@@ -1,0 +1,9 @@
+- Architecture decision:
+  - Use a traditional client-server architecture
+  - Frontend: Expo + React Native + TypeScript
+  - Backend: ASP.NET Core Web API
+  - Database: PostgreSQL
+  - Do not use Supabase Auth, Realtime, or Edge Functions
+  - Supabase may only be used as a hosted PostgreSQL provider if needed
+  - Business logic must live in the .NET backend
+  - All client data access must go through backend APIs
