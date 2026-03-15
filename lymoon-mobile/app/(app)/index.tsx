@@ -4,11 +4,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { HomeHeader } from '../../src/components/HomeHeader';
 import { ScheduleCard } from '../../src/features/schedule/components/ScheduleCard';
-import { MOCK_SCHEDULES, SCHEDULE_CATEGORIES } from '../../src/features/schedule/constants';
+import { NewScheduleBottomSheet } from '../../src/components/NewScheduleBottomSheet';
+import { ENGINEERING_SPRINT_TEMPLATE, SCHEDULE_CATEGORIES } from '../../src/features/schedule/constants';
+import type { ScheduleItem } from '../../src/types/schedule';
 
 export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [sheetVisible, setSheetVisible] = useState(false);
   const insets = useSafeAreaInsets();
+
+  function handleAddSchedule() {
+    setSchedules((prev) => [
+      ...prev,
+      { ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) },
+    ]);
+  }
 
   // Header height: status bar + 8pt padding + greeting block (~56px) + 16pt bottom padding
   const headerHeight = insets.top + 8 + 56 + 16;
@@ -57,16 +68,38 @@ export default function HomeScreen() {
         <View className="px-6 gap-4 pb-8">
           <View className="flex-row items-center justify-between">
             <Text className="text-[16px] font-bold text-[#0f172a]">Active Schedules</Text>
-            <TouchableOpacity className="flex-row items-center gap-1">
+            <TouchableOpacity className="flex-row items-center gap-1" onPress={() => setSheetVisible(true)}>
               <Ionicons name="add-circle-outline" size={15} color="#b6ec13" />
               <Text className="text-[14px] font-semibold text-[#b6ec13]">New</Text>
             </TouchableOpacity>
           </View>
-          {MOCK_SCHEDULES.map((s) => (
-            <ScheduleCard key={s.id} {...s} />
-          ))}
+          {schedules.length === 0 ? (
+            <View className="items-center justify-center px-6 py-16">
+              <View className="mb-6 items-center justify-center rounded-[24px] bg-[rgba(241,245,249,0.7)] size-16"
+                style={{ shadowColor: '#e2e8f0', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 2, elevation: 1 }}
+              >
+                <Ionicons name="calendar-outline" size={28} color="#94a3b8" />
+              </View>
+              <Text className="text-[16px] font-bold text-center text-[rgba(15,23,42,0.7)] mb-1">
+                No active schedules yet
+              </Text>
+              <Text className="text-[14px] text-[#64748b] text-center" style={{ maxWidth: 200, lineHeight: 20 }}>
+                Tap + to create or join a schedule to get started.
+              </Text>
+            </View>
+          ) : (
+            schedules.map((s) => (
+              <ScheduleCard key={s.id} {...s} />
+            ))
+          )}
         </View>
       </ScrollView>
+
+      <NewScheduleBottomSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        onSelect={handleAddSchedule}
+      />
     </View>
   );
 }
