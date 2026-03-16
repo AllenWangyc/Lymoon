@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { HomeHeader } from '../../src/components/HomeHeader';
-import { ScheduleCard } from '../../src/features/schedule/components/ScheduleCard';
-import { NewScheduleBottomSheet } from '../../src/components/NewScheduleBottomSheet';
-import { ENGINEERING_SPRINT_TEMPLATE, SCHEDULE_CATEGORIES } from '../../src/features/schedule/constants';
-import type { ScheduleItem } from '../../src/types/schedule';
+import { HomeHeader } from '@/components/HomeHeader';
+import { ScheduleCard } from '@/features/schedule/components/ScheduleCard';
+import { NewScheduleBottomSheet } from '@/components/NewScheduleBottomSheet';
+import { ENGINEERING_SPRINT_TEMPLATE, SCHEDULE_CATEGORIES } from '@/features/schedule/constants';
+import type { ScheduleItem } from '@/types/schedule';
 
 export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState('All');

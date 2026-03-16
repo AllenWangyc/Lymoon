@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import type { DayBar } from '../../../types/schedule';
+import type { DayBar } from '@/types/schedule';
 
 export function WeekBar({ days }: { days: DayBar[] }) {
   return (

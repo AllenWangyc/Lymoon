@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import type { Shift } from '../../../types/schedule';
+import type { Shift } from '@/types/schedule';
 
 type Props = {
   shift: Shift;

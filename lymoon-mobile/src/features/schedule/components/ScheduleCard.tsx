@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import type { DayBar } from '../../../types/schedule';
+import type { DayBar } from '@/types/schedule';
 import { WeekBar } from './WeekBar';
 
 type Props = {

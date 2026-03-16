@@ -1,5 +1,5 @@
 import { View, Text, ScrollView } from 'react-native';
-import type { Employee, Shift } from '../../../types/schedule';
+import type { Employee, Shift } from '@/types/schedule';
 import { ShiftCard } from './ShiftCard';
 import { AddShiftSlot } from './AddShiftSlot';
 

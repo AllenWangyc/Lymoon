@@ -4,14 +4,14 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { addWeeks, getDay } from 'date-fns';
-import { WeekNavigator } from '../../../src/features/schedule/components/WeekNavigator';
-import { DaySelector } from '../../../src/features/schedule/components/DaySelector';
-import { EmployeeShiftRow } from '../../../src/features/schedule/components/EmployeeShiftRow';
+import { WeekNavigator } from '@/features/schedule/components/WeekNavigator';
+import { DaySelector } from '@/features/schedule/components/DaySelector';
+import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
 import {
   MOCK_SCHEDULE_DETAIL,
   MOCK_USER_ROLE,
   MOCK_CURRENT_USER_ID,
-} from '../../../src/features/schedule/constants';
+} from '@/features/schedule/constants';
 
 function toWeekIndex(jsDay: number): number {
   return jsDay === 0 ? 6 : jsDay - 1;
