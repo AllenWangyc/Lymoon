@@ -7,6 +7,7 @@ import { addWeeks, getDay } from 'date-fns';
 import { WeekNavigator } from '@/features/schedule/components/WeekNavigator';
 import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
+import { ScheduleOptionsMenu } from '@/features/schedule/components/ScheduleOptionsMenu';
 import {
   MOCK_SCHEDULE_DETAIL,
   MOCK_USER_ROLE,
@@ -34,6 +35,7 @@ export default function ScheduleDetailScreen() {
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const currentWeekStart = useMemo(
     () => addWeeks(baseWeekStart, weekOffset),
@@ -91,6 +93,7 @@ export default function ScheduleDetailScreen() {
           </View>
 
           <TouchableOpacity
+            onPress={() => setMenuOpen(true)}
             activeOpacity={0.7}
             className="size-10 rounded-full bg-white items-center justify-center border border-[#f1f5f9]"
             style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
@@ -115,6 +118,8 @@ export default function ScheduleDetailScreen() {
           onSelectDay={setSelectedDayIndex}
         />
       </View>
+
+      <ScheduleOptionsMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Scrollable employee list */}
       <ScrollView
