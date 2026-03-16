@@ -12,3 +12,27 @@ export type ScheduleItem = {
   iconBg: string;
   days: DayBar[];
 };
+
+export type ShiftType = 'Morning' | 'Standard' | 'Afternoon' | 'Custom';
+
+export type Shift = {
+  id: string;
+  employeeId: string;
+  dayOfWeek: number; // 0 = Mon … 6 = Sun
+  startTime: string; // "09:00"
+  endTime: string;   // "13:00"
+  shiftType: ShiftType;
+};
+
+export type Employee = {
+  id: string;
+  name: string;
+  role: string;
+  avatarInitials: string;
+};
+
+export type ScheduleDetail = ScheduleItem & {
+  employees: Employee[];
+  shifts: Shift[];
+  weekStartDate: string; // ISO date string "2024-10-14" (always a Monday)
+};
