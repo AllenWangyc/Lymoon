@@ -1,12 +1,14 @@
-import { View, Text } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 import type { Shift } from '@/types/schedule';
 
 type Props = {
   shift: Shift;
+  onPress?: () => void;
 };
 
-export function ShiftCard({ shift }: Props) {
+export function ShiftCard({ shift, onPress }: Props) {
   return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.75} disabled={!onPress}>
     <View
       className="rounded-[12px] px-[17px] py-[13px] min-w-[120px] self-stretch"
       style={{
@@ -36,5 +38,6 @@ export function ShiftCard({ shift }: Props) {
         {shift.startTime} – {shift.endTime}
       </Text>
     </View>
+    </TouchableOpacity>
   );
 }

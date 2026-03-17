@@ -9,6 +9,7 @@ type Props = {
   isManager: boolean;
   currentUserId: string;
   onAddShift: (employeeId: string) => void;
+  onShiftPress: (shift: Shift) => void;
 };
 
 export function EmployeeShiftRow({
@@ -17,6 +18,7 @@ export function EmployeeShiftRow({
   isManager,
   currentUserId,
   onAddShift,
+  onShiftPress,
 }: Props) {
   const canAddShift = isManager || employee.id === currentUserId;
 
@@ -58,7 +60,7 @@ export function EmployeeShiftRow({
         style={{ height: 65 }}
       >
         {shifts.map((shift) => (
-          <ShiftCard key={shift.id} shift={shift} />
+          <ShiftCard key={shift.id} shift={shift} onPress={() => onShiftPress(shift)} />
         ))}
         {canAddShift && (
           <AddShiftSlot onPress={() => onAddShift(employee.id)} />
