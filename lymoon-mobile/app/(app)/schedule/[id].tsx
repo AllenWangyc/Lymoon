@@ -8,11 +8,13 @@ import { WeekNavigator } from '@/features/schedule/components/WeekNavigator';
 import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
 import { ScheduleOptionsMenu } from '@/features/schedule/components/ScheduleOptionsMenu';
+import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
 import {
   MOCK_SCHEDULE_DETAIL,
   MOCK_USER_ROLE,
   MOCK_CURRENT_USER_ID,
 } from '@/features/schedule/constants';
+import type { Shift } from '@/types/schedule';
 
 function toWeekIndex(jsDay: number): number {
   return jsDay === 0 ? 6 : jsDay - 1;
@@ -36,6 +38,8 @@ export default function ScheduleDetailScreen() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+  const [shiftDetailVisible, setShiftDetailVisible] = useState(false);
 
   const currentWeekStart = useMemo(
     () => addWeeks(baseWeekStart, weekOffset),
@@ -56,6 +60,22 @@ export default function ScheduleDetailScreen() {
   function handleAddShift(employeeId: string) {
     // TODO: open add-shift bottom sheet
     console.log('Add shift for', employeeId);
+  }
+
+  function handleShiftPress(shift: Shift) {
+    setSelectedShift(shift);
+    setShiftDetailVisible(true);
+  }
+
+  function handleEditShift(shift: Shift) {
+    setShiftDetailVisible(false);
+    router.push({ pathname: '/schedule/edit-shift', params: { shiftId: shift.id } });
+  }
+
+  function handleDeleteShift(shift: Shift) {
+    // TODO: call delete API, then refresh schedule
+    console.log('Delete shift', shift.id);
+    setShiftDetailVisible(false);
   }
 
   const headerContentHeight = 40 + 16 + 38 + 16 + 44 + 8;
@@ -121,6 +141,21 @@ export default function ScheduleDetailScreen() {
 
       <ScheduleOptionsMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
 
+      <ShiftDetailBottomSheet
+        visible={shiftDetailVisible}
+        shift={selectedShift}
+        employee={
+          selectedShift
+            ? schedule.employees.find((e) => e.id === selectedShift.employeeId) ?? null
+            : null
+        }
+        weekStartDate={currentWeekStart.toISOString()}
+        isManager={isManager}
+        onClose={() => setShiftDetailVisible(false)}
+        onEditShift={handleEditShift}
+        onDeleteShift={handleDeleteShift}
+      />
+
       {/* Scrollable employee list */}
       <ScrollView
         className="flex-1"
@@ -140,6 +175,7 @@ export default function ScheduleDetailScreen() {
             isManager={isManager}
             currentUserId={MOCK_CURRENT_USER_ID}
             onAddShift={handleAddShift}
+            onShiftPress={handleShiftPress}
           />
         ))}
       </ScrollView>
