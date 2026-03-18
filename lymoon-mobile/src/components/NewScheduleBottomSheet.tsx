@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onSelect: () => void;
+  onSelect: (type: 'create' | 'join') => void;
 }
 
 const SHEET_HEIGHT = 320;
@@ -26,8 +26,13 @@ export function NewScheduleBottomSheet({ visible, onClose, onSelect }: Props) {
     }
   }, [visible]);
 
-  function handleOption() {
-    onSelect();
+  function handleCreate() {
+    onSelect('create');
+    onClose();
+  }
+
+  function handleJoin() {
+    onSelect('join');
     onClose();
   }
 
@@ -61,7 +66,7 @@ export function NewScheduleBottomSheet({ visible, onClose, onSelect }: Props) {
           <View className="gap-3">
             {/* Create New Schedule */}
             <TouchableOpacity
-              onPress={handleOption}
+              onPress={handleCreate}
               activeOpacity={0.7}
               className="bg-white border border-[#f1f5f9] rounded-[16px] flex-row items-center gap-4 p-[17px]"
               style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
@@ -78,7 +83,7 @@ export function NewScheduleBottomSheet({ visible, onClose, onSelect }: Props) {
 
             {/* Join with Code */}
             <TouchableOpacity
-              onPress={handleOption}
+              onPress={handleJoin}
               activeOpacity={0.7}
               className="bg-white border border-[#f1f5f9] rounded-[16px] flex-row items-center gap-4 p-[17px]"
               style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}

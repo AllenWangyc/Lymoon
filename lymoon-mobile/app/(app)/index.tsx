@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { router } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +7,7 @@ import { HomeHeader } from '@/components/HomeHeader';
 import { ScheduleCard } from '@/features/schedule/components/ScheduleCard';
 import { NewScheduleBottomSheet } from '@/components/NewScheduleBottomSheet';
 import { ENGINEERING_SPRINT_TEMPLATE, SCHEDULE_CATEGORIES } from '@/features/schedule/constants';
+import { useToast } from '@/hooks/useToast';
 import type { ScheduleItem } from '@/types/schedule';
 
 export default function HomeScreen() {
@@ -13,12 +15,18 @@ export default function HomeScreen() {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [sheetVisible, setSheetVisible] = useState(false);
   const insets = useSafeAreaInsets();
+  const { showToast } = useToast();
 
-  function handleAddSchedule() {
-    setSchedules((prev) => [
-      ...prev,
-      { ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) },
-    ]);
+  function handleScheduleOption(type: 'create' | 'join') {
+    if (type === 'join') {
+      router.push('/join-schedule');
+    } else {
+      setSchedules((prev) => [
+        ...prev,
+        { ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) },
+      ]);
+      showToast('Schedule created successfully');
+    }
   }
 
   // Header height: status bar + 8pt padding + greeting block (~56px) + 16pt bottom padding
@@ -98,7 +106,7 @@ export default function HomeScreen() {
       <NewScheduleBottomSheet
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
-        onSelect={handleAddSchedule}
+        onSelect={handleScheduleOption}
       />
     </View>
   );
