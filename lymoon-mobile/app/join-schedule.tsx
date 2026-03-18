@@ -1,43 +1,100 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import { ActivityIndicator, Animated, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { OTPInput } from '@/components/OTPInput';
+import { SchedulePreviewCard } from '@/components/SchedulePreviewCard';
+import { CodeInputHint } from '@/components/CodeInputHint';
+import { useScheduleStore } from '@/stores/scheduleStore';
+import { ENGINEERING_SPRINT_TEMPLATE } from '@/features/schedule/constants';
+
+const MOCK_INVALID_CODE = '000000';
+const MOCK_JOINED_CODE  = '111111';
+
+const MOCK_SCHEDULE_PREVIEW = {
+  scheduleName: 'Engineering Sprint',
+  managerName: 'Sarah Chen',
+  memberCount: 12,
+};
 
 export default function JoinScheduleScreen() {
   const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [found, setFound] = useState(false);
+  const [joined, setJoined] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { addSchedule } = useScheduleStore();
+
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  const cardTranslateY = useRef(new Animated.Value(12)).current;
+
+  useEffect(() => {
+    if (found || joined) {
+      cardOpacity.setValue(0);
+      cardTranslateY.setValue(12);
+      Animated.parallel([
+        Animated.timing(cardOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(cardTranslateY, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [found, joined]);
 
   const canSearch = code.length === 6;
 
+  function handleCodeChange(val: string) {
+    setCode(val);
+    if (error) setError(null);
+    if (found) setFound(false);
+    if (joined) setJoined(false);
+  }
+
   function handleSearch() {
-    console.log('Join schedule with code:', code);
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      if (code === MOCK_INVALID_CODE) {
+        setError('Invalid invite code. Please check with your manager.');
+      } else if (code === MOCK_JOINED_CODE) {
+        setJoined(true);
+      } else {
+        setFound(true);
+      }
+    }, 900);
+  }
+
+  function handleJoin() {
+    addSchedule({ ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) });
+    router.back();
   }
 
   return (
     <SafeAreaView className="flex-1 bg-[#f8f8f6]">
       <View className="flex-1 px-6">
 
-        {/* Back button */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mt-12 w-10 h-10 rounded-full bg-white border border-[#f1f5f9] items-center justify-center"
-          style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 }}
-        >
-          <Ionicons name="arrow-back" size={16} color="#0f172a" />
-        </TouchableOpacity>
-
-        {/* Title block */}
-        <View className="mt-10">
-          <Text
-            className="text-[30px] font-bold text-[#0f172a]"
-            style={{ letterSpacing: -0.75 }}
+        {/* Header row: back button left, title centered */}
+        <View className="mt-12 flex-row items-start">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full bg-white border border-[#f1f5f9] items-center justify-center"
+            style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 }}
           >
-            Join Schedule
-          </Text>
-          <Text className="text-[16px] text-[#64748b] mt-2">
-            Enter your invitation code
-          </Text>
+            <Ionicons name="arrow-back" size={16} color="#0f172a" />
+          </TouchableOpacity>
+
+          <View className="flex-1 items-center">
+            <Text
+              className="text-[28px] font-bold text-[#0f172a]"
+              style={{ letterSpacing: -0.75 }}
+            >
+              Join Schedule
+            </Text>
+            <Text className="text-[16px] text-[#64748b] mt-2">
+              Enter your invitation code
+            </Text>
+          </View>
+
+          <View className="w-10" />
         </View>
 
         {/* Main content area */}
@@ -50,22 +107,35 @@ export default function JoinScheduleScreen() {
                 <Ionicons name="people-outline" size={22} color="#64748b" />
               </View>
             </View>
-            <OTPInput value={code} onChange={setCode} />
+            <OTPInput value={code} onChange={handleCodeChange} hasError={!!error} hasSuccess={found} hasJoined={joined} isLoading={isLoading} />
+            {error  && <CodeInputHint status="error"   message={error} />}
+            {found  && <CodeInputHint status="success" message="Schedule found" />}
+            {joined && <CodeInputHint status="joined"  message="You're already a member of this schedule" />}
           </View>
 
+          {/* Schedule preview card */}
+          {(found || joined) && (
+            <Animated.View style={{ opacity: cardOpacity, transform: [{ translateY: cardTranslateY }] }}>
+              <SchedulePreviewCard {...MOCK_SCHEDULE_PREVIEW} />
+            </Animated.View>
+          )}
+
           {/* Action buttons */}
-          <View className="pt-24 gap-4">
-            {/* Search */}
+          <View className={`${found || joined ? 'pt-4' : 'pt-24'} gap-4`}>
+            {/* Search / Join */}
             <TouchableOpacity
-              onPress={handleSearch}
-              disabled={!canSearch}
+              onPress={found ? handleJoin : handleSearch}
+              disabled={!canSearch || joined || isLoading}
               className="h-16 rounded-[16px] items-center justify-center bg-[#b6ec13]"
               style={[
                 { shadowColor: '#b6ec13', shadowOpacity: 0.2, shadowRadius: 15, shadowOffset: { width: 0, height: 10 }, elevation: 4 },
-                !canSearch && { opacity: 0.4 },
+                (!canSearch || joined || isLoading) && { opacity: 0.4 },
               ]}
             >
-              <Text className="text-[18px] font-bold text-[#0f172a]">Search</Text>
+              {isLoading
+                ? <ActivityIndicator size="small" color="#0f172a" />
+                : <Text className="text-[18px] font-bold text-[#0f172a]">{found || joined ? 'Join' : 'Search'}</Text>
+              }
             </TouchableOpacity>
 
             {/* Cancel */}
@@ -83,8 +153,8 @@ export default function JoinScheduleScreen() {
           <View className="flex-row items-start gap-2 bg-[#f1f5f9] px-4 py-3 rounded-[16px] self-center">
             <Ionicons name="information-circle-outline" size={14} color="#475569" style={{ marginTop: 1 }} />
             <View>
-              <Text className="text-[12px] font-medium text-[#475569]">Need help joining a team?</Text>
-              <Text className="text-[12px] font-medium text-[#475569]">Contact your manager</Text>
+              <Text className="text-[12px] text-[#475569]" style={{ letterSpacing: 0.3 }}>Need help joining a team?</Text>
+              <Text className="text-[12px] text-[#475569]" style={{ letterSpacing: 0.3 }}>Contact your manager</Text>
             </View>
           </View>
         </View>
