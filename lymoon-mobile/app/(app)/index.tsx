@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,23 +8,27 @@ import { ScheduleCard } from '@/features/schedule/components/ScheduleCard';
 import { NewScheduleBottomSheet } from '@/components/NewScheduleBottomSheet';
 import { ENGINEERING_SPRINT_TEMPLATE, SCHEDULE_CATEGORIES } from '@/features/schedule/constants';
 import { useToast } from '@/hooks/useToast';
-import type { ScheduleItem } from '@/types/schedule';
+import { useScheduleStore } from '@/stores/scheduleStore';
 
 export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [sheetVisible, setSheetVisible] = useState(false);
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
+  const { schedules, addSchedule, pendingToast, clearPendingToast } = useScheduleStore();
+
+  useEffect(() => {
+    if (pendingToast) {
+      showToast(pendingToast);
+      clearPendingToast();
+    }
+  }, [pendingToast]);
 
   function handleScheduleOption(type: 'create' | 'join') {
     if (type === 'join') {
       router.push('/join-schedule');
     } else {
-      setSchedules((prev) => [
-        ...prev,
-        { ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) },
-      ]);
+      addSchedule({ ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) });
       showToast('Schedule created successfully');
     }
   }
