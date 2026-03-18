@@ -41,7 +41,7 @@ export default function JoinScheduleScreen() {
         </View>
 
         {/* Main content area */}
-        <View className="mt-4 gap-12">
+        <View className="mt-12 gap-12">
 
           {/* Team icon + OTP cells */}
           <View className="gap-4">
@@ -50,11 +50,11 @@ export default function JoinScheduleScreen() {
                 <Ionicons name="people-outline" size={22} color="#64748b" />
               </View>
             </View>
-            <OTPInput value={code} onChange={setCode} autoFocus />
+            <OTPInput value={code} onChange={setCode} />
           </View>
 
           {/* Action buttons */}
-          <View className="pt-14 gap-4">
+          <View className="pt-24 gap-4">
             {/* Search */}
             <TouchableOpacity
               onPress={handleSearch}
@@ -80,11 +80,12 @@ export default function JoinScheduleScreen() {
 
         {/* Help hint — pinned to bottom */}
         <View className="absolute bottom-12 left-6 right-6 items-center">
-          <View className="flex-row items-center gap-2 bg-[#f1f5f9] px-4 py-2 rounded-full">
-            <Ionicons name="information-circle-outline" size={14} color="#475569" />
-            <Text className="text-[12px] font-medium text-[#475569]">
-              Need help joining a team? Contact your manager
-            </Text>
+          <View className="flex-row items-start gap-2 bg-[#f1f5f9] px-4 py-3 rounded-[16px] self-center">
+            <Ionicons name="information-circle-outline" size={14} color="#475569" style={{ marginTop: 1 }} />
+            <View>
+              <Text className="text-[12px] font-medium text-[#475569]">Need help joining a team?</Text>
+              <Text className="text-[12px] font-medium text-[#475569]">Contact your manager</Text>
+            </View>
           </View>
         </View>
 
