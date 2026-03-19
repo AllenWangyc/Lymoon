@@ -39,6 +39,7 @@ export const MOCK_SHIFTS: import('@/types/schedule').Shift[] = [
 export const MOCK_SCHEDULE_DETAIL: import('@/types/schedule').ScheduleDetail = {
   ...ENGINEERING_SPRINT_TEMPLATE,
   id: 'schedule-1',
+  memberPermission: 'full_collaboration',
   employees: MOCK_EMPLOYEES,
   shifts: MOCK_SHIFTS,
   weekStartDate: '2024-10-14',

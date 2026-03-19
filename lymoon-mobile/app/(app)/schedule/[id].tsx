@@ -48,6 +48,7 @@ export default function ScheduleDetailScreen() {
 
   const isManager = MOCK_USER_ROLE === 'Manager';
   const isFullCollab = (schedule?.memberPermission ?? 'manager_only') === 'full_collaboration';
+  // Full collaboration: all members can edit shifts. In manager_only mode, members can only edit their own shifts.
   const canEditShifts = isManager || isFullCollab;
 
   const shiftsForDay = useMemo(
@@ -152,7 +153,7 @@ export default function ScheduleDetailScreen() {
             : null
         }
         weekStartDate={currentWeekStart.toISOString()}
-        canEdit={canEditShifts}
+        canEdit={canEditShifts || selectedShift?.employeeId === MOCK_CURRENT_USER_ID}
         onClose={() => setShiftDetailVisible(false)}
         onEditShift={handleEditShift}
         onDeleteShift={handleDeleteShift}
