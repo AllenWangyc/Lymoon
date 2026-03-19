@@ -15,7 +15,7 @@ export default function HomeScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
-  const { schedules, pendingToast, clearPendingToast } = useScheduleStore();
+  const { schedules, pendingToast, clearPendingToast, showNewScheduleSheet, setShowNewScheduleSheet } = useScheduleStore();
 
   useEffect(() => {
     if (pendingToast) {
@@ -23,6 +23,13 @@ export default function HomeScreen() {
       clearPendingToast();
     }
   }, [pendingToast]);
+
+  useEffect(() => {
+    if (showNewScheduleSheet) {
+      setSheetVisible(true);
+      setShowNewScheduleSheet(false);
+    }
+  }, [showNewScheduleSheet]);
 
   function handleScheduleOption(type: 'join') {
     if (type === 'join') {

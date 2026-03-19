@@ -23,7 +23,7 @@ export const ENGINEERING_SPRINT_TEMPLATE: Omit<ScheduleItem, 'id'> = {
 };
 
 export const MOCK_CURRENT_USER_ID = 'emp-1';
-export const MOCK_USER_ROLE: 'Manager' | 'Member' = 'Manager';
+export const MOCK_USER_ROLE: 'Manager' | 'Member' = 'Member';
 
 export const MOCK_EMPLOYEES: import('@/types/schedule').Employee[] = [
   { id: 'emp-1', name: 'Alex Rivera', role: 'Lead Developer', avatarInitials: 'AR' },
