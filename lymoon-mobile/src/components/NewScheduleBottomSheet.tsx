@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
@@ -27,7 +28,7 @@ export function NewScheduleBottomSheet({ visible, onClose, onSelect }: Props) {
   }, [visible]);
 
   function handleCreate() {
-    onSelect('create');
+    router.push('/create-schedule');
     onClose();
   }
 
