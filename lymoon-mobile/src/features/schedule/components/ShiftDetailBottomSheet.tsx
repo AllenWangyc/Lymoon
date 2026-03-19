@@ -16,7 +16,7 @@ type Props = {
   shift: Shift | null;
   employee: Employee | null;
   weekStartDate: string;
-  isManager: boolean;
+  canEdit: boolean;
   onClose: () => void;
   onEditShift: (shift: Shift) => void;
   onDeleteShift: (shift: Shift) => void;
@@ -30,7 +30,7 @@ export function ShiftDetailBottomSheet({
   shift,
   employee,
   weekStartDate,
-  isManager,
+  canEdit,
   onClose,
   onEditShift,
   onDeleteShift,
@@ -146,7 +146,7 @@ export function ShiftDetailBottomSheet({
 
             {/* Actions */}
             <View className="gap-5">
-              {isManager && (
+              {canEdit && (
                 <>
                   <TouchableOpacity
                     onPress={() => onEditShift(shift)}

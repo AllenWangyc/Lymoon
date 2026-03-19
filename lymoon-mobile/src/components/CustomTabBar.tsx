@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useScheduleStore } from '@/stores/scheduleStore';
 
 type TabConfig = {
   name: string;
@@ -21,6 +22,12 @@ const RIGHT_TABS: TabConfig[] = [
 
 export function CustomTabBar({ state, navigation }: { state: any; navigation: any }) {
   const insets = useSafeAreaInsets();
+  const setShowNewScheduleSheet = useScheduleStore((s) => s.setShowNewScheduleSheet);
+
+  function handleFabPress() {
+    navigation.navigate('index');
+    setShowNewScheduleSheet(true);
+  }
 
   const isActive = (name: string) => state.routes[state.index]?.name === name;
 
@@ -57,6 +64,7 @@ export function CustomTabBar({ state, navigation }: { state: any; navigation: an
       <View className="w-14 h-4 items-center">
         <TouchableOpacity
           activeOpacity={0.85}
+          onPress={handleFabPress}
           className="absolute -top-10 w-14 h-14 rounded-full bg-[#b6ec13] items-center justify-center"
           style={{
             shadowColor: '#b6ec13',

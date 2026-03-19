@@ -15,7 +15,8 @@
       "Bash(find 'D:/Vibe coding projects/Lymoon/lymoon-mobile/src' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
       "Bash(xargs grep:*)",
       "Bash(ls:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gh pr:*)"
     ]
   }
 }

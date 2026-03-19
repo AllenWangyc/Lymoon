@@ -11,6 +11,10 @@ export type ScheduleItem = {
   hours: string;
   iconBg: string;
   days: DayBar[];
+  scheduleType?: 'shift' | 'event' | 'personal';
+  memberPermission?: 'manager_only' | 'full_collaboration';
+  startWeek?: string;      // ISO Monday date, e.g. "2026-03-16"
+  description?: string;   // optional, max 20 words
 };
 
 export type ShiftType = 'Morning' | 'Standard' | 'Afternoon' | 'Custom';

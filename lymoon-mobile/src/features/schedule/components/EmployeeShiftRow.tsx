@@ -6,7 +6,7 @@ import { AddShiftSlot } from './AddShiftSlot';
 type Props = {
   employee: Employee;
   shifts: Shift[];
-  isManager: boolean;
+  canEditShifts: boolean;
   currentUserId: string;
   onAddShift: (employeeId: string) => void;
   onShiftPress: (shift: Shift) => void;
@@ -15,12 +15,12 @@ type Props = {
 export function EmployeeShiftRow({
   employee,
   shifts,
-  isManager,
+  canEditShifts,
   currentUserId,
   onAddShift,
   onShiftPress,
 }: Props) {
-  const canAddShift = isManager || employee.id === currentUserId;
+  const canAddShift = canEditShifts || employee.id === currentUserId;
 
   return (
     <View className="gap-3">

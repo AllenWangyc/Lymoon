@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { HomeHeader } from '@/components/HomeHeader';
 import { ScheduleCard } from '@/features/schedule/components/ScheduleCard';
 import { NewScheduleBottomSheet } from '@/components/NewScheduleBottomSheet';
-import { ENGINEERING_SPRINT_TEMPLATE, SCHEDULE_CATEGORIES } from '@/features/schedule/constants';
+import { SCHEDULE_CATEGORIES } from '@/features/schedule/constants';
 import { useToast } from '@/hooks/useToast';
 import { useScheduleStore } from '@/stores/scheduleStore';
 
@@ -15,7 +15,7 @@ export default function HomeScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
-  const { schedules, addSchedule, pendingToast, clearPendingToast } = useScheduleStore();
+  const { schedules, pendingToast, clearPendingToast, showNewScheduleSheet, setShowNewScheduleSheet } = useScheduleStore();
 
   useEffect(() => {
     if (pendingToast) {
@@ -24,13 +24,18 @@ export default function HomeScreen() {
     }
   }, [pendingToast]);
 
-  function handleScheduleOption(type: 'create' | 'join') {
+  useEffect(() => {
+    if (showNewScheduleSheet) {
+      setSheetVisible(true);
+      setShowNewScheduleSheet(false);
+    }
+  }, [showNewScheduleSheet]);
+
+  function handleScheduleOption(type: 'join') {
     if (type === 'join') {
       router.push('/join-schedule');
-    } else {
-      addSchedule({ ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) });
-      showToast('Schedule created successfully');
     }
+    // 'create' is handled directly in NewScheduleBottomSheet via router.push('/create-schedule')
   }
 
   // Header height: status bar + 8pt padding + greeting block (~56px) + 16pt bottom padding
