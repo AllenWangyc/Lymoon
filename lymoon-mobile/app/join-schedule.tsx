@@ -64,7 +64,10 @@ export default function JoinScheduleScreen() {
   }
 
   function handleJoin() {
-    addSchedule({ ...ENGINEERING_SPRINT_TEMPLATE, id: String(Date.now()) });
+    addSchedule(
+      { ...ENGINEERING_SPRINT_TEMPLATE, id: Math.random().toString(36).slice(2) },
+      `Joined "${ENGINEERING_SPRINT_TEMPLATE.title}" successfully`,
+    );
     router.back();
   }
 

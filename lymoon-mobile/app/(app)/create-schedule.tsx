@@ -58,9 +58,9 @@ export default function CreateScheduleScreen() {
     }
 
     addSchedule({
-      id: String(Date.now()),
+      id: Math.random().toString(36).slice(2),
       title: trimmedName,
-      subtitle: description.trim() || '',
+      subtitle: `Draft · ${format(weekStart, 'MMM d')}`,
       status: 'Draft',
       isActive: false,
       hours: '0h',
@@ -108,7 +108,7 @@ export default function CreateScheduleScreen() {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView
