@@ -28,14 +28,16 @@ function CategoryPill({
   useEffect(() => {
     if (isSelected) {
       scaleAnim.setValue(0.97);
-      Animated.spring(scaleAnim, {
+      const anim = Animated.spring(scaleAnim, {
         toValue: 1.0,
         friction: 6,
         tension: 200,
         useNativeDriver: true,
-      }).start();
+      });
+      anim.start();
+      return () => anim.stop();
     }
-  }, [isSelected]);
+  }, [isSelected, scaleAnim]);
 
   return (
     <Animated.View
