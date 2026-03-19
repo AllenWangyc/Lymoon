@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onSelect: (type: 'create' | 'join') => void;
+  onSelect: (type: 'join') => void;
 }
 
 const SHEET_HEIGHT = 320;

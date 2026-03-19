@@ -24,7 +24,7 @@ export default function HomeScreen() {
     }
   }, [pendingToast]);
 
-  function handleScheduleOption(type: 'create' | 'join') {
+  function handleScheduleOption(type: 'join') {
     if (type === 'join') {
       router.push('/join-schedule');
     }
