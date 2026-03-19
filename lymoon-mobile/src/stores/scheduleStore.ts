@@ -14,7 +14,7 @@ export const useScheduleStore = create<ScheduleState>((set) => ({
   addSchedule: (item) =>
     set((state) => ({
       schedules: [...state.schedules, item],
-      pendingToast: `Joined "${item.title}" successfully`,
+      pendingToast: `Created "${item.title}" successfully`,
     })),
   clearPendingToast: () => set({ pendingToast: null }),
 }));
