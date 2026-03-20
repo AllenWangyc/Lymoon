@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { OTPInput } from '@/components/OTPInput';
 import { SchedulePreviewCard } from '@/components/SchedulePreviewCard';
 import { CodeInputHint } from '@/components/CodeInputHint';
+import { PageHeader } from '@/components/PageHeader';
 import { useScheduleStore } from '@/stores/scheduleStore';
 import { ENGINEERING_SPRINT_TEMPLATE } from '@/features/schedule/constants';
 
@@ -75,29 +76,13 @@ export default function JoinScheduleScreen() {
     <SafeAreaView className="flex-1 bg-[#f8f8f6]">
       <View className="flex-1 px-6">
 
-        {/* Header row: back button left, title centered */}
-        <View className="mt-12 flex-row items-start">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-white border border-[#f1f5f9] items-center justify-center"
-            style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 }}
-          >
-            <Ionicons name="arrow-back" size={16} color="#0f172a" />
-          </TouchableOpacity>
-
-          <View className="flex-1 items-center">
-            <Text
-              className="text-[28px] font-bold text-[#0f172a]"
-              style={{ letterSpacing: -0.75 }}
-            >
-              Join Schedule
-            </Text>
-            <Text className="text-[16px] text-[#64748b] mt-2">
-              Enter your invitation code
-            </Text>
-          </View>
-
-          <View className="w-10" />
+        {/* Header */}
+        <View className="mt-6">
+          <PageHeader
+            title="Join Schedule"
+            subtitle="Enter your invitation code"
+            onBack={() => router.back()}
+          />
         </View>
 
         {/* Main content area */}

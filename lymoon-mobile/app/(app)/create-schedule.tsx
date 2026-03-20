@@ -15,6 +15,7 @@ import { startOfWeek, endOfWeek, format, isSameWeek } from 'date-fns';
 import { CategoryPicker } from '../../src/features/schedule/components/CategoryPicker';
 import { PermissionPicker } from '../../src/features/schedule/components/PermissionPicker';
 import { WeekPickerBottomSheet } from '../../src/components/WeekPickerBottomSheet';
+import { PageHeader } from '../../src/components/PageHeader';
 import { useScheduleStore } from '../../src/stores/scheduleStore';
 
 function formatWeekRange(date: Date): string {
@@ -78,33 +79,8 @@ export default function CreateScheduleScreen() {
   return (
     <SafeAreaView className="flex-1 bg-[#f8f8f6]">
       {/* Header */}
-      <View
-        className="flex-row items-center border-b border-[rgba(182,236,19,0.1)] bg-[#f8f8f6]"
-        style={{ height: 56 }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-          style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Ionicons name="chevron-back" size={22} color="#0f172a" />
-        </TouchableOpacity>
-
-        <View className="flex-1 items-center">
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: '700',
-              color: '#0f172a',
-              letterSpacing: -0.5,
-            }}
-          >
-            Create Schedule
-          </Text>
-        </View>
-
-        {/* Spacer to balance back button */}
-        <View style={{ width: 48 }} />
+      <View className="px-4 py-3">
+        <PageHeader title="Create Schedule" onBack={() => router.back()} />
       </View>
 
       <KeyboardAvoidingView
@@ -310,14 +286,9 @@ export default function CreateScheduleScreen() {
         <TouchableOpacity
           onPress={handleCreate}
           activeOpacity={0.85}
+          disabled={!name.trim()}
           className="bg-[#b6ec13] py-4 rounded-3xl items-center justify-center"
-          style={{
-            shadowColor: '#b6ec13',
-            shadowOffset: { width: 0, height: 10 },
-            shadowOpacity: 0.3,
-            shadowRadius: 15,
-            elevation: 8,
-          }}
+          style={!name.trim() ? { opacity: 0.4 } : undefined}
         >
           <Text className="text-[#0f172a] font-bold text-base">Create</Text>
         </TouchableOpacity>
