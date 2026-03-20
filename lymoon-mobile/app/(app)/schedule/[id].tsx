@@ -9,6 +9,7 @@ import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
 import { ScheduleOptionsMenu } from '@/features/schedule/components/ScheduleOptionsMenu';
 import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
+import { PageHeader } from '@/components/PageHeader';
 import {
   MOCK_SCHEDULE_DETAIL,
   MOCK_USER_ROLE,
@@ -96,34 +97,21 @@ export default function ScheduleDetailScreen() {
         }}
       >
         {/* Title row */}
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-            className="size-10 rounded-full bg-white items-center justify-center border border-[#f1f5f9]"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
-          >
-            <Ionicons name="chevron-back" size={16} color="#0f172a" />
-          </TouchableOpacity>
-
-          <View className="items-center">
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}>
-              {schedule.title}
-            </Text>
-            <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748b', lineHeight: 16 }}>
-              {schedule.subtitle}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={() => setMenuOpen(true)}
-            activeOpacity={0.7}
-            className="size-10 rounded-full bg-white items-center justify-center border border-[#f1f5f9]"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
-          >
-            <Ionicons name="ellipsis-horizontal" size={16} color="#0f172a" />
-          </TouchableOpacity>
-        </View>
+        <PageHeader
+          title={schedule.title}
+          subtitle={schedule.subtitle}
+          onBack={() => router.back()}
+          rightElement={
+            <TouchableOpacity
+              onPress={() => setMenuOpen(true)}
+              activeOpacity={0.7}
+              className="size-10 rounded-full bg-white items-center justify-center border border-[#f1f5f9]"
+              style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
+            >
+              <Ionicons name="ellipsis-horizontal" size={16} color="#0f172a" />
+            </TouchableOpacity>
+          }
+        />
 
         {/* Week navigator */}
         <WeekNavigator

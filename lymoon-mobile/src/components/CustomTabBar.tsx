@@ -29,6 +29,9 @@ export function CustomTabBar({ state, navigation }: { state: any; navigation: an
     setShowNewScheduleSheet(true);
   }
 
+  const currentRoute = state.routes[state.index]?.name;
+  if (currentRoute === 'create-schedule') return null;
+
   const isActive = (name: string) => state.routes[state.index]?.name === name;
 
   const renderTab = (tab: TabConfig) => {

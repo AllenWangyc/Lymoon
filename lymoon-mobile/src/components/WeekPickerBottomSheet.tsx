@@ -199,11 +199,12 @@ export function WeekPickerBottomSheet({
               {(state === 'today') && (
                 <View
                   style={{
+                    position: 'absolute',
+                    bottom: 3,
                     width: 6,
                     height: 6,
                     borderRadius: 3,
                     backgroundColor: '#b6ec13',
-                    marginTop: 2,
                   }}
                 />
               )}

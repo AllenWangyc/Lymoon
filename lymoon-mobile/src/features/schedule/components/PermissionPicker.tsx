@@ -43,11 +43,12 @@ function PermissionCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className="flex-row items-center w-full rounded-2xl p-[18px]"
+      className="flex-row items-start w-full rounded-2xl p-[18px]"
       style={{
         backgroundColor: 'white',
         borderWidth: 2,
         borderColor: isSelected ? '#b6ec13' : 'rgba(182, 236, 19, 0.15)',
+        minHeight: 84,
       }}
     >
       <View
