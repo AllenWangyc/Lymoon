@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { OTPInput } from '@/components/OTPInput';
-import { SchedulePreviewCard } from '@/components/SchedulePreviewCard';
+import { SchedulePreviewCard } from '@/features/schedule/components/SchedulePreviewCard';
 import { CodeInputHint } from '@/components/CodeInputHint';
 import { PageHeader } from '@/components/PageHeader';
 import { useScheduleStore } from '@/stores/scheduleStore';

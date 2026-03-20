@@ -7,18 +7,18 @@ export const MOCK_SCHEDULES: ScheduleItem[] = [];
 export const ENGINEERING_SPRINT_TEMPLATE: Omit<ScheduleItem, 'id'> = {
   title: 'Engineering Sprint',
   subtitle: 'Phase 2 • Week 42',
-  status: 'Active',
-  isActive: true,
-  hours: '38.5 hrs',
+  scheduleType: 'shift',
+  description: 'Sprint planning and daily standups for the engineering team',
+  hours: '38.5',
   iconBg: 'rgba(182,236,19,0.1)',
   days: [
-    { day: 'M', opacity: 1 },
-    { day: 'T', opacity: 0.8 },
-    { day: 'W', opacity: 1, isToday: true },
-    { day: 'T', opacity: 0.6 },
-    { day: 'F', opacity: 1 },
-    { day: 'S', opacity: 0 },
-    { day: 'S', opacity: 0 },
+    { day: 'Mo', opacity: 1 },
+    { day: 'Tu', opacity: 0.8 },
+    { day: 'We', opacity: 1, isToday: true },
+    { day: 'Th', opacity: 0.6 },
+    { day: 'Fr', opacity: 1 },
+    { day: 'Sa', opacity: 0 },
+    { day: 'Su', opacity: 0 },
   ],
 };
 
