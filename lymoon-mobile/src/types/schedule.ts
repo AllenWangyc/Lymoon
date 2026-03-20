@@ -6,8 +6,6 @@ export type ScheduleItem = {
   id: string;
   title: string;
   subtitle: string;
-  status: string;
-  isActive: boolean;
   hours: string;
   iconBg: string;
   days: DayBar[];
@@ -15,6 +13,7 @@ export type ScheduleItem = {
   memberPermission?: 'manager_only' | 'full_collaboration';
   startWeek?: string;      // ISO Monday date, e.g. "2026-03-16"
   description?: string;   // optional, max 20 words
+  inviteCode?: string;     // 6-char uppercase alphanumeric, e.g. "A3BK9Z"
 };
 
 export type ShiftType = 'Morning' | 'Standard' | 'Afternoon' | 'Custom';

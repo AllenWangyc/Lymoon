@@ -30,7 +30,7 @@ export function CustomTabBar({ state, navigation }: { state: any; navigation: an
   }
 
   const currentRoute = state.routes[state.index]?.name;
-  if (currentRoute === 'create-schedule') return null;
+  if (currentRoute === 'create-schedule' || currentRoute === 'schedule-created' || currentRoute === 'schedule') return null;
 
   const isActive = (name: string) => state.routes[state.index]?.name === name;
 

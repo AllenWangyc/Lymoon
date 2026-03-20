@@ -21,7 +21,7 @@ import { useScheduleStore } from '../../src/stores/scheduleStore';
 function formatWeekRange(date: Date): string {
   const end = endOfWeek(date, { weekStartsOn: 1 });
   const isCurrentWeek = isSameWeek(date, new Date(), { weekStartsOn: 1 });
-  const range = `${format(date, 'MMM d')} – ${format(end, 'MMM d')}`;
+  const range = `${format(date, 'MMM d')} - ${format(end, 'MMM d')}`;
   return isCurrentWeek ? `${range} (This Week)` : range;
 }
 
@@ -58,13 +58,13 @@ export default function CreateScheduleScreen() {
       return;
     }
 
+    const newId = Math.random().toString(36).slice(2);
+
     addSchedule({
-      id: Math.random().toString(36).slice(2),
+      id: newId,
       title: trimmedName,
       subtitle: `Draft · ${format(weekStart, 'MMM d')}`,
-      status: 'Draft',
-      isActive: false,
-      hours: '0h',
+      hours: '0',
       iconBg: 'rgba(182,236,19,0.1)',
       days: [],
       scheduleType,
@@ -73,7 +73,7 @@ export default function CreateScheduleScreen() {
       description: description.trim() || undefined,
     });
 
-    router.replace('/');
+    router.replace(`/schedule-created?id=${newId}`);
   }
 
   return (
