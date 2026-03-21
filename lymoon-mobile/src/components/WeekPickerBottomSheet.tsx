@@ -1,13 +1,5 @@
-import {
-  Animated,
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
   addMonths,
@@ -24,6 +16,7 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns';
+import { BottomSheet } from './BottomSheet';
 
 export interface WeekPickerBottomSheetProps {
   visible: boolean;
@@ -65,29 +58,10 @@ export function WeekPickerBottomSheet({
   onClose,
 }: WeekPickerBottomSheetProps) {
   const today = startOfDay(new Date());
-  const translateY = useRef(new Animated.Value(600)).current;
 
   const [displayMonth, setDisplayMonth] = useState<Date>(() => initialWeekStart ?? today);
   const [pendingWeekStart, setPendingWeekStart] = useState<Date | null>(initialWeekStart ?? null);
   const [pendingSelectedDay, setPendingSelectedDay] = useState<Date | null>(null);
-
-  // Slide up/down animation
-  useEffect(() => {
-    if (visible) {
-      Animated.spring(translateY, {
-        toValue: 0,
-        useNativeDriver: true,
-        damping: 20,
-        stiffness: 200,
-      }).start();
-    } else {
-      Animated.timing(translateY, {
-        toValue: 600,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
 
   // Reset state when sheet opens
   useEffect(() => {
@@ -216,185 +190,135 @@ export function WeekPickerBottomSheet({
   };
 
   return (
-    <Modal
+    <BottomSheet
       visible={visible}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={onClose}
+      onClose={onClose}
+      height={600}
+      backgroundColor="#ffffff"
+      borderRadius={40}
+      showTopBorder={false}
+      elevation={24}
+      openAnimation={{ type: 'spring', damping: 20, stiffness: 200 }}
+      closeAnimation={{ type: 'timing', duration: 250 }}
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-        {/* Backdrop */}
-        <TouchableWithoutFeedback onPress={onClose}>
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: 'rgba(15,23,42,0.6)',
-            }}
-          />
-        </TouchableWithoutFeedback>
-
-        {/* Sheet */}
-        <Animated.View
-          style={[
-            { transform: [{ translateY }] },
-            {
-              backgroundColor: '#ffffff',
-              borderTopLeftRadius: 40,
-              borderTopRightRadius: 40,
-              overflow: 'hidden',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: -4 },
-              shadowOpacity: 0.12,
-              shadowRadius: 20,
-              elevation: 24,
-            },
-          ]}
-        >
-          {/* Drag Handle */}
-          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
-            <View
+      {/* Header */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          paddingHorizontal: 24,
+          paddingTop: 16,
+          paddingBottom: 25,
+          borderBottomWidth: 1,
+          borderBottomColor: '#f8f8f6',
+        }}
+      >
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}>
+            Select Start Week
+          </Text>
+          {headerLabel ? (
+            <Text
               style={{
-                backgroundColor: '#edf0db',
-                width: 48,
-                height: 6,
-                borderRadius: 9999,
+                fontSize: 14,
+                fontWeight: '700',
+                color: '#1d2210',
+                letterSpacing: -0.35,
+                lineHeight: 20,
               }}
-            />
-          </View>
+            >
+              {headerLabel}
+            </Text>
+          ) : (
+            <Text style={{ fontSize: 14, color: '#94a3b8', lineHeight: 20 }}>
+              No week selected
+            </Text>
+          )}
+        </View>
+        <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={{ padding: 8 }}>
+          <Ionicons name="close" size={18} color="#94a3b8" />
+        </TouchableOpacity>
+      </View>
 
-          {/* Header */}
-          <View
+      {/* Date Picker Content */}
+      <View style={{ paddingTop: 24 }}>
+        {/* Month Navigation */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 24,
+            paddingBottom: 24,
+          }}
+        >
+          <TouchableOpacity onPress={goToPrevMonth} activeOpacity={0.7} style={{ padding: 8 }}>
+            <Ionicons name="chevron-back" size={16} color="#0f172a" />
+          </TouchableOpacity>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}>
+            {format(displayMonth, 'MMMM yyyy')}
+          </Text>
+          <TouchableOpacity onPress={goToNextMonth} activeOpacity={0.7} style={{ padding: 8 }}>
+            <Ionicons name="chevron-forward" size={16} color="#0f172a" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Day Labels */}
+        <View style={{ flexDirection: 'row', paddingHorizontal: 24, paddingBottom: 8 }}>
+          {DAY_LABELS.map(label => (
+            <View key={label} style={{ flex: 1, alignItems: 'center' }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '700',
+                  color: '#434934',
+                  letterSpacing: 0.6,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Calendar Weeks */}
+        <View style={{ gap: 0 }}>
+          {weeks.map((week, weekIndex) => renderWeekRow(week, weekIndex))}
+        </View>
+
+        {/* Confirm Button */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 56 }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (pendingWeekStart) {
+                onConfirm(pendingWeekStart);
+                onClose();
+              }
+            }}
+            activeOpacity={0.85}
+            disabled={!pendingWeekStart}
             style={{
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              paddingHorizontal: 24,
-              paddingTop: 16,
-              paddingBottom: 25,
-              borderBottomWidth: 1,
-              borderBottomColor: '#f8f8f6',
+              backgroundColor: '#b6ec13',
+              height: 64,
+              borderRadius: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pendingWeekStart ? 1 : 0.5,
+              shadowColor: 'rgb(182,236,19)',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.35,
+              shadowRadius: 12,
+              elevation: 8,
             }}
           >
-            <View style={{ flex: 1, gap: 4 }}>
-              <Text
-                style={{ fontSize: 20, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}
-              >
-                Select Start Week
-              </Text>
-              {headerLabel ? (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '700',
-                    color: '#1d2210',
-                    letterSpacing: -0.35,
-                    lineHeight: 20,
-                  }}
-                >
-                  {headerLabel}
-                </Text>
-              ) : (
-                <Text style={{ fontSize: 14, color: '#94a3b8', lineHeight: 20 }}>
-                  No week selected
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity
-              onPress={onClose}
-              activeOpacity={0.7}
-              style={{ padding: 8 }}
-            >
-              <Ionicons name="close" size={18} color="#94a3b8" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Date Picker Content */}
-          <View style={{ paddingTop: 24 }}>
-            {/* Month Navigation */}
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 24,
-                paddingBottom: 24,
-              }}
-            >
-              <TouchableOpacity onPress={goToPrevMonth} activeOpacity={0.7} style={{ padding: 8 }}>
-                <Ionicons name="chevron-back" size={16} color="#0f172a" />
-              </TouchableOpacity>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}>
-                {format(displayMonth, 'MMMM yyyy')}
-              </Text>
-              <TouchableOpacity onPress={goToNextMonth} activeOpacity={0.7} style={{ padding: 8 }}>
-                <Ionicons name="chevron-forward" size={16} color="#0f172a" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Day Labels */}
-            <View
-              style={{ flexDirection: 'row', paddingHorizontal: 24, paddingBottom: 8 }}
-            >
-              {DAY_LABELS.map(label => (
-                <View key={label} style={{ flex: 1, alignItems: 'center' }}>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: '700',
-                      color: '#434934',
-                      letterSpacing: 0.6,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Calendar Weeks */}
-            <View style={{ gap: 0 }}>
-              {weeks.map((week, weekIndex) => renderWeekRow(week, weekIndex))}
-            </View>
-
-            {/* Confirm Button */}
-            <View style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 56 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (pendingWeekStart) {
-                    onConfirm(pendingWeekStart);
-                    onClose();
-                  }
-                }}
-                activeOpacity={0.85}
-                disabled={!pendingWeekStart}
-                style={{
-                  backgroundColor: '#b6ec13',
-                  height: 64,
-                  borderRadius: 16,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: pendingWeekStart ? 1 : 0.5,
-                  shadowColor: 'rgb(182,236,19)',
-                  shadowOffset: { width: 0, height: 6 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 12,
-                  elevation: 8,
-                }}
-              >
-                <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a' }}>
-                  Confirm
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Animated.View>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a' }}>
+              Confirm
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }
