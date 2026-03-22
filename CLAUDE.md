@@ -36,7 +36,23 @@ Lymoon/
 
 > Full details: [docs/frontend.md](docs/frontend.md)
 > **REQUIRED:** Before doing any frontend work, you MUST read `docs/frontend.md` in full.
-> **REQUIRED:** After completing any frontend task, summarize lessons learned (patterns used, pitfalls avoided, decisions made) and append them to the relevant section in `docs/frontend.md` to reduce cost and time on similar future tasks.
+
+> **REQUIRED:** After completing a frontend task, update `docs/frontend.md` ONLY with high-level, reusable knowledge that improves future development efficiency.
+
+### What to include (STRICT)
+- Reusable UI/UX patterns (e.g. bottom sheet usage, navigation patterns)
+- Architecture decisions and their rationale
+- Generalizable best practices that apply across multiple features
+
+### What to EXCLUDE (IMPORTANT)
+- One-off fixes, hacks, or timing workarounds (e.g. setTimeout delays)
+- Component-specific implementation details
+- Debug notes or temporary solutions
+
+### Writing guideline
+- Focus on **"pattern over implementation"**
+- Each entry should answer: "Will this be reused across the app?"
+- Keep entries concise and structured
 
 Tech stack: Expo SDK 52 + Expo Router v3, NativeWind v4, TanStack Query v5, Zustand, date-fns.
 

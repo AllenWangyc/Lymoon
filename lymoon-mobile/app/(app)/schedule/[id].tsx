@@ -19,6 +19,7 @@ import { useScheduleStore } from '@/stores/scheduleStore';
 import { useToast } from '@/hooks/useToast';
 import {
   MOCK_SCHEDULE_DETAIL,
+  MOCK_EMPLOYEES,
   MOCK_USER_ROLE,
   MOCK_CURRENT_USER_ID,
 } from '@/features/schedule/constants';
@@ -187,7 +188,7 @@ export default function ScheduleDetailScreen() {
       <ViewMembersSheet
         visible={viewMembersVisible}
         onClose={() => setViewMembersVisible(false)}
-        employees={schedule.employees}
+        employees={MOCK_EMPLOYEES}
       />
 
       <LeaveScheduleSheet
