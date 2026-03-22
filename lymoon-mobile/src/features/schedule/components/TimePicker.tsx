@@ -45,7 +45,7 @@ export function TimePicker({ label, value, onChange }: Props) {
           selectedIndex={hourIndex}
           onChange={(i) => onChange(buildTime(i, parseTime(value).minuteIndex))}
         />
-        <Text style={{ fontSize: 22, fontWeight: '700', color: '#0f172a', paddingBottom: 4 }}>
+        <Text className="pb-1" style={{ fontSize: 22, fontWeight: '700', color: '#0f172a' }}>
           :
         </Text>
         <TimeWheelPicker

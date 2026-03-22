@@ -39,10 +39,9 @@ export function WeekNavigator({
         <TouchableOpacity
           onPress={onAddNextWeek}
           activeOpacity={0.75}
-          className="rounded-full px-4 py-[9px]"
+          className="rounded-full px-4 py-[9px] border"
           style={{
             backgroundColor: 'rgba(182,236,19,0.1)',
-            borderWidth: 1,
             borderColor: 'rgba(182,236,19,0.2)',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 1 },

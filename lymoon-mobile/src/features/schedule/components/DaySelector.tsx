@@ -25,19 +25,18 @@ export function DaySelector({ weekStartDate, selectedDayIndex, onSelectDay }: Pr
             className="items-center min-w-[48px]"
           >
             <Text
+              className="pb-1"
               style={{
                 fontSize: 10,
                 fontWeight: '700',
                 color: isSelected ? '#0f172a' : '#94a3b8',
-                paddingBottom: 4,
               }}
             >
               {label}
             </Text>
 
             <View
-              className={isSelected ? 'rounded-full py-1 px-3' : ''}
-              style={isSelected ? { backgroundColor: '#b6ec13' } : undefined}
+              className={isSelected ? 'rounded-full py-1 px-3 bg-[#b6ec13]' : ''}
             >
               <Text
                 style={{

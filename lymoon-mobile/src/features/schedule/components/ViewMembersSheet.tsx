@@ -97,7 +97,7 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
         ref={buttonRef as any}
         onPress={handleMenuPress}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+        className="w-8 h-8 rounded-full items-center justify-center"
       >
         <Ionicons name="ellipsis-vertical" size={16} color="#0f172a" />
       </TouchableOpacity>
@@ -139,7 +139,7 @@ export function ViewMembersSheet({ visible, onClose, employees, isManager, onVie
         height={480}
         backgroundColor="#ffffff"
       >
-        <View ref={containerRef} style={{ height: 456 }}>
+        <View ref={containerRef} className="h-[456px]">
           <ScrollView
             showsVerticalScrollIndicator={false}
             scrollEnabled={!menuState}
@@ -158,7 +158,7 @@ export function ViewMembersSheet({ visible, onClose, employees, isManager, onVie
           {menuState && (
             <>
               <Pressable
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                className="absolute inset-0"
                 onPress={closeMenu}
               />
               <OptionsMenuCard

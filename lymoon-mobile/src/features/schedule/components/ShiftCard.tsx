@@ -22,10 +22,9 @@ export function ShiftCard({ shift, onPress }: Props) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.75} disabled={!onPress}>
     <View
-      className="rounded-[12px] px-[17px] py-[13px] min-w-[120px] self-stretch"
+      className="rounded-[12px] px-[17px] py-[13px] min-w-[120px] self-stretch border"
       style={{
         backgroundColor: 'rgba(182,236,19,0.2)',
-        borderWidth: 1,
         borderColor: 'rgba(182,236,19,0.2)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
