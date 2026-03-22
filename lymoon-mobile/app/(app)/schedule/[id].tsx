@@ -189,6 +189,7 @@ export default function ScheduleDetailScreen() {
         visible={viewMembersVisible}
         onClose={() => setViewMembersVisible(false)}
         employees={MOCK_EMPLOYEES}
+        isManager={isManager}
       />
 
       <LeaveScheduleSheet

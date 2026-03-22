@@ -1,13 +1,16 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet } from '@/components/BottomSheet';
+import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
+import { OptionsMenuCard } from '@/components/OptionsMenuCard';
 import type { Employee } from '@/types/schedule';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   employees: Employee[];
+  isManager: boolean;
   onViewWorkHours?: (employee: Employee) => void;
   onRemoveMember?: (employee: Employee) => void;
 };
@@ -29,7 +32,7 @@ type MemberCardProps = {
 
 function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
   const buttonRef = useRef<View>(null);
-  const isManager = employee.role === 'Manager';
+  const isOwnerManager = employee.role === 'Manager';
 
   function handleMenuPress() {
     buttonRef.current?.measureInWindow((_bx: number, by: number, _bw: number, bh: number) => {
@@ -71,7 +74,7 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
             {employee.name}
           </Text>
-          {isManager && (
+          {isOwnerManager && (
             <View className="bg-[#b6ec13] px-[10px] py-[2px] rounded-full">
               <Text
                 style={{
@@ -102,104 +105,97 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
   );
 }
 
-type OptionsMenuProps = {
-  top: number;
-  onViewWorkHours: () => void;
-  onRemove: () => void;
-};
 
-function OptionsMenu({ top, onViewWorkHours, onRemove }: OptionsMenuProps) {
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        right: 12,
-        top,
-        width: 192,
-        backgroundColor: 'white',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(195,201,174,0.2)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.12,
-        shadowRadius: 20,
-        elevation: 12,
-        zIndex: 100,
-      }}
-    >
-      <View style={{ paddingVertical: 9, paddingHorizontal: 1 }}>
-        <TouchableOpacity
-          onPress={onViewWorkHours}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10 }}
-        >
-          <Ionicons name="time-outline" size={15} color="#0f172a" />
-          <Text style={{ fontSize: 14, fontWeight: '500', color: '#0f172a' }}>View Work Hours</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={onRemove}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10 }}
-        >
-          <Ionicons name="person-remove-outline" size={15} color="#ba1a1a" />
-          <Text style={{ fontSize: 14, fontWeight: '500', color: '#ba1a1a' }}>Remove</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
-export function ViewMembersSheet({ visible, onClose, employees, onViewWorkHours, onRemoveMember }: Props) {
+export function ViewMembersSheet({ visible, onClose, employees, isManager, onViewWorkHours, onRemoveMember }: Props) {
   const [menuState, setMenuState] = useState<MenuState>(null);
+  const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
   const containerRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!visible) setMenuState(null);
+  }, [visible]);
 
   function closeMenu() {
     setMenuState(null);
   }
 
-  return (
-    <BottomSheet
-      visible={visible}
-      onClose={onClose}
-      height={480}
-      backgroundColor="#ffffff"
-    >
-      <View ref={containerRef} style={{ height: 456 }}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          scrollEnabled={!menuState}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 12 }}
-        >
-          {employees.map((emp) => (
-            <MemberCard
-              key={emp.id}
-              employee={emp}
-              containerRef={containerRef}
-              onMenuPress={(employee, top) => setMenuState({ employee, top })}
-            />
-          ))}
-        </ScrollView>
+  function handleRemovePress(employee: Employee) {
+    closeMenu();
+    setTimeout(() => setRemoveTarget(employee), 160);
+  }
 
-        {menuState && (
-          <>
-            <Pressable
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              onPress={closeMenu}
-            />
-            <OptionsMenu
-              top={menuState.top}
-              onViewWorkHours={() => {
-                closeMenu();
-                onViewWorkHours?.(menuState.employee);
-              }}
-              onRemove={() => {
-                closeMenu();
-                onRemoveMember?.(menuState.employee);
-              }}
-            />
-          </>
-        )}
-      </View>
-    </BottomSheet>
+  function handleRemoveConfirm() {
+    if (removeTarget) {
+      onRemoveMember?.(removeTarget);
+    }
+    setRemoveTarget(null);
+  }
+
+  return (
+    <>
+      <BottomSheet
+        visible={visible}
+        onClose={onClose}
+        height={480}
+        backgroundColor="#ffffff"
+      >
+        <View ref={containerRef} style={{ height: 456 }}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={!menuState}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 12 }}
+          >
+            {employees.map((emp) => (
+              <MemberCard
+                key={emp.id}
+                employee={emp}
+                containerRef={containerRef}
+                onMenuPress={(employee, top) => setMenuState({ employee, top })}
+              />
+            ))}
+          </ScrollView>
+
+          {menuState && (
+            <>
+              <Pressable
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                onPress={closeMenu}
+              />
+              <OptionsMenuCard
+                iconSize={15}
+                style={{ position: 'absolute', right: 12, top: menuState.top, width: 192, zIndex: 100 }}
+                items={[
+                  {
+                    key: 'view-work-hours',
+                    label: 'View Work Hours',
+                    icon: 'time-outline',
+                    onPress: () => { closeMenu(); onViewWorkHours?.(menuState.employee); },
+                  },
+                ]}
+                destructiveItem={isManager ? {
+                  key: 'remove',
+                  label: 'Remove',
+                  icon: 'person-remove-outline',
+                  color: '#ba1a1a',
+                  onPress: () => handleRemovePress(menuState.employee),
+                } : undefined}
+              />
+            </>
+          )}
+        </View>
+      </BottomSheet>
+
+      <ConfirmActionSheet
+        visible={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={handleRemoveConfirm}
+        title="Remove Member?"
+        message={`${removeTarget?.name} will be removed from this schedule and lose access to all shifts.`}
+        confirmLabel="Remove"
+        iconName="person-remove-outline"
+        iconColor="#dc2626"
+        iconBg="rgba(220,38,38,0.10)"
+      />
+    </>
   );
 }
