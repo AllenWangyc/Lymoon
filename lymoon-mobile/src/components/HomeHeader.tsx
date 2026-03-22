@@ -41,7 +41,7 @@ export function HomeHeader({ userName = 'Alex Rivera' }: Props) {
           <Text className="text-[13px] font-bold text-[#4a6b00]">{initials}</Text>
         </View>
 
-        <View style={{ gap: 1 }}>
+        <View className="gap-px">
           <Text className="text-[12px] font-medium text-[#64748b]">Welcome back,</Text>
           <Text className="text-[18px] font-bold text-[#0f172a]">{userName}</Text>
         </View>

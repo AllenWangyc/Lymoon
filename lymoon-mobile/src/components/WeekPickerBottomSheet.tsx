@@ -94,7 +94,7 @@ export function WeekPickerBottomSheet({
     const isSelectedWeek = pendingWeekStart ? isSameDay(weekStart, pendingWeekStart) : false;
 
     return (
-      <View key={weekIndex} style={{ flexDirection: 'row', paddingHorizontal: 24 }}>
+      <View key={weekIndex} className="flex-row px-6">
         {week.map((day, dayIndex) => {
           const state = getDayCellState(day, displayMonth, today);
           const inWeek = isSelectedWeek;
@@ -123,17 +123,13 @@ export function WeekPickerBottomSheet({
               onPress={() => {
                 if (isPressable) handleDayPress(day);
               }}
-              style={{ flex: 1, height: 40, alignItems: 'center', justifyContent: 'center' }}
+              className="flex-1 h-10 items-center justify-center"
             >
               {/* Week range pill background */}
               {inWeek && (
                 <View
+                  className="absolute inset-0"
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
                     backgroundColor: 'rgba(182,236,19,0.2)',
                     borderTopLeftRadius: isFirst ? 20 : 0,
                     borderBottomLeftRadius: isFirst ? 20 : 0,
@@ -146,8 +142,8 @@ export function WeekPickerBottomSheet({
               {/* Selected day circular highlight */}
               {isSelectedDay && inWeek && (
                 <View
+                  className="absolute"
                   style={{
-                    position: 'absolute',
                     width: 38,
                     height: 38,
                     borderRadius: 19,
@@ -172,14 +168,8 @@ export function WeekPickerBottomSheet({
               {/* Today dot */}
               {(state === 'today') && (
                 <View
-                  style={{
-                    position: 'absolute',
-                    bottom: 3,
-                    width: 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: '#b6ec13',
-                  }}
+                  className="absolute w-1.5 h-1.5 rounded-full bottom-[3px]"
+                  style={{ backgroundColor: '#b6ec13' }}
                 />
               )}
             </Pressable>
@@ -202,19 +192,8 @@ export function WeekPickerBottomSheet({
       closeAnimation={{ type: 'timing', duration: 250 }}
     >
       {/* Header */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          paddingHorizontal: 24,
-          paddingTop: 16,
-          paddingBottom: 25,
-          borderBottomWidth: 1,
-          borderBottomColor: '#f8f8f6',
-        }}
-      >
-        <View style={{ flex: 1, gap: 4 }}>
+      <View className="flex-row items-start justify-between px-6 pt-4 pb-[25px] border-b border-[#f8f8f6]">
+        <View className="flex-1 gap-1">
           <Text style={{ fontSize: 20, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}>
             Select Start Week
           </Text>
@@ -236,38 +215,30 @@ export function WeekPickerBottomSheet({
             </Text>
           )}
         </View>
-        <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={{ padding: 8 }}>
+        <TouchableOpacity onPress={onClose} activeOpacity={0.7} className="p-2">
           <Ionicons name="close" size={18} color="#94a3b8" />
         </TouchableOpacity>
       </View>
 
       {/* Date Picker Content */}
-      <View style={{ paddingTop: 24 }}>
+      <View className="pt-6">
         {/* Month Navigation */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 24,
-            paddingBottom: 24,
-          }}
-        >
-          <TouchableOpacity onPress={goToPrevMonth} activeOpacity={0.7} style={{ padding: 8 }}>
+        <View className="flex-row items-center justify-between px-6 pb-6">
+          <TouchableOpacity onPress={goToPrevMonth} activeOpacity={0.7} className="p-2">
             <Ionicons name="chevron-back" size={16} color="#0f172a" />
           </TouchableOpacity>
           <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', lineHeight: 28 }}>
             {format(displayMonth, 'MMMM yyyy')}
           </Text>
-          <TouchableOpacity onPress={goToNextMonth} activeOpacity={0.7} style={{ padding: 8 }}>
+          <TouchableOpacity onPress={goToNextMonth} activeOpacity={0.7} className="p-2">
             <Ionicons name="chevron-forward" size={16} color="#0f172a" />
           </TouchableOpacity>
         </View>
 
         {/* Day Labels */}
-        <View style={{ flexDirection: 'row', paddingHorizontal: 24, paddingBottom: 8 }}>
+        <View className="flex-row px-6 pb-2">
           {DAY_LABELS.map(label => (
-            <View key={label} style={{ flex: 1, alignItems: 'center' }}>
+            <View key={label} className="flex-1 items-center">
               <Text
                 style={{
                   fontSize: 12,
@@ -284,12 +255,12 @@ export function WeekPickerBottomSheet({
         </View>
 
         {/* Calendar Weeks */}
-        <View style={{ gap: 0 }}>
+        <View>
           {weeks.map((week, weekIndex) => renderWeekRow(week, weekIndex))}
         </View>
 
         {/* Confirm Button */}
-        <View style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 56 }}>
+        <View className="px-6 pt-6 pb-14">
           <TouchableOpacity
             onPress={() => {
               if (pendingWeekStart) {
@@ -299,12 +270,9 @@ export function WeekPickerBottomSheet({
             }}
             activeOpacity={0.85}
             disabled={!pendingWeekStart}
+            className="h-16 rounded-2xl items-center justify-center"
             style={{
               backgroundColor: '#b6ec13',
-              height: 64,
-              borderRadius: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
               opacity: pendingWeekStart ? 1 : 0.5,
               shadowColor: 'rgb(182,236,19)',
               shadowOffset: { width: 0, height: 6 },

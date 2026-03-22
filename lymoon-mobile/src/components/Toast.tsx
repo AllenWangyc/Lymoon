@@ -17,30 +17,22 @@ export function Toast({ message, type = 'success', onClose, translateY, topOffse
 
   return (
     <Animated.View
-      style={[
-        {
-          transform: [{ translateY }],
-          top: topOffset,
-          position: 'absolute',
-          left: 24,
-          right: 24,
-          zIndex: 999,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 12 },
-          shadowOpacity: 0.1,
-          shadowRadius: 25,
-          elevation: 12,
-          borderWidth: 1,
-          borderColor,
-          borderRadius: 16,
-          backgroundColor: 'rgba(255,255,255,0.97)',
-        },
-      ]}
+      className="absolute left-6 right-6 z-[999] border rounded-2xl bg-white/[97]"
+      style={{
+        transform: [{ translateY }],
+        top: topOffset,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.1,
+        shadowRadius: 25,
+        elevation: 12,
+        borderColor,
+      }}
     >
       <View className="flex-row items-center p-[17px] gap-3">
         <View
-          style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: iconBg }}
-          className="items-center justify-center"
+          className="w-10 h-10 rounded-full items-center justify-center"
+          style={{ backgroundColor: iconBg }}
         >
           <Ionicons name={iconName} size={18} color={iconColor} />
         </View>
