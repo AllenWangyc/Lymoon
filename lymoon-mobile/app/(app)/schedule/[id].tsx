@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { AddEditShiftBottomSheet } from '@/features/schedule/components/AddEditShiftBottomSheet';
+import type { ShiftEditConfig, ShiftConfirmResult } from '@/features/schedule/components/AddEditShiftBottomSheet';
+import { mergeOverlappingShifts } from '@/features/schedule/utils/mergeShifts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { addWeeks, getDay } from 'date-fns';
@@ -8,8 +11,12 @@ import { WeekNavigator } from '@/features/schedule/components/WeekNavigator';
 import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
 import { ScheduleOptionsMenu } from '@/features/schedule/components/ScheduleOptionsMenu';
+import { LeaveScheduleSheet } from '@/features/schedule/components/LeaveScheduleSheet';
+import { ViewMembersSheet } from '@/features/schedule/components/ViewMembersSheet';
 import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
 import { PageHeader } from '@/components/PageHeader';
+import { useScheduleStore } from '@/stores/scheduleStore';
+import { useToast } from '@/hooks/useToast';
 import {
   MOCK_SCHEDULE_DETAIL,
   MOCK_USER_ROLE,
@@ -24,9 +31,12 @@ function toWeekIndex(jsDay: number): number {
 export default function ScheduleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const removeSchedule = useScheduleStore((s) => s.removeSchedule);
+  const { showToast } = useToast();
 
   // TODO: replace with useScheduleDetail(id) TanStack Query hook when API is ready
   const schedule = MOCK_SCHEDULE_DETAIL;
+  const [shifts, setShifts] = useState<Shift[]>(schedule.shifts);
 
   const baseWeekStart = useMemo(
     () => new Date(schedule.weekStartDate),
@@ -39,8 +49,12 @@ export default function ScheduleDetailScreen() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [leaveConfirmVisible, setLeaveConfirmVisible] = useState(false);
+  const [viewMembersVisible, setViewMembersVisible] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [shiftDetailVisible, setShiftDetailVisible] = useState(false);
+  const [addEditConfig, setAddEditConfig] = useState<ShiftEditConfig | null>(null);
+  const [addEditVisible, setAddEditVisible] = useState(false);
 
   const currentWeekStart = useMemo(
     () => addWeeks(baseWeekStart, weekOffset),
@@ -53,8 +67,8 @@ export default function ScheduleDetailScreen() {
   const canEditShifts = isManager || isFullCollab;
 
   const shiftsForDay = useMemo(
-    () => schedule.shifts.filter((s) => s.dayOfWeek === selectedDayIndex),
-    [schedule.shifts, selectedDayIndex],
+    () => shifts.filter((s) => s.dayOfWeek === selectedDayIndex),
+    [shifts, selectedDayIndex],
   );
 
   function getEmployeeShifts(employeeId: string) {
@@ -62,8 +76,10 @@ export default function ScheduleDetailScreen() {
   }
 
   function handleAddShift(employeeId: string) {
-    // TODO: open add-shift bottom sheet
-    console.log('Add shift for', employeeId);
+    const employee = schedule.employees.find((e) => e.id === employeeId);
+    if (!employee) return;
+    setAddEditConfig({ mode: 'add', employeeId, dayOfWeek: selectedDayIndex, employee });
+    setAddEditVisible(true);
   }
 
   function handleShiftPress(shift: Shift) {
@@ -72,14 +88,41 @@ export default function ScheduleDetailScreen() {
   }
 
   function handleEditShift(shift: Shift) {
+    const employee = schedule.employees.find((e) => e.id === shift.employeeId);
+    if (!employee) return;
     setShiftDetailVisible(false);
-    router.push({ pathname: '/schedule/edit-shift', params: { shiftId: shift.id } });
+    setTimeout(() => {
+      setAddEditConfig({ mode: 'edit', shift, employee });
+      setAddEditVisible(true);
+    }, 160);
   }
 
   function handleDeleteShift(shift: Shift) {
     // TODO: call delete API, then refresh schedule
     console.log('Delete shift', shift.id);
     setShiftDetailVisible(false);
+  }
+
+  function handleShiftConfirm(result: ShiftConfirmResult) {
+    const newShift: Shift =
+      result.mode === 'edit' && result.shiftId
+        ? {
+            // Preserve original shift properties (shiftType, etc.), update only times
+            ...shifts.find((s) => s.id === result.shiftId)!,
+            startTime: result.startTime,
+            endTime: result.endTime,
+          }
+        : {
+            id: `shift-${Date.now()}`,
+            employeeId: result.employeeId,
+            dayOfWeek: result.dayOfWeek,
+            startTime: result.startTime,
+            endTime: result.endTime,
+            shiftType: 'Custom' as const,
+          };
+
+    setShifts(mergeOverlappingShifts(shifts, newShift, result.shiftId));
+    setAddEditVisible(false);
   }
 
   const headerContentHeight = 40 + 16 + 38 + 16 + 44 + 8;
@@ -130,7 +173,35 @@ export default function ScheduleDetailScreen() {
         />
       </View>
 
-      <ScheduleOptionsMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      <ScheduleOptionsMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onLeave={() => {
+          setTimeout(() => setLeaveConfirmVisible(true), 160);
+        }}
+        onViewMembers={() => {
+          setTimeout(() => setViewMembersVisible(true), 160);
+        }}
+      />
+
+      <ViewMembersSheet
+        visible={viewMembersVisible}
+        onClose={() => setViewMembersVisible(false)}
+        employees={schedule.employees}
+      />
+
+      <LeaveScheduleSheet
+        visible={leaveConfirmVisible}
+        scheduleName={schedule.title}
+        onClose={() => setLeaveConfirmVisible(false)}
+        onConfirm={() => {
+          setLeaveConfirmVisible(false);
+          // TODO: call leave API
+          removeSchedule(id as string);
+          showToast('You have left the schedule', 'success');
+          router.back();
+        }}
+      />
 
       <ShiftDetailBottomSheet
         visible={shiftDetailVisible}
@@ -145,6 +216,14 @@ export default function ScheduleDetailScreen() {
         onClose={() => setShiftDetailVisible(false)}
         onEditShift={handleEditShift}
         onDeleteShift={handleDeleteShift}
+      />
+
+      <AddEditShiftBottomSheet
+        visible={addEditVisible}
+        config={addEditConfig}
+        weekStartDate={currentWeekStart.toISOString()}
+        onClose={() => setAddEditVisible(false)}
+        onConfirm={handleShiftConfirm}
       />
 
       {/* Scrollable employee list */}

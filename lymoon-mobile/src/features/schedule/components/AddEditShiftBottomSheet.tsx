@@ -49,8 +49,8 @@ export function AddEditShiftBottomSheet({
   onClose,
   onConfirm,
 }: Props) {
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('17:00');
+  const [startTime, setStartTime] = useState('00:00');
+  const [endTime, setEndTime] = useState('00:00');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,8 +59,8 @@ export function AddEditShiftBottomSheet({
         setStartTime(config.shift.startTime);
         setEndTime(config.shift.endTime);
       } else {
-        setStartTime('09:00');
-        setEndTime('17:00');
+        setStartTime('00:00');
+        setEndTime('00:00');
       }
       setError(null);
     }

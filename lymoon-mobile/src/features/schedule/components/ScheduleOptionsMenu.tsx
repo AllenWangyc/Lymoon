@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 type Props = {
   visible: boolean;
   onClose: () => void;
+  onLeave: () => void;
+  onViewMembers: () => void;
 };
 
 type MenuItem = {
@@ -15,7 +17,7 @@ type MenuItem = {
   onPress: () => void;
 };
 
-export function ScheduleOptionsMenu({ visible, onClose }: Props) {
+export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers }: Props) {
   const insets = useSafeAreaInsets();
 
   const menuTop = insets.top + 56;
@@ -26,8 +28,8 @@ export function ScheduleOptionsMenu({ visible, onClose }: Props) {
       label: 'View Members',
       icon: 'people-outline',
       onPress: () => {
-        // TODO: navigate to team members screen
         onClose();
+        onViewMembers();
       },
     },
     {
@@ -56,8 +58,8 @@ export function ScheduleOptionsMenu({ visible, onClose }: Props) {
     icon: 'exit-outline',
     color: '#dc2626',
     onPress: () => {
-      // TODO: show leave confirmation dialog
       onClose();
+      onLeave();
     },
   };
 
