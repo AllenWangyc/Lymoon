@@ -1,6 +1,6 @@
 export type DayBar = { day: string; opacity: number; isToday?: boolean };
 
-export type ScheduleCategory = 'All' | 'Shared' | 'Personal' | 'Archived';
+export type ScheduleCategory = 'All' | 'Shift' | 'Event' | 'Personal';
 
 export type ScheduleItem = {
   id: string;
