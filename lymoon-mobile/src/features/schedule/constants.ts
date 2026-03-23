@@ -1,6 +1,6 @@
 import type { ScheduleItem } from '@/types/schedule';
 
-export const SCHEDULE_CATEGORIES = ['All', 'Shared', 'Personal', 'Archived'] as const;
+export const SCHEDULE_CATEGORIES = ['All', 'Shift', 'Event', 'Personal'] as const;
 
 export const MOCK_SCHEDULES: ScheduleItem[] = [];
 
