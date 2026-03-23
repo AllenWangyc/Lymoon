@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef } from 'react';
-import { Animated, Modal, TouchableWithoutFeedback, View } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, Platform, TouchableWithoutFeedback, View } from 'react-native';
 
 type TimingAnimation = {
   type: 'timing';
@@ -28,6 +28,7 @@ export interface BottomSheetProps {
   elevation?: number;
   openAnimation?: TimingAnimation | SpringAnimation;
   closeAnimation?: CloseAnimation;
+  keyboardAware?: boolean;
 }
 
 export function BottomSheet({
@@ -42,6 +43,7 @@ export function BottomSheet({
   elevation = 20,
   openAnimation = { type: 'timing', duration: 280 },
   closeAnimation = { type: 'instant' },
+  keyboardAware = false,
 }: BottomSheetProps) {
   const translateY = useRef(new Animated.Value(height)).current;
 
@@ -74,6 +76,8 @@ export function BottomSheet({
     }
   }, [visible]);
 
+  const Container = keyboardAware ? KeyboardAvoidingView : View;
+
   return (
     <Modal
       visible={visible}
@@ -82,18 +86,15 @@ export function BottomSheet({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+      <Container
+        className="flex-1 justify-end"
+        {...(keyboardAware && { behavior: Platform.OS === 'ios' ? 'padding' : undefined })}
+      >
         {/* Backdrop */}
         <TouchableWithoutFeedback onPress={onClose}>
           <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: `rgba(15,23,42,${backdropOpacity})`,
-            }}
+            className="absolute inset-0"
+            style={{ backgroundColor: `rgba(15,23,42,${backdropOpacity})` }}
           />
         </TouchableWithoutFeedback>
 
@@ -116,13 +117,13 @@ export function BottomSheet({
           }}
         >
           {/* Drag handle */}
-          <View style={{ height: 24, alignItems: 'center', justifyContent: 'center', paddingTop: 8 }}>
-            <View style={{ backgroundColor: '#e2e8f0', width: 48, height: 6, borderRadius: 9999 }} />
+          <View className="h-6 items-center justify-center pt-2">
+            <View className="bg-[#e2e8f0] w-12 h-1.5 rounded-full" />
           </View>
 
           {children}
         </Animated.View>
-      </View>
+      </Container>
     </Modal>
   );
 }

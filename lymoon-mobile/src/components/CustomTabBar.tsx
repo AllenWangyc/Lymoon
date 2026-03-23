@@ -54,9 +54,8 @@ export function CustomTabBar({ state, navigation }: { state: any; navigation: an
 
   return (
     <View
-      className="flex-row items-center justify-between border-t border-[#f1f5f9] px-6"
+      className="flex-row items-center justify-between border-t border-[#f1f5f9] px-6 pt-[13px]"
       style={{
-        paddingTop: 13,
         paddingBottom: Math.max(insets.bottom, 12),
         backgroundColor: 'rgba(255,255,255,0.9)',
       }}

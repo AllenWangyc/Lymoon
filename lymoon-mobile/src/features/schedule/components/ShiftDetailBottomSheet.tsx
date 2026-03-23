@@ -36,10 +36,10 @@ export function ShiftDetailBottomSheet({
       <View className="px-6 pt-4 pb-8">
         {/* Header: date + time range */}
         <View
-          className="rounded-[16px] items-center justify-center py-[18px] mb-11"
-          style={{ backgroundColor: '#f8f8f6', borderWidth: 1, borderColor: '#f8f8f6' }}
+          className="rounded-[16px] items-center justify-center py-[18px] mb-11 bg-[#f8f8f6] border border-[#f8f8f6]"
         >
           <Text
+            className="mb-3"
             style={{
               fontSize: 13,
               fontWeight: '400',
@@ -47,7 +47,6 @@ export function ShiftDetailBottomSheet({
               letterSpacing: 1.4,
               textTransform: 'uppercase',
               lineHeight: 20,
-              marginBottom: 12,
             }}
           >
             {dateLabel}
@@ -67,9 +66,8 @@ export function ShiftDetailBottomSheet({
         {/* Employee info */}
         <View className="flex-row items-center gap-4 px-2 mb-6">
           <View
-            className="size-10 rounded-full items-center justify-center"
+            className="size-10 rounded-full items-center justify-center bg-[#e2e8f0]"
             style={{
-              backgroundColor: '#e2e8f0',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.05,
@@ -93,8 +91,7 @@ export function ShiftDetailBottomSheet({
               <TouchableOpacity
                 onPress={() => onEditShift(shift)}
                 activeOpacity={0.8}
-                className="flex-row items-center justify-center gap-2 rounded-[12px] h-14"
-                style={{ backgroundColor: '#b6ec13' }}
+                className="flex-row items-center justify-center gap-2 rounded-[12px] h-14 bg-[#b6ec13]"
               >
                 <Ionicons name="pencil" size={18} color="#0f172a" />
                 <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>

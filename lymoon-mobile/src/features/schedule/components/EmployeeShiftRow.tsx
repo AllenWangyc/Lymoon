@@ -26,11 +26,8 @@ export function EmployeeShiftRow({
     <View className="gap-3">
       <View className="flex-row items-center gap-3">
         <View
-          className="size-9 rounded-full items-center justify-center"
+          className="size-9 rounded-full items-center justify-center bg-[#e2e8f0] border-2 border-white"
           style={{
-            backgroundColor: '#e2e8f0',
-            borderWidth: 2,
-            borderColor: '#ffffff',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.05,
@@ -57,7 +54,7 @@ export function EmployeeShiftRow({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingBottom: 4 }}
-        style={{ height: 65 }}
+        className="h-[65px]"
       >
         {shifts.map((shift) => (
           <ShiftCard key={shift.id} shift={shift} onPress={() => onShiftPress(shift)} />

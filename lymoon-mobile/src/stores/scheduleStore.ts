@@ -11,6 +11,7 @@ interface ScheduleState {
   pendingToast: string | null;
   showNewScheduleSheet: boolean;
   addSchedule: (item: ScheduleItem, toastMessage?: string) => void;
+  removeSchedule: (scheduleId: string, toastMessage?: string) => void;
   clearPendingToast: () => void;
   setShowNewScheduleSheet: (visible: boolean) => void;
 }
@@ -22,6 +23,11 @@ export const useScheduleStore = create<ScheduleState>((set) => ({
   addSchedule: (item, toastMessage) =>
     set((state) => ({
       schedules: [...state.schedules, { ...item, inviteCode: item.inviteCode ?? generateInviteCode() }],
+      pendingToast: toastMessage ?? null,
+    })),
+  removeSchedule: (scheduleId, toastMessage) =>
+    set((state) => ({
+      schedules: state.schedules.filter((s) => s.id !== scheduleId),
       pendingToast: toastMessage ?? null,
     })),
   clearPendingToast: () => set({ pendingToast: null }),

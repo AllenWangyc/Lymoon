@@ -49,8 +49,8 @@ export function AddEditShiftBottomSheet({
   onClose,
   onConfirm,
 }: Props) {
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('17:00');
+  const [startTime, setStartTime] = useState('00:00');
+  const [endTime, setEndTime] = useState('00:00');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,8 +59,8 @@ export function AddEditShiftBottomSheet({
         setStartTime(config.shift.startTime);
         setEndTime(config.shift.endTime);
       } else {
-        setStartTime('09:00');
-        setEndTime('17:00');
+        setStartTime('00:00');
+        setEndTime('00:00');
       }
       setError(null);
     }
@@ -95,13 +95,13 @@ export function AddEditShiftBottomSheet({
       <View className="px-6 pt-4 pb-8">
         {/* Date label */}
         <Text
+          className="mb-4"
           style={{
             fontSize: 13,
             fontWeight: '400',
             color: '#94a3b8',
             letterSpacing: 0.8,
             textTransform: 'uppercase',
-            marginBottom: 16,
           }}
         >
           {dateLabel}
@@ -110,9 +110,8 @@ export function AddEditShiftBottomSheet({
         {/* Employee row */}
         <View className="flex-row items-center gap-3 mb-6">
           <View
-            className="size-8 rounded-full items-center justify-center"
+            className="size-8 rounded-full items-center justify-center bg-[#e2e8f0]"
             style={{
-              backgroundColor: '#e2e8f0',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.05,
@@ -138,11 +137,11 @@ export function AddEditShiftBottomSheet({
         {/* Validation error */}
         {error !== null && (
           <Text
+            className="mt-2"
             style={{
               fontSize: 13,
               color: '#dc2626',
               textAlign: 'center',
-              marginTop: 8,
             }}
           >
             {error}
@@ -153,8 +152,7 @@ export function AddEditShiftBottomSheet({
         <TouchableOpacity
           onPress={handleConfirm}
           activeOpacity={0.8}
-          className="items-center justify-center rounded-[16px]"
-          style={{ backgroundColor: '#b6ec13', height: 56, marginTop: 24 }}
+          className="items-center justify-center rounded-[16px] bg-[#b6ec13] h-14 mt-6"
         >
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
             {config.mode === 'add' ? 'Add Shift' : 'Save Changes'}

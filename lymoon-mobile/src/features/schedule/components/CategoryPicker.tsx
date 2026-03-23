@@ -41,15 +41,15 @@ function CategoryPill({
 
   return (
     <Animated.View
-      style={{ flex: 1, transform: [{ scale: scaleAnim }] }}
+      className="flex-1"
+      style={{ transform: [{ scale: scaleAnim }] }}
     >
       <TouchableOpacity
         onPress={onPress}
         activeOpacity={0.8}
-        className="items-center justify-center rounded-full py-[9px]"
+        className="items-center justify-center rounded-full py-[9px] border"
         style={{
           backgroundColor: isSelected ? '#e8f9a3' : 'white',
-          borderWidth: 1,
           borderColor: isSelected ? '#b6ec13' : 'rgba(182, 236, 19, 0.2)',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 1 },

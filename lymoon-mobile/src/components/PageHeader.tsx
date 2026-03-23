@@ -37,7 +37,7 @@ export function PageHeader({ title, subtitle, onBack, rightElement }: PageHeader
           {title}
         </Text>
         {subtitle && (
-          <Text style={{ fontSize: 14, color: '#64748b', marginTop: 2 }} numberOfLines={1}>
+          <Text className="mt-0.5" style={{ fontSize: 14, color: '#64748b' }} numberOfLines={1}>
             {subtitle}
           </Text>
         )}

@@ -42,7 +42,7 @@ export function NewScheduleBottomSheet({ visible, onClose, onSelect }: Props) {
           </View>
           <View className="flex-1">
             <Text className="text-[16px] font-bold text-[#0f172a]">Create New Schedule</Text>
-            <Text className="text-[12px] text-[#64748b]" style={{ lineHeight: 16 }}>Start a fresh project timeline</Text>
+            <Text className="text-[12px] text-[#64748b] leading-4">Start a fresh project timeline</Text>
           </View>
           <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
         </TouchableOpacity>
@@ -59,7 +59,7 @@ export function NewScheduleBottomSheet({ visible, onClose, onSelect }: Props) {
           </View>
           <View className="flex-1">
             <Text className="text-[16px] font-bold text-[#0f172a]">Join with Code</Text>
-            <Text className="text-[12px] text-[#64748b]" style={{ lineHeight: 16 }}>Enter a shared invite code</Text>
+            <Text className="text-[12px] text-[#64748b] leading-4">Enter a shared invite code</Text>
           </View>
           <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
         </TouchableOpacity>

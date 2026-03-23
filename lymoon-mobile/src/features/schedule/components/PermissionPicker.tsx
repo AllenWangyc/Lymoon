@@ -43,22 +43,15 @@ function PermissionCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className="flex-row items-start w-full rounded-2xl p-[18px]"
+      className="flex-row items-start w-full rounded-2xl p-[18px] bg-white border-2 min-h-[84px]"
       style={{
-        backgroundColor: 'white',
-        borderWidth: 2,
         borderColor: isSelected ? '#b6ec13' : 'rgba(182, 236, 19, 0.15)',
-        minHeight: 84,
       }}
     >
       <View
-        className="items-center justify-center rounded-full mr-3"
+        className="w-10 h-10 items-center justify-center rounded-full mr-3"
         style={{
-          width: 40,
-          height: 40,
-          backgroundColor: isSelected
-            ? 'rgba(182, 236, 19, 0.1)'
-            : '#f1f5f9',
+          backgroundColor: isSelected ? 'rgba(182, 236, 19, 0.1)' : '#f1f5f9',
         }}
       >
         <Ionicons
@@ -70,21 +63,21 @@ function PermissionCard({
 
       <View className="flex-1">
         <Text
+          className="mb-0.5"
           style={{
             fontSize: 16,
             fontWeight: '700',
             color: '#0f172a',
-            marginBottom: 2,
           }}
         >
           {option.title}
         </Text>
         <Text
+          className="leading-4"
           style={{
             fontSize: 12,
             fontWeight: '400',
             color: '#64748b',
-            lineHeight: 16,
           }}
         >
           {option.description}
@@ -98,17 +91,17 @@ export function PermissionPicker({ value, onChange }: Props) {
   return (
     <View>
       <Text
+        className="mb-2"
         style={{
           fontSize: 12,
           fontWeight: '500',
           color: '#64748b',
-          marginBottom: 8,
         }}
       >
         You will be the manager of this schedule
       </Text>
 
-      <View style={{ gap: 12 }}>
+      <View className="gap-3">
         {OPTIONS.map((option) => (
           <PermissionCard
             key={option.key}
