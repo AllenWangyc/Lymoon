@@ -5,6 +5,7 @@
 - Each reply must begin by mentioning my name, Allen.
 - When encountering uncertain code design issues, you must consult me first and must not execute directly.
 - Do not write compatibility code unless I request it.
+- Whenever implementing a frontend feature that requires a backend API, you MUST add the corresponding endpoint design to `docs/API.md` as part of the same task. Do not leave API documentation as a follow-up.
 
 ## Overview
 
@@ -57,7 +58,12 @@ Lymoon/
 Tech stack: Expo SDK 52 + Expo Router v3, NativeWind v4, TanStack Query v5, Zustand, date-fns.
 
 Key rules:
-- Use NativeWind for all styling — no inline `StyleSheet` objects
+- Use NativeWind (`className`) for ALL styling by default — no inline `StyleSheet` objects
+- Inline `style={}` is ONLY permitted when NativeWind cannot express the value:
+  - Shadow properties: `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`, `elevation`
+  - Text typography: `fontSize`, `fontWeight`, `color`, `lineHeight`, `letterSpacing`
+  - Dynamic/computed values: colors from props or state, animated transforms, safe area insets
+  - Anything else that Tailwind has no equivalent for in React Native
 - Shared components → `src/components/`, feature components → `src/features/<feature>/components/`
 - State (Zustand) in `src/stores/`, hooks in `src/hooks/`, types in `src/types/`
 

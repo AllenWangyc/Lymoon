@@ -284,6 +284,43 @@ Removes the authenticated user from the schedule. A Manager cannot leave if they
 
 ---
 
+### Get Member Work Hours
+`GET /api/schedules/{id}/members/{userId}/work-hours`
+
+Returns weekly work hour totals for the specified member. The response always covers the current week plus the 3 preceding weeks (4 weeks total), newest first.
+
+Any team member may call this endpoint (not manager-only).
+
+**Response `200`:**
+```json
+[
+  {
+    "weekStart": "2026-03-17",   // ISO Monday date, index 0 = current week
+    "weekEnd":   "2026-03-23",   // ISO Sunday date
+    "totalHours": 38.5
+  },
+  {
+    "weekStart": "2026-03-10",
+    "weekEnd":   "2026-03-16",
+    "totalHours": 42.0
+  },
+  {
+    "weekStart": "2026-03-03",
+    "weekEnd":   "2026-03-09",
+    "totalHours": 35.0
+  },
+  {
+    "weekStart": "2026-02-24",
+    "weekEnd":   "2026-03-02",
+    "totalHours": 40.0
+  }
+]
+```
+
+> `totalHours` is computed server-side by summing `endTime - startTime` for all shifts belonging to the employee within that schedule and week.
+
+---
+
 ### Remove Member
 `POST /api/schedules/{id}/members/remove`
 

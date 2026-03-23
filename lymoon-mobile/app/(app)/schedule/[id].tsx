@@ -12,6 +12,7 @@ import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
 import { ScheduleOptionsMenu } from '@/features/schedule/components/ScheduleOptionsMenu';
 import { LeaveScheduleSheet } from '@/features/schedule/components/LeaveScheduleSheet';
+import { RenameScheduleSheet } from '@/features/schedule/components/RenameScheduleSheet';
 import { ViewMembersSheet } from '@/features/schedule/components/ViewMembersSheet';
 import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
 import { PageHeader } from '@/components/PageHeader';
@@ -33,6 +34,7 @@ export default function ScheduleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const removeSchedule = useScheduleStore((s) => s.removeSchedule);
+  const inviteCode = useScheduleStore((s) => s.schedules.find((sc) => sc.id === id)?.inviteCode);
   const { showToast } = useToast();
 
   // TODO: replace with useScheduleDetail(id) TanStack Query hook when API is ready
@@ -56,6 +58,7 @@ export default function ScheduleDetailScreen() {
   const [shiftDetailVisible, setShiftDetailVisible] = useState(false);
   const [addEditConfig, setAddEditConfig] = useState<ShiftEditConfig | null>(null);
   const [addEditVisible, setAddEditVisible] = useState(false);
+  const [renameVisible, setRenameVisible] = useState(false);
 
   const currentWeekStart = useMemo(
     () => addWeeks(baseWeekStart, weekOffset),
@@ -183,6 +186,10 @@ export default function ScheduleDetailScreen() {
         onViewMembers={() => {
           setTimeout(() => setViewMembersVisible(true), 160);
         }}
+        inviteCode={inviteCode}
+        onInviteCopied={() => showToast('Invite code copied!', 'success')}
+        isManager={isManager}
+        onRename={() => setTimeout(() => setRenameVisible(true), 160)}
       />
 
       <ViewMembersSheet
@@ -202,6 +209,16 @@ export default function ScheduleDetailScreen() {
           removeSchedule(id as string);
           showToast('You have left the schedule', 'success');
           router.back();
+        }}
+      />
+
+      <RenameScheduleSheet
+        visible={renameVisible}
+        onClose={() => setRenameVisible(false)}
+        currentName={schedule.title}
+        onConfirm={(_newName) => {
+          // TODO: call POST /api/schedules/{id}/rename
+          showToast('Schedule renamed', 'success');
         }}
       />
 

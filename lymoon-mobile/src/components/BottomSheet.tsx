@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef } from 'react';
-import { Animated, Modal, TouchableWithoutFeedback, View } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, Platform, TouchableWithoutFeedback, View } from 'react-native';
 
 type TimingAnimation = {
   type: 'timing';
@@ -28,6 +28,7 @@ export interface BottomSheetProps {
   elevation?: number;
   openAnimation?: TimingAnimation | SpringAnimation;
   closeAnimation?: CloseAnimation;
+  keyboardAware?: boolean;
 }
 
 export function BottomSheet({
@@ -42,6 +43,7 @@ export function BottomSheet({
   elevation = 20,
   openAnimation = { type: 'timing', duration: 280 },
   closeAnimation = { type: 'instant' },
+  keyboardAware = false,
 }: BottomSheetProps) {
   const translateY = useRef(new Animated.Value(height)).current;
 
@@ -74,6 +76,8 @@ export function BottomSheet({
     }
   }, [visible]);
 
+  const Container = keyboardAware ? KeyboardAvoidingView : View;
+
   return (
     <Modal
       visible={visible}
@@ -82,7 +86,10 @@ export function BottomSheet({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-end">
+      <Container
+        className="flex-1 justify-end"
+        {...(keyboardAware && { behavior: Platform.OS === 'ios' ? 'padding' : undefined })}
+      >
         {/* Backdrop */}
         <TouchableWithoutFeedback onPress={onClose}>
           <View
@@ -116,7 +123,7 @@ export function BottomSheet({
 
           {children}
         </Animated.View>
-      </View>
+      </Container>
     </Modal>
   );
 }

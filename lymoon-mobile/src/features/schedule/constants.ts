@@ -23,7 +23,7 @@ export const ENGINEERING_SPRINT_TEMPLATE: Omit<ScheduleItem, 'id'> = {
 };
 
 export const MOCK_CURRENT_USER_ID = 'emp-1';
-export const MOCK_USER_ROLE: 'Manager' | 'Member' = 'Member';
+export const MOCK_USER_ROLE: 'Manager' | 'Member' = 'Manager';
 
 export const MOCK_EMPLOYEES: import('@/types/schedule').Employee[] = [
   { id: 'emp-1', name: 'Alex Rivera', role: 'Lead Developer', avatarInitials: 'AR' },
@@ -35,6 +35,12 @@ export const MOCK_SHIFTS: import('@/types/schedule').Shift[] = [
   { id: 'shift-2', employeeId: 'emp-2', dayOfWeek: 2, startTime: '10:00', endTime: '18:00', shiftType: 'Standard' },
   { id: 'shift-3', employeeId: 'emp-2', dayOfWeek: 2, startTime: '14:00', endTime: '18:00', shiftType: 'Afternoon' },
 ];
+
+// keyed by employeeId → [currentWeek, week-1, week-2, week-3] hours
+export const MOCK_WORK_HOURS_HISTORY: Record<string, number[]> = {
+  'emp-1': [38.5, 42, 35, 40],
+  'emp-2': [32, 28, 36, 30],
+};
 
 export const MOCK_SCHEDULE_DETAIL: import('@/types/schedule').ScheduleDetail = {
   ...ENGINEERING_SPRINT_TEMPLATE,

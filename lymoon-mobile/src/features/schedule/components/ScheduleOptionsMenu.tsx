@@ -1,5 +1,6 @@
 import { Modal, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Clipboard from 'expo-clipboard';
 import { OptionsMenuCard } from '@/components/OptionsMenuCard';
 import type { OptionsMenuItem } from '@/components/OptionsMenuCard';
 
@@ -8,9 +9,13 @@ type Props = {
   onClose: () => void;
   onLeave: () => void;
   onViewMembers: () => void;
+  inviteCode?: string;
+  onInviteCopied?: () => void;
+  isManager?: boolean;
+  onRename?: () => void;
 };
 
-export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers }: Props) {
+export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, inviteCode, onInviteCopied, isManager, onRename }: Props) {
   const insets = useSafeAreaInsets();
 
   const menuTop = insets.top + 56;
@@ -27,22 +32,25 @@ export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers }
     },
     {
       key: 'copy-invite',
-      label: 'Copy Invite Link',
+      label: 'Copy Invite Code',
       icon: 'link-outline',
-      onPress: () => {
-        // TODO: copy invite code to clipboard
+      onPress: async () => {
+        if (inviteCode) {
+          await Clipboard.setStringAsync(inviteCode);
+          onInviteCopied?.();
+        }
         onClose();
       },
     },
-    {
+    ...(isManager ? [{
       key: 'rename',
       label: 'Rename',
-      icon: 'pencil-outline',
+      icon: 'pencil-outline' as const,
       onPress: () => {
-        // TODO: show rename dialog
         onClose();
+        onRename?.();
       },
-    },
+    }] : []),
   ];
 
   const destructiveItem: OptionsMenuItem = {
