@@ -2,6 +2,7 @@ import { View, Text, ScrollView } from 'react-native';
 import type { Employee, Shift } from '@/types/schedule';
 import { ShiftCard } from './ShiftCard';
 import { AddShiftSlot } from './AddShiftSlot';
+import { UserAvatar } from '@/components/UserAvatar';
 
 type Props = {
   employee: Employee;
@@ -25,20 +26,7 @@ export function EmployeeShiftRow({
   return (
     <View className="gap-3">
       <View className="flex-row items-center gap-3">
-        <View
-          className="size-9 rounded-full items-center justify-center bg-[#e2e8f0] border-2 border-white"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>
-            {employee.avatarInitials}
-          </Text>
-        </View>
+        <UserAvatar name={employee.name} initials={employee.avatarInitials} size={36} />
 
         <View className="gap-[2px]">
           <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', lineHeight: 20 }}>

@@ -20,68 +20,41 @@ function DecorativeBackground() {
   return (
     <View className="absolute inset-0 overflow-hidden">
       {/* Glow blobs */}
-      <View
-        className="absolute rounded-full bg-[rgba(182,236,19,0.1)]"
-        style={{ width: 256, height: 256, left: 78, top: 265 }}
-      />
-      <View
-        className="absolute rounded-full bg-[rgba(182,236,19,0.05)]"
-        style={{ width: 288, height: 288, right: 39, bottom: 353 }}
-      />
+      <View className="absolute rounded-full bg-[rgba(182,236,19,0.1)] w-64 h-64 left-[78px] top-[265px]" />
+      <View className="absolute rounded-full bg-[rgba(182,236,19,0.05)] w-[288px] h-[288px] right-[39px] bottom-[353px]" />
 
       {/* Geometric rings */}
       <View
-        className="absolute border-2 border-[rgba(182,236,19,0.2)] rounded-[128px] opacity-20"
-        style={{ width: 256, height: 256, right: -43, top: 20, transform: [{ rotate: '12deg' }] }}
+        className="absolute border-2 border-[rgba(182,236,19,0.2)] rounded-[128px] opacity-20 w-64 h-64 right-[-43px] top-5 rotate-[12deg]"
       >
-        <View
-          className="absolute border border-[rgba(182,236,19,0.15)] rounded-[113px]"
-          style={{ borderStyle: 'dashed', top: 12, left: 12, right: 12, bottom: 12 }}
-        />
+        <View className="absolute border border-[rgba(182,236,19,0.15)] rounded-[113px] border-dashed top-3 left-3 right-3 bottom-3" />
       </View>
       <View
-        className="absolute border-2 border-[rgba(182,236,19,0.2)] rounded-[160px] opacity-10"
-        style={{ width: 320, height: 320, left: -105, top: 331, transform: [{ rotate: '-45deg' }] }}
+        className="absolute border-2 border-[rgba(182,236,19,0.2)] rounded-[160px] opacity-10 w-80 h-80 left-[-105px] top-[331px] rotate-[-45deg]"
       >
-        <View
-          className="absolute border border-[rgba(182,236,19,0.15)] rounded-[142px]"
-          style={{ borderStyle: 'dashed', top: 16, left: 16, right: 16, bottom: 16 }}
-        />
+        <View className="absolute border border-[rgba(182,236,19,0.15)] rounded-[142px] border-dashed top-4 left-4 right-4 bottom-4" />
       </View>
       <View
-        className="absolute border-2 border-[rgba(182,236,19,0.2)] rounded-[48px] opacity-[0.15]"
-        style={{ width: 96, height: 96, left: 19, top: 132 }}
+        className="absolute border-2 border-[rgba(182,236,19,0.2)] rounded-[48px] opacity-[0.15] w-24 h-24 left-[19px] top-[132px]"
       >
-        <View
-          className="absolute border border-[rgba(182,236,19,0.15)] rounded-[41px]"
-          style={{ borderStyle: 'dashed', top: 5, left: 5, right: 5, bottom: 5 }}
-        />
+        <View className="absolute border border-[rgba(182,236,19,0.15)] rounded-[41px] border-dashed top-[5px] left-[5px] right-[5px] bottom-[5px]" />
       </View>
 
       {/* Decorative icons */}
-      <View className="absolute opacity-[0.15]" style={{ right: 47, top: 165, transform: [{ rotate: '15deg' }] }}>
+      <View className="absolute opacity-[0.15] right-[47px] top-[165px] rotate-[15deg]">
         <Ionicons name="leaf" size={100} color="#b6ec13" />
       </View>
-      <View className="absolute opacity-10" style={{ right: -2, top: 509, transform: [{ rotate: '-20deg' }] }}>
+      <View className="absolute opacity-10 right-[-2px] top-[509px] rotate-[-20deg]">
         <Ionicons name="restaurant-outline" size={140} color="#b6ec13" />
       </View>
-      <View className="absolute opacity-10" style={{ left: 20, bottom: 202, transform: [{ rotate: '45deg' }] }}>
+      <View className="absolute opacity-10 left-5 bottom-[202px] rotate-45">
         <Ionicons name="flower-outline" size={80} color="#b6ec13" />
       </View>
 
       {/* Decorative pills */}
-      <View
-        className="absolute bg-[rgba(182,236,19,0.2)] rounded-full"
-        style={{ width: 8, height: 32, left: 145, top: 107, transform: [{ rotate: '45deg' }] }}
-      />
-      <View
-        className="absolute bg-[rgba(182,236,19,0.3)] rounded-full"
-        style={{ width: 6, height: 24, right: 114, top: 335, transform: [{ rotate: '-12deg' }] }}
-      />
-      <View
-        className="absolute bg-[rgba(182,236,19,0.15)] rounded-full"
-        style={{ width: 12, height: 40, left: 82, top: 493, transform: [{ rotate: '110deg' }] }}
-      />
+      <View className="absolute bg-[rgba(182,236,19,0.2)] rounded-full w-2 h-8 left-[145px] top-[107px] rotate-45" />
+      <View className="absolute bg-[rgba(182,236,19,0.3)] rounded-full w-[6px] h-6 right-[114px] top-[335px] rotate-[-12deg]" />
+      <View className="absolute bg-[rgba(182,236,19,0.15)] rounded-full w-3 h-10 left-[82px] top-[493px] rotate-[110deg]" />
     </View>
   );
 }
@@ -101,7 +74,7 @@ function BrandingSection() {
       >
         <Image
           source={require('../../assets/icon.png')}
-          style={{ width: 40, height: 40 }}
+          className="w-10 h-10"
           resizeMode="contain"
         />
         <View className="absolute -top-1 -right-1 size-6 rounded-full bg-[#f8f8f6] items-center justify-center">
@@ -112,8 +85,8 @@ function BrandingSection() {
         Lymoon
       </Text>
       <Text
-        className="text-center mt-3"
-        style={{ fontSize: 18, fontWeight: '500', color: '#475569', lineHeight: 28, maxWidth: 287 }}
+        className="text-center mt-3 max-w-[287px]"
+        style={{ fontSize: 18, fontWeight: '500', color: '#475569', lineHeight: 28 }}
       >
         Refresh your productivity with a squeeze of organic collaboration.
       </Text>
@@ -156,10 +129,8 @@ function ActionCard() {
 
   return (
     <View
-      className="w-full rounded-[40px] bg-[rgba(248,250,245,0.92)] border border-[rgba(255,255,255,0.4)]"
+      className="w-full rounded-[40px] bg-[rgba(248,250,245,0.92)] border border-[rgba(255,255,255,0.4)] p-[33px] gap-8"
       style={{
-        padding: 33,
-        gap: 32,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 25 },
         shadowOpacity: 0.05,
@@ -167,14 +138,12 @@ function ActionCard() {
         elevation: 8,
       }}
     >
-      <View style={{ gap: 16 }}>
+      <View className="gap-4">
         <TouchableOpacity
           onPress={handleGooglePress}
           activeOpacity={0.8}
-          className="w-full bg-white border border-[#e2e8f0] rounded-[16px] flex-row items-center justify-center"
+          className="w-full bg-white border border-[#e2e8f0] rounded-[16px] flex-row items-center justify-center h-[58px] gap-3"
           style={{
-            height: 58,
-            gap: 12,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.05,
@@ -191,10 +160,8 @@ function ActionCard() {
         <TouchableOpacity
           onPress={handleApplePress}
           activeOpacity={0.8}
-          className="w-full bg-black rounded-[16px] flex-row items-center justify-center"
+          className="w-full bg-black rounded-[16px] flex-row items-center justify-center h-[58px] gap-3"
           style={{
-            height: 58,
-            gap: 12,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.05,
@@ -220,18 +187,18 @@ function ActionCard() {
         </View>
       </View>
 
-      <View className="items-center" style={{ gap: 4 }}>
+      <View className="items-center gap-1">
         <Text style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
           By continuing, you agree to our
         </Text>
-        <View className="flex-row items-center" style={{ gap: 4 }}>
-          <TouchableOpacity activeOpacity={0.7}>
+        <View className="flex-row items-center gap-1">
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(auth)/terms')}>
             <Text style={{ fontSize: 12, fontWeight: '600', color: '#64748b', textDecorationLine: 'underline' }}>
               Terms of Service
             </Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 12, color: '#94a3b8' }}>&amp;</Text>
-          <TouchableOpacity activeOpacity={0.7}>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(auth)/privacy')}>
             <Text style={{ fontSize: 12, fontWeight: '600', color: '#64748b', textDecorationLine: 'underline' }}>
               Privacy Policy
             </Text>

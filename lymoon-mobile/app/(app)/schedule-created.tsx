@@ -19,20 +19,11 @@ function InviteCodeDisplay({ code }: { code: string }) {
   const chars = code.split('');
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+    <View className="flex-row items-center gap-[10px]">
       {chars.map((char, i) => (
         <View
           key={i}
-          style={{
-            width: 40,
-            height: 48,
-            borderRadius: 10,
-            backgroundColor: '#f8f8f6',
-            borderWidth: 1,
-            borderColor: '#e2e8f0',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="w-10 h-12 rounded-[10px] bg-[#f8f8f6] border border-[#e2e8f0] items-center justify-center"
         >
           <Text
             style={{
@@ -52,20 +43,11 @@ function InviteCodeDisplay({ code }: { code: string }) {
 
 function HintRow({ icon, text }: { icon: string; text: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-      <View
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          backgroundColor: 'rgba(182,236,19,0.12)',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+    <View className="flex-row items-center gap-3">
+      <View className="w-9 h-9 rounded-[10px] bg-[rgba(182,236,19,0.12)] items-center justify-center">
         <Ionicons name={icon as any} size={18} color="#5a8a00" />
       </View>
-      <Text style={{ flex: 1, fontSize: 14, color: '#64748b', lineHeight: 20 }}>{text}</Text>
+      <Text className="flex-1" style={{ fontSize: 14, color: '#64748b', lineHeight: 20 }}>{text}</Text>
     </View>
   );
 }
@@ -139,28 +121,23 @@ export default function ScheduleCreatedScreen() {
     : null;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f8f6' }}>
+    <SafeAreaView className="flex-1 bg-[#f8f8f6]">
       {/* Header */}
-      <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 }}>
+      <View className="px-4 pt-3 pb-1">
         <PageHeader title="Schedule Created" onBack={handleGoHome} />
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         {/* ① Success Icon */}
-        <View style={{ alignItems: 'center', marginTop: 40 }}>
+        <View className="items-center mt-10">
           <Animated.View style={{ transform: [{ scale: iconScale }] }}>
             <View
+              className="size-[72px] rounded-full bg-[#b6ec13] items-center justify-center"
               style={{
-                width: 72,
-                height: 72,
-                borderRadius: 36,
-                backgroundColor: '#b6ec13',
-                alignItems: 'center',
-                justifyContent: 'center',
                 shadowColor: '#b6ec13',
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.35,
@@ -175,10 +152,8 @@ export default function ScheduleCreatedScreen() {
 
         {/* ② Headline + schedule info */}
         <Animated.View
+          className="items-center mt-6 px-6"
           style={{
-            alignItems: 'center',
-            marginTop: 24,
-            paddingHorizontal: 24,
             opacity: contentOpacity,
             transform: [{ translateY: contentSlide }],
           }}
@@ -196,24 +171,15 @@ export default function ScheduleCreatedScreen() {
           {schedule && (
             <>
               <Text
-                style={{
-                  fontSize: 16,
-                  color: '#64748b',
-                  marginTop: 6,
-                  fontWeight: '500',
-                  textAlign: 'center',
-                }}
+                className="mt-[6px] text-center"
+                style={{ fontSize: 16, color: '#64748b', fontWeight: '500' }}
               >
                 {schedule.title}
               </Text>
               {weekRange && (
                 <Text
-                  style={{
-                    fontSize: 13,
-                    color: '#94a3b8',
-                    marginTop: 4,
-                    textAlign: 'center',
-                  }}
+                  className="mt-1 text-center"
+                  style={{ fontSize: 13, color: '#94a3b8' }}
                 >
                   {weekRange}
                 </Text>
@@ -224,39 +190,26 @@ export default function ScheduleCreatedScreen() {
 
         {/* ③ Invite Code Card */}
         <Animated.View
+          className="mx-4 mt-7"
           style={{
-            marginHorizontal: 16,
-            marginTop: 28,
             opacity: codeOpacity,
             transform: [{ translateY: codeSlide }],
           }}
         >
           <View
+            className="bg-white rounded-[20px] border-2 border-[#b6ec13] py-6 px-5 items-center gap-4"
             style={{
-              backgroundColor: 'white',
-              borderRadius: 20,
-              borderWidth: 2,
-              borderColor: '#b6ec13',
-              paddingVertical: 24,
-              paddingHorizontal: 20,
-              alignItems: 'center',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06,
               shadowRadius: 8,
               elevation: 2,
-              gap: 16,
             }}
           >
             {/* Label */}
             <Text
-              style={{
-                fontSize: 11,
-                fontWeight: '700',
-                color: '#94a3b8',
-                letterSpacing: 1.5,
-                textTransform: 'uppercase',
-              }}
+              className="uppercase"
+              style={{ fontSize: 11, fontWeight: '700', color: '#94a3b8', letterSpacing: 1.5 }}
             >
               Invite Code
             </Text>
@@ -271,23 +224,13 @@ export default function ScheduleCreatedScreen() {
             )}
 
             {/* Copy button */}
-            <Animated.View style={{ transform: [{ scale: copyScale }], marginTop: 8 }}>
+            <Animated.View className="mt-2" style={{ transform: [{ scale: copyScale }] }}>
               <TouchableOpacity
                 onPress={handleCopy}
                 onPressIn={handleCopyPressIn}
                 onPressOut={handleCopyPressOut}
                 activeOpacity={1}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  backgroundColor: 'transparent',
-                  borderWidth: 1.5,
-                  borderColor: '#b6ec13',
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 100,
-                }}
+                className="flex-row items-center gap-[6px] bg-transparent border-[1.5px] border-[#b6ec13] px-5 py-[10px] rounded-full"
               >
                 <Ionicons name="copy-outline" size={15} color="#0f172a" />
                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}>Copy Code</Text>
@@ -296,12 +239,8 @@ export default function ScheduleCreatedScreen() {
 
             {/* Helper text */}
             <Text
-              style={{
-                fontSize: 12,
-                color: '#94a3b8',
-                textAlign: 'center',
-                lineHeight: 18,
-              }}
+              className="text-center"
+              style={{ fontSize: 12, color: '#94a3b8', lineHeight: 18 }}
             >
               Share this code with your team members{'\n'}so they can join this schedule
             </Text>
@@ -310,18 +249,12 @@ export default function ScheduleCreatedScreen() {
 
         {/* ④ What's next hints */}
         <Animated.View
-          style={{
-            marginHorizontal: 16,
-            marginTop: 16,
-            opacity: hintsOpacity,
-          }}
+          className="mx-4 mt-4"
+          style={{ opacity: hintsOpacity }}
         >
           <View
+            className="bg-white rounded-2xl p-4 gap-3"
             style={{
-              backgroundColor: 'white',
-              borderRadius: 16,
-              padding: 16,
-              gap: 12,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.04,
@@ -330,56 +263,31 @@ export default function ScheduleCreatedScreen() {
             }}
           >
             <Text
-              style={{
-                fontSize: 11,
-                fontWeight: '700',
-                color: '#94a3b8',
-                letterSpacing: 1.2,
-                textTransform: 'uppercase',
-                marginBottom: 2,
-              }}
+              className="uppercase mb-[2px]"
+              style={{ fontSize: 11, fontWeight: '700', color: '#94a3b8', letterSpacing: 1.2 }}
             >
               What's next
             </Text>
             <HintRow icon="calendar-outline" text="Add shifts from the Schedule Detail page" />
-            <View style={{ height: 1, backgroundColor: '#f1f5f9' }} />
+            <View className="h-px bg-[#f1f5f9]" />
             <HintRow icon="people-outline" text="Members can join using the invite code above" />
           </View>
         </Animated.View>
       </ScrollView>
 
       {/* Bottom buttons */}
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingBottom: 32,
-          paddingTop: 12,
-          backgroundColor: '#f8f8f6',
-          gap: 10,
-        }}
-      >
+      <View className="px-4 pb-8 pt-3 bg-[#f8f8f6] gap-[10px]">
         <TouchableOpacity
           onPress={handleOpenSchedule}
           activeOpacity={0.85}
-          style={{
-            backgroundColor: '#0f172a',
-            paddingVertical: 16,
-            borderRadius: 100,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="bg-[#0f172a] py-4 rounded-full items-center justify-center"
         >
           <Text style={{ fontSize: 16, fontWeight: '700', color: 'white' }}>Open Schedule</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleGoHome}
           activeOpacity={0.85}
-          style={{
-            paddingVertical: 16,
-            borderRadius: 100,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="py-4 rounded-full items-center justify-center"
         >
           <Text style={{ fontSize: 16, fontWeight: '600', color: '#64748b' }}>Back Home</Text>
         </TouchableOpacity>
