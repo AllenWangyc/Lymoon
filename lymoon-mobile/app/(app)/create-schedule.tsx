@@ -101,12 +101,8 @@ export default function CreateScheduleScreen() {
           {/* Schedule Name */}
           <View>
             <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#0f172a',
-                marginBottom: 8,
-              }}
+              className="mb-2"
+              style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}
             >
               Schedule Name
             </Text>
@@ -119,13 +115,9 @@ export default function CreateScheduleScreen() {
               placeholder="e.g. Engineering Sprint"
               placeholderTextColor="#94a3b8"
               autoCapitalize="words"
+              className="bg-white rounded-2xl h-14 border px-4"
               style={{
-                backgroundColor: 'white',
-                borderRadius: 16,
-                height: 56,
-                borderWidth: 1,
                 borderColor: nameError ? '#f87171' : 'rgba(182,236,19,0.2)',
-                paddingHorizontal: 16,
                 fontSize: 16,
                 color: '#0f172a',
                 shadowColor: '#000',
@@ -137,11 +129,8 @@ export default function CreateScheduleScreen() {
             />
             {nameError && (
               <Text
-                style={{
-                  fontSize: 12,
-                  color: '#f87171',
-                  marginTop: 4,
-                }}
+                className="mt-1"
+                style={{ fontSize: 12, color: '#f87171' }}
               >
                 Schedule name is required
               </Text>
@@ -151,12 +140,8 @@ export default function CreateScheduleScreen() {
           {/* Description */}
           <View>
             <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#0f172a',
-                marginBottom: 8,
-              }}
+              className="mb-2"
+              style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}
             >
               Description{' '}
               <Text style={{ fontWeight: '400', color: '#94a3b8' }}>(optional)</Text>
@@ -168,13 +153,8 @@ export default function CreateScheduleScreen() {
               placeholderTextColor="#94a3b8"
               multiline
               textAlignVertical="top"
+              className="bg-white rounded-2xl min-h-[100px] border border-[rgba(182,236,19,0.2)] p-4"
               style={{
-                backgroundColor: 'white',
-                borderRadius: 16,
-                minHeight: 100,
-                borderWidth: 1,
-                borderColor: 'rgba(182,236,19,0.2)',
-                padding: 16,
                 fontSize: 16,
                 color: '#0f172a',
                 shadowColor: '#000',
@@ -185,12 +165,8 @@ export default function CreateScheduleScreen() {
               }}
             />
             <Text
-              style={{
-                fontSize: 12,
-                color: wordCountColor,
-                marginTop: 4,
-                textAlign: 'right',
-              }}
+              className="mt-1 text-right"
+              style={{ fontSize: 12, color: wordCountColor }}
             >
               {wordCount} / 20 words
             </Text>
@@ -199,16 +175,12 @@ export default function CreateScheduleScreen() {
           {/* Category */}
           <View>
             <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#0f172a',
-                marginBottom: 4,
-              }}
+              className="mb-1"
+              style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}
             >
               Category
             </Text>
-            <View style={{ marginTop: 4 }}>
+            <View className="mt-1">
               <CategoryPicker value={scheduleType} onChange={setScheduleType} />
             </View>
           </View>
@@ -216,28 +188,16 @@ export default function CreateScheduleScreen() {
           {/* Start Week */}
           <View>
             <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#0f172a',
-                marginBottom: 8,
-              }}
+              className="mb-2"
+              style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}
             >
               Start Week
             </Text>
             <TouchableOpacity
               onPress={() => setShowWeekPicker(true)}
               activeOpacity={0.8}
+              className="bg-white rounded-2xl h-14 border border-[rgba(182,236,19,0.2)] px-4 flex-row items-center justify-between"
               style={{
-                backgroundColor: 'white',
-                borderRadius: 16,
-                height: 56,
-                borderWidth: 1,
-                borderColor: 'rgba(182,236,19,0.2)',
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.05,
@@ -245,7 +205,7 @@ export default function CreateScheduleScreen() {
                 elevation: 1,
               }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View className="flex-row items-center gap-2">
                 <Ionicons name="calendar-outline" size={18} color="#0f172a" />
                 <Text style={{ fontSize: 16, color: '#0f172a' }}>
                   {formatWeekRange(weekStart)}
@@ -258,16 +218,12 @@ export default function CreateScheduleScreen() {
           {/* Member Permissions */}
           <View>
             <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#0f172a',
-                marginBottom: 4,
-              }}
+              className="mb-1"
+              style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}
             >
               Member Permissions
             </Text>
-            <View style={{ marginTop: 4 }}>
+            <View className="mt-1">
               <PermissionPicker value={memberPermission} onChange={setMemberPermission} />
             </View>
           </View>
@@ -275,14 +231,7 @@ export default function CreateScheduleScreen() {
       </KeyboardAvoidingView>
 
       {/* Fixed Bottom Create Button */}
-      <View
-        style={{
-          paddingBottom: 40,
-          paddingTop: 16,
-          paddingHorizontal: 16,
-          backgroundColor: '#f8f8f6',
-        }}
-      >
+      <View className="pb-10 pt-4 px-4 bg-[#f8f8f6]">
         <TouchableOpacity
           onPress={handleCreate}
           activeOpacity={0.85}

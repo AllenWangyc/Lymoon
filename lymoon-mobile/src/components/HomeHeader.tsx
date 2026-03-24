@@ -2,21 +2,13 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useAuthStore } from '@/stores/authStore';
+import { UserAvatar } from '@/components/UserAvatar';
 
-type Props = {
-  userName?: string;
-};
-
-export function HomeHeader({ userName = 'Alex Rivera' }: Props) {
+export function HomeHeader() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
-  const initials = userName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const { userName, avatarInitials } = useAuthStore();
 
   return (
     <View
@@ -24,22 +16,13 @@ export function HomeHeader({ userName = 'Alex Rivera' }: Props) {
       style={{
         paddingTop: insets.top + 8,
         backgroundColor: 'rgba(248,248,246,0.92)',
-        // expo-blur BlurView can replace this View for real frosted glass
         borderBottomWidth: 0,
         zIndex: 10,
       }}
     >
       {/* Left: Avatar + greeting */}
       <View className="flex-row items-center gap-3">
-        <View
-          className="w-10 h-10 rounded-full items-center justify-center border"
-          style={{
-            backgroundColor: 'rgba(182,236,19,0.2)',
-            borderColor: 'rgba(182,236,19,0.1)',
-          }}
-        >
-          <Text className="text-[13px] font-bold text-[#4a6b00]">{initials}</Text>
-        </View>
+        <UserAvatar name={userName} initials={avatarInitials} size={40} />
 
         <View className="gap-px">
           <Text className="text-[12px] font-medium text-[#64748b]">Welcome back,</Text>

@@ -5,6 +5,7 @@ import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
 import { BottomSheet } from '@/components/BottomSheet';
 import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
 import { OptionsMenuCard } from '@/components/OptionsMenuCard';
+import { UserAvatar } from '@/components/UserAvatar';
 import { MOCK_WORK_HOURS_HISTORY } from '@/features/schedule/constants';
 import type { Employee } from '@/types/schedule';
 
@@ -16,13 +17,6 @@ type Props = {
   onViewWorkHours?: (employee: Employee) => void;
   onRemoveMember?: (employee: Employee) => void;
 };
-
-const AVATAR_COLORS = ['#b6ec13', '#86efac', '#93c5fd', '#fca5a5', '#fcd34d', '#c4b5fd'];
-
-function getAvatarColor(name: string): string {
-  const hash = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
-}
 
 // ─── Week helpers ────────────────────────────────────────────────────────────
 
@@ -176,21 +170,7 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
     >
       {/* Avatar + Name + Badge */}
       <View className="flex-row items-center gap-4">
-        <View
-          className="w-10 h-10 rounded-full items-center justify-center"
-          style={{
-            backgroundColor: getAvatarColor(employee.name),
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: '700', color: '#0f172a' }}>
-            {employee.avatarInitials}
-          </Text>
-        </View>
+        <UserAvatar name={employee.name} initials={employee.avatarInitials} size={40} />
         <View className="flex-row items-center gap-2">
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
             {employee.name}

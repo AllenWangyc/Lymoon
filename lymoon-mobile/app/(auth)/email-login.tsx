@@ -39,7 +39,7 @@ export default function EmailLoginScreen() {
           Sign in to your Lymoon account
         </Text>
 
-        <View style={{ gap: 16 }}>
+        <View className="gap-4">
           <View>
             <Text className="mb-2" style={{ fontSize: 13, fontWeight: '500', color: '#475569' }}>
               Email
@@ -88,7 +88,7 @@ export default function EmailLoginScreen() {
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row justify-center mt-8" style={{ gap: 4 }}>
+        <View className="flex-row justify-center mt-8 gap-1">
           <Text style={{ fontSize: 14, color: '#64748b' }}>Don't have an account?</Text>
           <TouchableOpacity activeOpacity={0.7}>
             {/* TODO: navigate to register screen when built */}

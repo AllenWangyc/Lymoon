@@ -50,7 +50,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-[#f8f8f6]">
-      <HomeHeader userName="Alex Rivera" />
+      <HomeHeader />
 
       <ScrollView
         className="flex-1"
@@ -92,8 +92,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={cat}
               onPress={() => setActiveCategory(cat)}
-              className={`px-5 rounded-full ${cat === activeCategory ? 'bg-[#b6ec13]' : 'bg-white border border-[#f1f5f9]'}`}
-              style={{ paddingVertical: 9 }}
+              className={`px-5 py-[9px] rounded-full ${cat === activeCategory ? 'bg-[#b6ec13]' : 'bg-white border border-[#f1f5f9]'}`}
             >
               <Text
                 className={`text-[14px] text-center ${cat === activeCategory ? 'font-semibold text-[#0f172a]' : 'font-medium text-[#64748b]'}`}
@@ -123,7 +122,7 @@ export default function HomeScreen() {
               <Text className="text-[16px] font-bold text-center text-[rgba(15,23,42,0.7)] mb-1">
                 {searchQuery.trim() ? 'No matching schedules' : 'No active schedules yet'}
               </Text>
-              <Text className="text-[14px] text-[#64748b] text-center" style={{ maxWidth: 200, lineHeight: 20 }}>
+              <Text className="text-[14px] text-[#64748b] text-center max-w-[200px]" style={{ lineHeight: 20 }}>
                 {searchQuery.trim() ? 'Try a different search term.' : 'Tap + to create or join a schedule to get started.'}
               </Text>
             </View>
