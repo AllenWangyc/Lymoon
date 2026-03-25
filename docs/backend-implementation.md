@@ -9,11 +9,16 @@
 
 ## Current State
 
-- `Program.cs` — minimal (no auth/DB wiring, **missing `UseAuthentication()`**)
-- `Controllers/HealthController.cs` — only existing controller
-- NuGet packages already added: `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.Authentication.JwtBearer`, `Microsoft.EntityFrameworkCore`, `Npgsql.EntityFrameworkCore.PostgreSQL`
-- **Missing** `Microsoft.EntityFrameworkCore.Design` and `Microsoft.EntityFrameworkCore.Tools` — required for `dotnet ef` CLI
-- **No** `AppDbContext`, models, services, DTOs, or migrations yet
+**Steps 1, 2, and 2b are complete.** Current deployed state:
+
+- `Program.cs` — fully wired: Identity, EF Core, JWT Bearer, HttpClient, MemoryCache, `UseAuthentication()` + `UseAuthorization()`
+- All EF Core models created: `AppUser`, `Schedule`, `ScheduleMember`, `Shift`, `Notification`, `JwtSettings`
+- `Data/AppDbContext.cs` — configured with all DbSets and snake_case table names
+- Migrations applied: `InitialCreate`, `AddRefreshTokenColumns`, `AddAppleUserId`
+- Auth endpoints live: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/google`, `POST /api/auth/apple`
+- Services: `AuthService`, `JwtService` (interfaces + implementations)
+- DTOs: `DTOs/Auth/` — `RegisterRequest`, `LoginRequest`, `RefreshRequest`, `AuthResponse`, `GoogleSignInRequest`, `AppleSignInRequest`
+- **Next:** Step 3 — Schedules Core
 
 ---
 
@@ -86,22 +91,22 @@ notifications
 
 ### Tasks
 
-- [ ] Add missing NuGet packages to `Lymoon.API.csproj`:
+- [x] Add missing NuGet packages to `Lymoon.API.csproj`:
   - `Microsoft.EntityFrameworkCore.Design` (required for `dotnet ef migrations`)
   - `Microsoft.EntityFrameworkCore.Tools` (required for dotnet-ef CLI)
-- [ ] Create `Models/AppUser.cs` — extends `IdentityUser`, adds `DisplayName` property (non-null)
-- [ ] Create `Models/Schedule.cs` — EF entity with all columns above
-- [ ] Create `Models/ScheduleMember.cs` — composite PK entity
-- [ ] Create `Models/Shift.cs` — EF entity
-- [ ] Create `Models/Notification.cs` — EF entity
-- [ ] Create `Data/AppDbContext.cs` — extends `IdentityDbContext<AppUser>`, configures all DbSets and table names (snake_case)
-- [ ] Wire `AppDbContext` + Identity in `Program.cs` (connection string from `appsettings.json`)
-- [ ] Configure JWT Bearer in `Program.cs` (issuer/audience/key from `appsettings`)
-- [ ] Fix middleware pipeline in `Program.cs` — add `app.UseAuthentication()` **before** `app.UseAuthorization()` (current code is missing `UseAuthentication` — all `[Authorize]` attributes will 401 without it)
-- [ ] Add `appsettings.json` JWT + DB connection string placeholders (no real secrets in source)
-- [ ] Add `JwtSettings` options class (`Models/JwtSettings.cs`)
-- [ ] Run `dotnet ef migrations add InitialCreate` and verify migration SQL
-- [ ] Run `dotnet ef database update`
+- [x] Create `Models/AppUser.cs` — extends `IdentityUser`, adds `DisplayName` property (non-null)
+- [x] Create `Models/Schedule.cs` — EF entity with all columns above
+- [x] Create `Models/ScheduleMember.cs` — composite PK entity
+- [x] Create `Models/Shift.cs` — EF entity
+- [x] Create `Models/Notification.cs` — EF entity
+- [x] Create `Data/AppDbContext.cs` — extends `IdentityDbContext<AppUser>`, configures all DbSets and table names (snake_case)
+- [x] Wire `AppDbContext` + Identity in `Program.cs` (connection string from `appsettings.json`)
+- [x] Configure JWT Bearer in `Program.cs` (issuer/audience/key from `appsettings`)
+- [x] Fix middleware pipeline in `Program.cs` — add `app.UseAuthentication()` **before** `app.UseAuthorization()`
+- [x] Add `appsettings.json` JWT + DB connection string placeholders (no real secrets in source)
+- [x] Add `JwtSettings` options class (`Models/JwtSettings.cs`)
+- [x] Run `dotnet ef migrations add InitialCreate` and verify migration SQL
+- [x] Run `dotnet ef database update`
 
 ### Verification
 ```bash
@@ -134,27 +139,26 @@ Wire up ASP.NET Core Identity + JWT token generation. The frontend calls `POST /
 
 ### Tasks
 
-- [ ] Create `DTOs/Auth/RegisterRequest.cs`
-- [ ] Create `DTOs/Auth/LoginRequest.cs`
-- [ ] Create `DTOs/Auth/RefreshRequest.cs`
-- [ ] Create `DTOs/Auth/AuthResponse.cs` (accessToken, refreshToken, user { id, email, displayName })
-- [ ] Add `RefreshToken` + `RefreshTokenExpiry` columns to `AppUser` model
-- [ ] Create migration for new columns: `dotnet ef migrations add AddRefreshToken`
-- [ ] Create `Services/IJwtService.cs` + `Services/JwtService.cs`
+- [x] Create `DTOs/Auth/RegisterRequest.cs`
+- [x] Create `DTOs/Auth/LoginRequest.cs`
+- [x] Create `DTOs/Auth/RefreshRequest.cs`
+- [x] Create `DTOs/Auth/AuthResponse.cs` (accessToken, refreshToken, user { id, email, displayName })
+- [x] Add `RefreshToken` + `RefreshTokenExpiry` columns to `AppUser` model
+- [x] Create migration for new columns: `dotnet ef migrations add AddRefreshTokenColumns`
+- [x] Create `Services/IJwtService.cs` + `Services/JwtService.cs`
   - `GenerateAccessToken(AppUser)` → signed JWT, 15-min expiry
   - `GenerateRefreshToken()` → cryptographically random string, 7-day expiry
-- [ ] Add `RefreshToken` (string) + `RefreshTokenExpiry` (DateTimeOffset) columns to `AppUser`
+- [x] Add `RefreshToken` (string) + `RefreshTokenExpiry` (DateTimeOffset) columns to `AppUser`
   - Single-device MVP approach: store one refresh token per user directly on `AspNetUsers`
   - 7-day expiry; token is a cryptographically random 64-byte base64 string
   - **Trade-off:** multi-device will require a separate `refresh_tokens` table — consult Allen if multi-device is needed before MVP ships
-- [ ] Create migration: `dotnet ef migrations add AddRefreshTokenColumns`
-- [ ] Create `Services/IAuthService.cs` + `Services/AuthService.cs`
+- [x] Create `Services/IAuthService.cs` + `Services/AuthService.cs`
   - `RegisterAsync(RegisterRequest)` → creates Identity user, returns AuthResponse
   - `LoginAsync(LoginRequest)` → validates credentials, returns AuthResponse
   - `RefreshAsync(RefreshRequest)` → validates refresh token + expiry against `AppUser`, rotates token, returns new AuthResponse
-- [ ] Create `Controllers/AuthController.cs` (thin — calls service, returns result)
-- [ ] Register `IAuthService`, `IJwtService` as scoped in `Program.cs`
-- [ ] Input validation: `[Required]`, `[EmailAddress]`, `[MinLength(6)]` on request DTOs
+- [x] Create `Controllers/AuthController.cs` (thin — calls service, returns result)
+- [x] Register `IAuthService`, `IJwtService` as scoped in `Program.cs`
+- [x] Input validation: `[Required]`, `[EmailAddress]`, `[MinLength(6)]` on request DTOs
 
 ### Verification
 ```bash
@@ -170,6 +174,82 @@ dotnet build
 - Register → Login → Refresh cycle works end-to-end
 - Wrong password returns 401, not 500
 - Access token is a valid JWT with `sub` = userId
+
+---
+
+## Step 2b — Third-Party Auth (Google & Apple Sign In)
+
+**Branch:** `feat/backend-step2b-oauth`
+**Depends on:** Step 2
+**Parallelizable with:** Step 3
+
+### Context brief
+Mobile client (Expo) handles the OAuth flow natively and obtains an ID token from Google/Apple. The client POSTs that ID token to the backend. The backend validates the ID token against Google's or Apple's public key, finds or creates the local `AppUser`, and returns the same `AuthResponse` (access token + refresh token) as the email/password flow.
+
+**Token exchange pattern:**
+1. Mobile uses `expo-auth-session` or `@react-native-google-signin/google-signin` to get an ID token
+2. Mobile sends `POST /api/auth/google` or `POST /api/auth/apple` with `{ idToken: "..." }`
+3. Backend validates the ID token, upserts the user, returns `AuthResponse`
+
+This approach keeps all auth logic server-side. The backend never redirects — it only accepts and validates tokens.
+
+### Endpoints implemented
+| Method | Path | Auth |
+|--------|------|------|
+| POST | `/api/auth/google` | Public |
+| POST | `/api/auth/apple` | Public |
+
+### Tasks
+
+**NuGet packages:**
+- [x] Add `Google.Apis.Auth` — for server-side Google ID token validation (no ASP.NET OAuth middleware needed)
+- [x] Apple uses JWT validation with Apple's public JWKS — no extra package required (use `Microsoft.IdentityModel.Tokens`)
+
+**DTOs:**
+- [x] Create `DTOs/Auth/GoogleSignInRequest.cs` — `{ string IdToken }`
+- [x] Create `DTOs/Auth/AppleSignInRequest.cs` — `{ string IdToken }`
+
+**Google:**
+- [x] Add `GoogleSignInAsync(GoogleSignInRequest)` to `IAuthService` + implement in `AuthService`
+  - Validate ID token via `GoogleJsonWebSignature.ValidateAsync(idToken)` — verifies signature, expiry, and audience
+  - Extract `email`, `name` (use as `DisplayName`), `sub` (Google user ID) from payload
+  - Find existing user by email: if found, return tokens; if not, create new `AppUser` with `EmailConfirmed = true` and a random unusable password (`Guid.NewGuid().ToString()`)
+  - Return `AuthResponse` (same shape as email/password login)
+- [x] Add `GOOGLE_CLIENT_ID` to `appsettings.json` placeholder — passed as `audience` to `ValidateAsync`
+
+**Apple:**
+- [x] Add `AppleSignInAsync(AppleSignInRequest)` to `IAuthService` + implement in `AuthService`
+  - Fetch Apple's public keys from `https://appleid.apple.com/auth/keys` (cache with 1-hour TTL)
+  - Validate the ID token JWT: check signature, `iss = https://appleid.apple.com`, `aud = <APPLE_APP_BUNDLE_ID>`, expiry
+  - Extract `email`, `sub` (Apple user ID) from claims
+  - Apple only sends `email` on the first sign-in — store Apple's `sub` in a custom `AppleUserId` column on `AppUser` for future lookups
+  - Find existing user by `AppleUserId` first, then fall back to email; create if neither found
+  - Return `AuthResponse`
+- [x] Add `AppleUserId` (string, nullable) column to `AppUser`
+- [x] Create migration: `dotnet ef migrations add AddAppleUserId`
+- [x] Add `APPLE_APP_BUNDLE_ID` to `appsettings.json` placeholder
+
+**Controller:**
+- [x] Add `POST /api/auth/google` and `POST /api/auth/apple` actions to `AuthController`
+  - Both are public (`[AllowAnonymous]`)
+  - Input validation: `[Required]` on `IdToken`
+
+### Verification
+```bash
+dotnet build  # Must succeed, zero warnings
+dotnet ef migrations list  # Shows "AddAppleUserId"
+
+# Manual test (use a real short-lived ID token from the mobile client):
+# POST /api/auth/google { "idToken": "<valid Google ID token>" } → 200 AuthResponse
+# POST /api/auth/google { "idToken": "invalid" }               → 401 { "error": "..." }
+# POST /api/auth/apple  { "idToken": "<valid Apple ID token>" } → 200 AuthResponse
+```
+
+### Exit criteria
+- Invalid or expired ID token → 401 with `{ "error": "..." }`
+- First-time Google sign-in creates a new user; second call returns the same user
+- First-time Apple sign-in creates a new user; subsequent sign-ins look up by `AppleUserId` (not email, since Apple hides email after the first sign-in)
+- Returned `AuthResponse` is identical in shape to the email/password login response
 
 ---
 
