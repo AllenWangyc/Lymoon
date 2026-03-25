@@ -71,6 +71,9 @@ Key rules:
 
 ## Backend (Lymoon.API)
 
+> Full implementation plan: [docs/backend-implementation.md](docs/backend-implementation.md)
+> **REQUIRED:** Before doing any backend work, you MUST read `docs/backend-implementation.md` in full.
+
 ### Tech Stack
 - ASP.NET Core Web API (.NET 8)
 - ASP.NET Core Identity (user management)
@@ -82,12 +85,17 @@ Key rules:
 Lymoon.API/
   Controllers/
     HealthController.cs
-  Services/                     # All business logic
+  Services/                     # All business logic (interfaces + implementations)
   Data/
     AppDbContext.cs
     Migrations/
-  Models/                       # EF Core entities
-  DTOs/                         # Request/response models
+  Models/                       # EF Core entities + JwtSettings
+  DTOs/
+    Auth/
+    Schedules/
+    Shifts/
+    Notifications/
+  Helpers/                      # InviteCodeGenerator, AvatarHelper
   Program.cs
 ```
 
@@ -95,14 +103,17 @@ Lymoon.API/
 - Controllers are thin: validate input, call service, return result
 - All business logic in Services layer
 - Use `[Authorize]` on all endpoints except Auth
-- Check team membership in services before any data access
+- Every service method that accesses schedule data must first verify the requesting user is a member of that schedule (via `schedule_members`)
 - Use async/await throughout; no synchronous DB calls
 - DTOs are separate from entity models — never return raw EF entities
+- All errors return `{ "error": "<message>" }` with appropriate HTTP status
+- Use a global exception middleware or ActionFilter to convert domain exceptions to error responses
 
 ### Authorization Rules
-- **Manager**: can create and modify all shifts within their team's schedules
-- **Member**: can only modify their own shifts (`shift.EmployeeId == currentUserId`)
-- Verify team membership via `team_members` table in every service method
+- **Manager**: can add/edit/delete any shift in the schedule
+- **`full_collaboration` permission**: any member can add/edit/delete any shift
+- **Member (default)**: can add a shift only for themselves; can edit/delete only their own shifts
+- Check `schedule_members.Role` for the requesting user in every service method
 
 ### Dev Commands
 ```bash
@@ -110,21 +121,47 @@ cd Lymoon.API
 dotnet run
 dotnet ef migrations add <MigrationName>
 dotnet ef database update
+dotnet ef migrations list
 ```
+
+---
+
+## Implementation Steps
+
+Work through these steps sequentially (Steps 4 and 5 can run in parallel after Step 3):
+
+- [ ] **Step 1** — Database Foundation & Program.cs wiring (`feat/backend-step1-foundation`)
+- [ ] **Step 2** — Authentication: Register / Login / Refresh (`feat/backend-step2-auth`)
+- [ ] **Step 3** — Schedules Core: List / Create / Get Detail / Rename (`feat/backend-step3-schedules-core`)
+- [ ] **Step 4** — Schedule Membership & Week Navigation (`feat/backend-step4-membership`) ← parallel with Step 5
+- [ ] **Step 5** — Shifts: Add / Update / Delete (`feat/backend-step5-shifts`) ← parallel with Step 4
+- [ ] **Step 6** — Work Hours & Notifications (`feat/backend-step6-work-hours-notifications`)
+
+Full task checklists, exit criteria, and verification commands for each step are in `docs/backend-implementation.md`.
 
 ---
 
 ## Database
 
-### Core Tables
+### Schema
 ```
-AspNetUsers    - Managed by ASP.NET Core Identity
-teams          - id, name, invite_code, created_by
-team_members   - team_id, user_id, role (Manager | Member)
-schedules      - id, team_id, week_start, published_at (null = draft)
-shifts         - id, schedule_id, employee_id, day_of_week, start_time, end_time
-notifications  - id, user_id, team_id, type, message, is_read, created_at
+AspNetUsers     - ASP.NET Core Identity; + DisplayName (text, not-null)
+
+schedules       - id (uuid), title, description, scheduleType, memberPermission,
+                  inviteCode (char 6, unique), iconBg, startWeek (date),
+                  currentWeek (date), createdById (FK → AspNetUsers)
+
+schedule_members - scheduleId (FK), userId (FK), role ('Manager' | 'Member')
+                   PK: (scheduleId, userId)
+
+shifts          - id (uuid), scheduleId (FK), userId (FK), weekStart (date),
+                  dayOfWeek (int, 0=Mon…6=Sun), startTime (time), endTime (time)
+
+notifications   - id (uuid), userId (FK), scheduleId (FK), type, message,
+                  isRead (bool, default false), createdAt (timestamptz)
 ```
+
+> **Note:** There is no separate `teams` table. `Schedule` is the top-level multi-tenant entity. `schedule_members` replaces the old `team_members` concept.
 
 Always use EF Core Code First migrations. Never modify the database schema directly.
 
@@ -132,14 +169,22 @@ Always use EF Core Code First migrations. Never modify the database schema direc
 
 ## Notifications
 
-In-app only — no push notifications.
-- On schedule publish: backend bulk-inserts notification rows for all team members
-- Mark read via `PATCH /api/notifications/read`
+In-app only — no push notifications. Triggered by:
+
+| Event | Who is notified | Type |
+|---|---|---|
+| Another user modifies your shift | Shift owner | `shift_modified` |
+| Another user deletes your shift | Shift owner | `shift_deleted` |
+| Manager adds next week | All schedule members | `new_week_added` |
+| Manager removes you from a schedule | Removed member | `removed_from_schedule` |
+
+No self-notifications (actor == target → skip). Mark read via `POST /api/notifications/read`.
 
 ## Invite System
 
-- Teams have a unique 6-character alphanumeric `invite_code`
-- Employees enter the code manually in the app to join a team
+- Schedules have a unique 6-character uppercase alphanumeric `inviteCode`
+- Generated server-side on schedule creation; retries on collision
+- Employees enter the code manually in the app to join a schedule
 - No deep links
 
 ---

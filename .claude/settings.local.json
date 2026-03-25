@@ -18,7 +18,9 @@
       "Bash(npx tsc:*)",
       "Bash(gh pr:*)",
       "Bash(api)",
-      "Bash(lib \")"
+      "Bash(lib \")",
+      "Bash(find 'D:\\\\Vibe coding projects\\\\Lymoon\\\\lymoon-mobile' -name register.tsx -o -name *terms* -o -name *privacy* -o -name *legal*)",
+      "Bash(find 'D:\\\\Vibe coding projects\\\\Lymoon\\\\lymoon-mobile' -type d -name *auth*)"
     ]
   }
 }

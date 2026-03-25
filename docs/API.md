@@ -92,7 +92,7 @@ This document defines all API endpoints required by the mobile frontend. It serv
 ### List User's Schedules
 `GET /api/schedules`
 
-Returns all schedules the authenticated user is a member of.
+Returns all schedules the authenticated user is a member of. All computed fields (`hours`, `days`) are based on `currentWeek` — the latest week of the schedule.
 
 **Response `200`:**
 ```json
@@ -100,16 +100,16 @@ Returns all schedules the authenticated user is a member of.
   {
     "id": "string",
     "title": "string",
-    "subtitle": "string",
-    "hours": "string",             // e.g. "38.5"
+    "hours": "string",             // total hours for the current user in currentWeek, e.g. "38.5"
     "iconBg": "string",            // e.g. "rgba(182,236,19,0.1)"
     "days": [
       { "day": "Mo", "opacity": 1, "isToday": false }
-    ],
+    ],                             // 7-element array computed from current user's shifts in currentWeek
     "scheduleType": "shift | event | personal",
     "memberPermission": "manager_only | full_collaboration",
-    "startWeek": "2026-03-16",     // ISO Monday date
-    "description": "string | null",
+    "startWeek": "2026-03-16",     // ISO Monday date — the week the schedule was created for
+    "currentWeek": "2026-03-23",   // ISO Monday date — the latest active week (advances on Add Next Week)
+    "description": "string | null", // optional, max 20 words, user-authored
     "inviteCode": "string"         // 6-char uppercase alphanumeric
   }
 ]
@@ -136,13 +136,13 @@ Returns all schedules the authenticated user is a member of.
 {
   "id": "string",
   "title": "string",
-  "subtitle": "string",
   "hours": "0",
   "iconBg": "string",
   "days": [ ... ],
   "scheduleType": "string",
   "memberPermission": "string",
   "startWeek": "string",
+  "currentWeek": "string",       // same as startWeek on creation
   "description": "string | null",
   "inviteCode": "string"
 }
@@ -153,28 +153,28 @@ Returns all schedules the authenticated user is a member of.
 ### Get Schedule Detail
 `GET /api/schedules/{id}`
 
-Returns full schedule including all employees and shifts for the current week. The client passes `weekStart` as a query parameter to paginate weeks.
+Returns full schedule including all employees and shifts for the requested week. Defaults to `currentWeek` when no `weekStart` is provided. The manager can navigate to any week between `startWeek` and `currentWeek`.
 
 **Query params:**
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
-| `weekStart` | `string` | No | ISO Monday date (e.g. `2026-03-16`). Defaults to schedule's start week. |
+| `weekStart` | `string` | No | ISO Monday date (e.g. `2026-03-16`). Defaults to `currentWeek`. |
 
 **Response `200`:**
 ```json
 {
   "id": "string",
   "title": "string",
-  "subtitle": "string",
   "hours": "string",
   "iconBg": "string",
   "days": [ ... ],
   "scheduleType": "string",
   "memberPermission": "string",
-  "startWeek": "string",
+  "startWeek": "string",         // earliest available week
+  "currentWeek": "string",       // latest active week — used to gate "+ Next Week" button
   "description": "string | null",
   "inviteCode": "string",
-  "weekStartDate": "2024-10-14",
+  "weekStartDate": "2024-10-14", // the week whose shifts are returned in this response
   "currentUserRole": "Manager | Member",
   "employees": [
     {
@@ -218,7 +218,54 @@ Manager only.
 
 ---
 
+### Add Next Week
+`POST /api/schedules/{id}/weeks`
+
+Manager only. Advances `currentWeek` by exactly 7 days. Triggered by the "＋ Next Week" button in Schedule Detail. This is a one-way operation — `currentWeek` can only move forward.
+
+No request body required. The backend computes `new currentWeek = currentWeek + 7 days`.
+
+**Response `200`:**
+```json
+{
+  "currentWeek": "2026-03-30"   // the new currentWeek after advancing
+}
+```
+
+---
+
 ## Schedule Membership
+
+### Look Up Schedule by Invite Code
+`GET /api/schedules/lookup?code={inviteCode}`
+
+Returns a preview of the schedule before the user joins. Used in the Join Schedule screen's "Search" step.
+
+**Query params:**
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `code` | `string` | Yes | 6-char uppercase alphanumeric invite code |
+
+**Response `200`:**
+```json
+{
+  "scheduleName": "string",
+  "managerName": "string",
+  "memberCount": 5
+}
+```
+
+**Response `404` — code not found:**
+```json
+{ "error": "invalid_code" }
+```
+
+**Response `409` — already a member:**
+```json
+{ "error": "already_member" }
+```
+
+---
 
 ### Join Schedule by Invite Code
 `POST /api/schedules/join`
