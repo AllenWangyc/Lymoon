@@ -130,8 +130,9 @@ dotnet ef migrations list
 
 Work through these steps sequentially (Steps 4 and 5 can run in parallel after Step 3):
 
-- [ ] **Step 1** — Database Foundation & Program.cs wiring (`feat/backend-step1-foundation`)
+- [x] **Step 1** — Database Foundation & Program.cs wiring (`feat/backend-step1-foundation`)
 - [ ] **Step 2** — Authentication: Register / Login / Refresh (`feat/backend-step2-auth`)
+- [ ] **Step 2b** — Third-Party Auth: Google & Apple Sign In (`feat/backend-step2b-oauth`) ← parallel with Step 3
 - [ ] **Step 3** — Schedules Core: List / Create / Get Detail / Rename (`feat/backend-step3-schedules-core`)
 - [ ] **Step 4** — Schedule Membership & Week Navigation (`feat/backend-step4-membership`) ← parallel with Step 5
 - [ ] **Step 5** — Shifts: Add / Update / Delete (`feat/backend-step5-shifts`) ← parallel with Step 4
