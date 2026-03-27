@@ -9,9 +9,18 @@ interface AuthState {
   avatarInitials: string | null;
   accessToken: string | null;
   refreshToken: string | null;
-  setUser(userId: string, userName: string, userRole: UserRole, avatarInitials: string): void;
-  setTokens(accessToken: string, refreshToken: string): void;
-  clearUser(): void;
+  isAuthenticated: boolean;
+
+  setUser: (data: {
+    userId: string;
+    userName: string;
+    userRole: UserRole;
+    avatarInitials: string;
+    accessToken: string;
+    refreshToken: string;
+  }) => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  clearUser: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -21,9 +30,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   avatarInitials: null,
   accessToken: null,
   refreshToken: null,
-  setUser: (userId, userName, userRole, avatarInitials) =>
-    set({ userId, userName, userRole, avatarInitials }),
+  isAuthenticated: false,
+
+  setUser: (data) =>
+    set({
+      userId: data.userId,
+      userName: data.userName,
+      userRole: data.userRole,
+      avatarInitials: data.avatarInitials,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      isAuthenticated: true,
+    }),
+
   setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
+
   clearUser: () =>
     set({
       userId: null,
@@ -32,5 +53,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       avatarInitials: null,
       accessToken: null,
       refreshToken: null,
+      isAuthenticated: false,
     }),
 }));
