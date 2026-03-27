@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"postman_mcp_server": {
+			"type": "http",
+			"url": "https://mcp.postman.com/minimal",
+			"headers": {
+				"Authorization": "Bearer YOUR_API_KEY"
+			}
+		}
+	},
+	"inputs": []
+}

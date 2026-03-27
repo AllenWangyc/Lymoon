@@ -18,7 +18,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Identity (API-only: no cookie schemes)
-builder.Services.AddIdentityCore<AppUser>()
+builder.Services.AddIdentityCore<AppUser>(options =>
+{
+    options.Password.RequiredLength = 6;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+})
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
@@ -48,6 +55,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Application services
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<IShiftService, ShiftService>();
 
 var app = builder.Build();
 

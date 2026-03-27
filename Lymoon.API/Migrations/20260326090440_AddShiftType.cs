@@ -1,29 +1,29 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Lymoon.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAppleUserId : Migration
+    public partial class AddShiftType : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "AppleUserId",
-                table: "AspNetUsers",
+                name: "ShiftType",
+                table: "shifts",
                 type: "text",
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "AppleUserId",
-                table: "AspNetUsers");
+                name: "ShiftType",
+                table: "shifts");
         }
     }
 }

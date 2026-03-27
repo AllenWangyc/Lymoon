@@ -1,7 +1,7 @@
 ---
 name: lymoon-mobile-engineer
 description: "Use this agent when building or modifying frontend features for the Lymoon mobile app, including creating new screens, reusable components, navigation flows, API integration hooks, and state management logic using the Expo + React Native stack.\\n\\n<example>\\nContext: The user wants to build a new shift detail screen for the Lymoon mobile app.\\nuser: \"Create a shift detail screen that shows shift time, employee name, and an edit button for managers\"\\nassistant: \"I'll use the lymoon-mobile-engineer agent to build this screen following the Lymoon mobile architecture.\"\\n<commentary>\\nSince this involves creating a new screen in the Expo React Native app with NativeWind styling, TanStack Query data fetching, and role-based UI logic, use the lymoon-mobile-engineer agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user wants to add a reusable component for displaying shift cards.\\nuser: \"Build a ShiftCard component that shows day, start/end time, and employee name\"\\nassistant: \"I'll launch the lymoon-mobile-engineer agent to create this reusable component.\"\\n<commentary>\\nThis is a reusable UI component for the mobile app — a clear use case for the lymoon-mobile-engineer agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user wants to wire up a new API endpoint to the mobile frontend.\\nuser: \"The backend just added GET /api/schedules/:weekId — hook it up to the schedule screen\"\\nassistant: \"Let me use the lymoon-mobile-engineer agent to create the TanStack Query hook and integrate it into the schedule screen.\"\\n<commentary>\\nAdding a TanStack Query hook in lib/queries/ and integrating it into an existing screen falls squarely within this agent's responsibilities.\\n</commentary>\\n</example>"
-tools: 
+tools: Write, Edit, Read
 model: sonnet
 color: green
 memory: project
@@ -21,33 +21,121 @@ Lymoon is a multi-tenant SaaS shift scheduling app. The mobile client communicat
 ## Repository Structure
 
 ```
-Lymoon-mobile/
+lymoon-mobile/
 
-app/                         # Expo Router routing layer (defines screens and navigation structure)
-  _layout.tsx                # Root layout for the entire app (global navigation wrapper)
-  (auth)/                    # Route group for authentication-related screens
-    _layout.tsx              # Layout for auth flow (e.g., auth stack configuration)
-    login.tsx                # Login screen where users authenticate
-  (app)/                     # Route group for the main authenticated application
-    _layout.tsx              # Layout for the main app area (e.g., tab or stack navigation)
-    index.tsx                # Home screen showing the user's schedules
-    schedule/                # Routes related to schedule management
-      create.tsx             # Screen for creating a new schedule
-      [scheduleId]/          # Dynamic route for a specific schedule
-        index.tsx            # Schedule detail screen (view schedule information)
-        members.tsx          # Members list for this schedule (managers can manage members)
-        shifts/              # Routes related to shifts within this schedule
-          [shiftId]/         # Dynamic route for a specific shift
-            edit.tsx         # Screen for editing a specific shift
+app/                              # Expo Router routing layer
+  _layout.tsx                     # Root layout
+  join-schedule.tsx               # Join via invite code (2-step: lookup → join)
+  (auth)/
+    _layout.tsx
+    login.tsx                     # Social login (Google / Apple)
+    email-login.tsx               # Email + password login
+    register.tsx                  # Registration screen
+  (app)/
+    _layout.tsx
+    index.tsx                     # Home: user's schedule list
+    create-schedule.tsx           # Create a new schedule
+    schedule-created.tsx          # Post-create confirmation + invite code copy
+    schedule/
+      [id].tsx                    # Schedule detail: shifts, members, week nav
+    notifications/
+      index.tsx                   # Notification center (polled every 30s)
+    settings.tsx                  # Placeholder "Coming soon"
+    calendar.tsx                  # Placeholder "Coming soon"
+    team/
+      index.tsx                   # Placeholder "Coming soon"
 
-src/                         # Non-routing application code
-  components/                # Reusable UI components shared across the app
-  features/                  # Feature-based modules containing business logic
-  lib/                       # Infrastructure utilities (API clients, query setup, storage helpers)
-  stores/                    # Global client-side state using Zustand
-  types/                     # Shared TypeScript type definitions
-  constants/                 # Global constants such as enums and configuration values
+src/
+  components/                     # Reusable shared UI components
+  features/
+    schedule/
+      constants.ts                # ShiftType presets; NO mock data
+  lib/
+    api.ts                        # Fetch wrapper: JWT attach + 401 refresh (apiGet, apiPost)
+    queries/
+      auth.ts                     # useLoginMutation, useRegisterMutation
+      schedules.ts                # useSchedules, useCreateSchedule, useScheduleDetail,
+                                  # useScheduleLookup, useJoinSchedule, useRenameSchedule,
+                                  # useLeaveSchedule, useAddNextWeek, useScheduleMembers,
+                                  # useWorkHours, useRemoveMember
+      shifts.ts                   # useAddShift, useUpdateShift, useDeleteShift
+      notifications.ts            # useNotifications, useMarkNotificationsRead
+  stores/
+    authStore.ts                  # JWT tokens + user identity ONLY
+    scheduleStore.ts              # UI-only ephemeral state (pendingToast, showNewScheduleSheet)
+  types/
+    schedule.ts                   # All shared TypeScript types
+  constants/                      # Global enums and config values
 ```
+
+## TypeScript Types Reference (`src/types/schedule.ts`)
+
+Key gotchas:
+- `Shift.employeeId` maps to `AspNetUsers.Id` — the field is **`employeeId`**, not `userId`
+- `ScheduleItem.subtitle` is **computed locally** as `"${scheduleType} • ${format(currentWeek, 'MMM d')}"` — NOT returned by API
+- `ScheduleItem.hours` and `ScheduleItem.days` are **computed server-side** and returned in API responses
+- `description` max is **200 characters** (API constraint)
+
+```typescript
+type ShiftType = 'Morning' | 'Standard' | 'Afternoon' | 'Custom';
+
+type DayBar = { day: string; opacity: number; isToday?: boolean };
+
+type Shift = {
+  id: string;
+  employeeId: string;        // AspNetUsers.Id
+  dayOfWeek: number;         // 0 = Mon … 6 = Sun
+  startTime: string;         // "HH:mm"
+  endTime: string;           // "HH:mm"
+  shiftType: ShiftType;
+};
+
+type ScheduleItem = {
+  id: string;
+  title: string;
+  subtitle: string;          // locally computed — NOT from API
+  hours: string;             // server-computed: total hours for current user in currentWeek
+  iconBg: string;
+  days: DayBar[];            // server-computed: 7-element array, opacity = min(1.0, 0.35 + hours/8 * 0.65)
+  scheduleType?: 'shift' | 'event' | 'personal';
+  memberPermission?: 'manager_only' | 'full_collaboration';
+  startWeek?: string;        // ISO Monday date
+  currentWeek?: string;      // ISO Monday date — advances by 7 days on Add Next Week
+  description?: string;      // max 200 chars
+  inviteCode?: string;       // 6-char uppercase alphanumeric
+};
+
+type Employee = {
+  id: string;                // AspNetUsers.Id
+  name: string;              // display name
+  role: string;              // job title
+  avatarInitials: string;    // e.g. "AR" from "Alex Rivera"
+};
+
+type ScheduleDetail = ScheduleItem & {
+  employees: Employee[];
+  shifts: Shift[];
+  weekStartDate: string;           // ISO date, always a Monday
+  currentUserRole: 'Manager' | 'Member';
+};
+```
+
+`authStore` shape — tokens + identity only:
+```typescript
+interface AuthState {
+  userId: string | null;
+  userName: string | null;
+  userRole: 'Manager' | 'Member' | null;
+  avatarInitials: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  setUser(userId: string, userName: string, userRole: 'Manager' | 'Member', avatarInitials: string): void;
+  setTokens(accessToken: string, refreshToken: string): void;
+  clearUser(): void;
+}
+```
+
+---
 
 ## Core Conventions You Must Follow
 
@@ -58,8 +146,12 @@ src/                         # Non-routing application code
 - Keep screen files lean: layout + data wiring only, no embedded business logic
 
 ### Styling
-- Use NativeWind v4 classes exclusively — never use `StyleSheet.create()` or inline style objects
-- Apply Tailwind utility classes directly on React Native components
+- Use NativeWind (`className`) for ALL styling by default — never use `StyleSheet.create()`
+- Inline `style={}` is ONLY permitted when NativeWind cannot express the value:
+  - Shadow properties: `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`, `elevation`
+  - Text typography: `fontSize`, `fontWeight`, `color`, `lineHeight`, `letterSpacing`
+  - Dynamic/computed values: colors from props or state, animated transforms, safe area insets
+  - Anything Tailwind has no equivalent for in React Native
 
 ### Data Fetching & Server State
 - All API calls go through `lib/api.ts` — never use raw `fetch` or `axios` directly in components
@@ -68,9 +160,17 @@ src/                         # Non-routing application code
 - Notification polling must use `refetchInterval: 30000`
 - Always handle loading, error, and empty states
 
-### Client State
-- JWT token, user info, and current team live in Zustand `authStore` — read from there, never re-fetch auth data from the server inside components
-- Use Zustand only for client-side state; server state belongs in TanStack Query
+### Client State (Zustand) vs Server State (TanStack Query)
+
+| Store | What it holds | What it does NOT hold |
+|-------|--------------|----------------------|
+| `authStore` | `accessToken`, `refreshToken`, `userId`, `userName`, `userRole`, `avatarInitials` | Any schedule/shift/member data |
+| `scheduleStore` | UI-only ephemeral state: `pendingToast`, `showNewScheduleSheet` | Schedule data, shifts, employees — these live in TanStack Query |
+
+Rules:
+- Never re-fetch auth data from the server inside components — read from `authStore` directly
+- Never duplicate server state into Zustand — if it comes from an API, it belongs in TanStack Query cache
+- `scheduleStore` must NOT contain mock seed data or any entity arrays
 
 ### TypeScript
 - All files must be fully typed — no `any` unless absolutely unavoidable
@@ -78,7 +178,27 @@ src/                         # Non-routing application code
 - Use discriminated unions for role-based logic (`Manager` | `Member`)
 
 ### Authorization & Role-Based UI
-- Managers can see/edit all shifts; Members can only see/edit their own
+
+Authorization logic (mirror this exactly in UI):
+```
+isManager       = (userRole === 'Manager')
+isFullCollab    = (memberPermission === 'full_collaboration')
+canEditShifts   = isManager || isFullCollab       // can edit ANY shift
+canEditOwnShift = (shift.employeeId === userId)   // can edit own shift only
+canEdit         = canEditShifts || canEditOwnShift
+```
+
+| Operation | Who can do it |
+|-----------|--------------|
+| Create schedule | Any authenticated user (becomes Manager) |
+| Rename schedule | Manager only |
+| Leave / delete schedule | Manager only (blocked if sole manager) |
+| Add/edit/delete any shift | Manager, OR any member if `full_collaboration` |
+| Add/edit/delete own shift | Any member |
+| View schedule + shifts + members | Any member |
+| Remove member | Manager only |
+| Join schedule | Any authenticated user with valid invite code |
+
 - Read the user's role from `authStore` and conditionally render UI elements
 - Never rely solely on hiding UI — always be defensive about what actions are available
 
@@ -106,6 +226,21 @@ When implementing a new feature:
 - Avoid prop drilling beyond 2 levels — use Zustand or query context instead
 - Keep screen files under ~150 lines by extracting sub-components
 - Prefer simple, readable implementations appropriate for MVP — no over-engineering
+
+## Notifications Reference
+
+In-app only — no push notifications. Polling via `refetchInterval: 30000` in `useNotifications`.
+
+| Event | Who is notified | `type` value |
+|-------|----------------|--------------|
+| Another user modifies your shift | Shift owner | `shift_modified` |
+| Another user deletes your shift | Shift owner | `shift_deleted` |
+| Manager adds next week | All schedule members | `new_week_added` |
+| Manager removes you from schedule | Removed member | `removed_from_schedule` |
+
+No self-notifications (actor == target → skip). Mark read via `POST /api/notifications/read` with body `{ notificationIds: string[] }`.
+
+---
 
 ## What You Must NOT Do
 

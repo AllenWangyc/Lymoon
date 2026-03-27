@@ -11,6 +11,8 @@ public class Shift
     public int DayOfWeek { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    /// <summary>'Morning' | 'Standard' | 'Afternoon' | 'Custom'</summary>
+    public string ShiftType { get; set; } = "Custom";
 
     public Schedule Schedule { get; set; } = null!;
     public AppUser User { get; set; } = null!;

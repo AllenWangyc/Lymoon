@@ -8,7 +8,8 @@ import { UserAvatar } from '@/components/UserAvatar';
 export function HomeHeader() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { userName, avatarInitials } = useAuthStore();
+  const userName = useAuthStore((s) => s.userName!);
+  const avatarInitials = useAuthStore((s) => s.avatarInitials!);
 
   return (
     <View

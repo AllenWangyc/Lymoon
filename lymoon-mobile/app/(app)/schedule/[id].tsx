@@ -30,7 +30,8 @@ export default function ScheduleDetailScreen() {
   const { showToast } = useToast();
 
   // Auth
-  const { userId, userRole } = useAuthStore();
+  const userId = useAuthStore((s) => s.userId!);
+  const userRole = useAuthStore((s) => s.userRole);
   const isManager = userRole === 'Manager';
 
   // Schedule store
