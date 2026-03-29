@@ -7,6 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -16,7 +17,8 @@ import { CategoryPicker } from '../../src/features/schedule/components/CategoryP
 import { PermissionPicker } from '../../src/features/schedule/components/PermissionPicker';
 import { WeekPickerBottomSheet } from '../../src/components/WeekPickerBottomSheet';
 import { PageHeader } from '../../src/components/PageHeader';
-import { useScheduleStore } from '../../src/stores/scheduleStore';
+import { useCreateSchedule } from '@/lib/queries/schedules';
+import { useToast } from '@/hooks/useToast';
 
 function formatWeekRange(date: Date): string {
   const end = endOfWeek(date, { weekStartsOn: 1 });
@@ -26,7 +28,8 @@ function formatWeekRange(date: Date): string {
 }
 
 export default function CreateScheduleScreen() {
-  const { addSchedule } = useScheduleStore();
+  const createSchedule = useCreateSchedule();
+  const { showToast } = useToast();
 
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState(false);
@@ -57,23 +60,26 @@ export default function CreateScheduleScreen() {
       setNameError(true);
       return;
     }
-
-    const newId = Math.random().toString(36).slice(2);
-
-    addSchedule({
-      id: newId,
-      title: trimmedName,
-      subtitle: `Draft · ${format(weekStart, 'MMM d')}`,
-      hours: '0',
-      iconBg: 'rgba(182,236,19,0.1)',
-      days: [],
-      scheduleType,
-      memberPermission,
-      startWeek: format(weekStart, 'yyyy-MM-dd'),
-      description: description.trim() || undefined,
-    });
-
-    router.replace(`/schedule-created?id=${newId}`);
+    createSchedule.mutate(
+      {
+        title: trimmedName,
+        description: description.trim() || null,
+        scheduleType,
+        startWeek: format(weekStart, 'yyyy-MM-dd'),
+        memberPermission,
+        iconBg: 'rgba(182,236,19,0.1)',
+      },
+      {
+        onSuccess: (schedule) => {
+          router.replace(
+            `/schedule-created?id=${schedule.id}&inviteCode=${schedule.inviteCode}&title=${encodeURIComponent(schedule.title)}`,
+          );
+        },
+        onError: (err) => {
+          showToast(err.message ?? 'Failed to create schedule', 'error');
+        },
+      },
+    );
   }
 
   return (
@@ -235,11 +241,15 @@ export default function CreateScheduleScreen() {
         <TouchableOpacity
           onPress={handleCreate}
           activeOpacity={0.85}
-          disabled={!name.trim()}
+          disabled={!name.trim() || createSchedule.isPending}
           className="bg-[#b6ec13] py-4 rounded-3xl items-center justify-center"
-          style={!name.trim() ? { opacity: 0.4 } : undefined}
+          style={!name.trim() || createSchedule.isPending ? { opacity: 0.4 } : undefined}
         >
-          <Text className="text-[#0f172a] font-bold text-base">Create</Text>
+          {createSchedule.isPending ? (
+            <ActivityIndicator size="small" color="#0f172a" />
+          ) : (
+            <Text className="text-[#0f172a] font-bold text-base">Create</Text>
+          )}
         </TouchableOpacity>
       </View>
 
