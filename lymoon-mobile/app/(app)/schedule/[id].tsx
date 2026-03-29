@@ -295,7 +295,9 @@ export default function ScheduleDetailScreen() {
         onClose={() => setViewMembersVisible(false)}
         scheduleId={id as string}
         isManager={isManager}
+        currentUserId={userId}
         onRemoveSuccess={() => showToast('Member removed', 'success')}
+        onRemoveError={(msg) => showToast(msg, 'error')}
       />
 
       <LeaveScheduleSheet

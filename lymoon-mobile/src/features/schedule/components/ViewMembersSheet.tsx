@@ -14,7 +14,9 @@ type Props = {
   onClose: () => void;
   scheduleId: string;
   isManager: boolean;
+  currentUserId: string;
   onRemoveSuccess?: () => void;
+  onRemoveError?: (msg: string) => void;
 };
 
 // ─── Week helpers ────────────────────────────────────────────────────────────
@@ -51,7 +53,7 @@ function WorkHoursView({ employee, scheduleId, onBack }: WorkHoursViewProps) {
   // Map API work hours (keyed by weekStart) onto the computed week ranges
   const weekData = weeks.map((week) => {
     const isoStart = format(week.start, 'yyyy-MM-dd');
-    const match = workHours.find((wh) => wh.weekStart.startsWith(isoStart));
+    const match = workHours.find((wh) => wh.weekStart.slice(0, 10) === isoStart);
     return {
       label: formatWeekLabel(week.start, week.end, week.isCurrent),
       hours: match?.totalHours ?? 0,
@@ -158,7 +160,7 @@ type MemberCardProps = {
 };
 
 function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
-  const buttonRef = useRef<View>(null);
+  const buttonRef = useRef<TouchableOpacity>(null);
   const isOwnerManager = employee.role === 'Manager';
 
   function handleMenuPress() {
@@ -207,7 +209,7 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
 
       {/* Three-dot button */}
       <TouchableOpacity
-        ref={buttonRef as any}
+        ref={buttonRef}
         onPress={handleMenuPress}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         className="w-8 h-8 rounded-full items-center justify-center"
@@ -220,13 +222,13 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
 
 // ─── ViewMembersSheet ────────────────────────────────────────────────────────
 
-export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, onRemoveSuccess }: Props) {
+export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, currentUserId, onRemoveSuccess, onRemoveError }: Props) {
   const [menuState, setMenuState] = useState<MenuState>(null);
   const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
   const [workHoursEmployee, setWorkHoursEmployee] = useState<Employee | null>(null);
   const containerRef = useRef<View>(null);
 
-  const { data: members = [], isLoading: membersLoading } = useScheduleMembers(scheduleId);
+  const { data: members = [], isLoading: membersLoading, isError: membersError } = useScheduleMembers(scheduleId);
   const removeMember = useRemoveMember(scheduleId);
 
   // Convert API member shape to Employee type
@@ -250,7 +252,7 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, onRe
 
   function handleRemovePress(employee: Employee) {
     closeMenu();
-    setTimeout(() => setRemoveTarget(employee), 160);
+    setRemoveTarget(employee);
   }
 
   function handleRemoveConfirm() {
@@ -259,9 +261,8 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, onRe
     setRemoveTarget(null);
     removeMember.mutate(targetId, {
       onSuccess: () => onRemoveSuccess?.(),
-      onError: () => {
-        // Error is surfaced by the parent via showToast if needed;
-        // the sheet stays open so the manager can retry or dismiss.
+      onError: (err: Error) => {
+        onRemoveError?.(err.message ?? 'Failed to remove member');
       },
     });
   }
@@ -285,6 +286,12 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, onRe
             {membersLoading ? (
               <View className="flex-1 items-center justify-center">
                 <ActivityIndicator size="small" color="#b6ec13" />
+              </View>
+            ) : membersError ? (
+              <View className="flex-1 items-center justify-center px-6">
+                <Text style={{ fontSize: 14, color: '#ef4444', textAlign: 'center' }}>
+                  Failed to load members.
+                </Text>
               </View>
             ) : employees.length === 0 ? (
               <View className="flex-1 items-center justify-center px-6">
@@ -329,7 +336,7 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, onRe
                       },
                     },
                   ]}
-                  destructiveItem={isManager ? {
+                  destructiveItem={isManager && menuState.employee.id !== currentUserId ? {
                     key: 'remove',
                     label: 'Remove',
                     icon: 'person-remove-outline',

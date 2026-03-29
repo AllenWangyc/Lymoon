@@ -189,6 +189,9 @@ export function useRemoveMember(scheduleId: string) {
   return useMutation({
     mutationFn: (userId: string) =>
       apiPost<{ ok: boolean }>(`/schedules/${scheduleId}/members/remove`, { userId }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: scheduleKeys.members(scheduleId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.members(scheduleId) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+    },
   });
 }
