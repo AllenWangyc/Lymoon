@@ -26,6 +26,13 @@ This document defines all API endpoints required by the mobile frontend. It serv
 }
 ```
 
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `email` | Required. Must be a valid email address. |
+| `password` | Required. Min 6 characters, max 100 characters. |
+| `displayName` | Required. Max 50 characters. |
+
 **Response `200`:**
 ```json
 {
@@ -51,6 +58,12 @@ This document defines all API endpoints required by the mobile frontend. It serv
   "password": "string"
 }
 ```
+
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `email` | Required. Must be a valid email address. |
+| `password` | Required. |
 
 **Response `200`:**
 ```json
@@ -109,7 +122,7 @@ Returns all schedules the authenticated user is a member of. All computed fields
     "memberPermission": "manager_only | full_collaboration",
     "startWeek": "2026-03-16",     // ISO Monday date — the week the schedule was created for
     "currentWeek": "2026-03-23",   // ISO Monday date — the latest active week (advances on Add Next Week)
-    "description": "string | null", // optional, max 20 words, user-authored
+    "description": "string | null", // optional, max 200 characters, user-authored
     "inviteCode": "string"         // 6-char uppercase alphanumeric
   }
 ]
@@ -127,9 +140,20 @@ Returns all schedules the authenticated user is a member of. All computed fields
   "description": "string | null",
   "scheduleType": "shift | event | personal",
   "startWeek": "2026-03-16",
-  "memberPermission": "manager_only | full_collaboration"
+  "memberPermission": "manager_only | full_collaboration",
+  "iconBg": "string"
 }
 ```
+
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `title` | Required. Max 100 characters. |
+| `description` | Optional. Max 200 characters. |
+| `scheduleType` | Required. Must be one of: `shift`, `event`, `personal`. |
+| `startWeek` | Required. ISO date string (`YYYY-MM-DD`). Must be a Monday. |
+| `memberPermission` | Required. Must be one of: `manager_only`, `full_collaboration`. |
+| `iconBg` | Required. CSS color string (e.g. `"rgba(182,236,19,0.1)"`). |
 
 **Response `200`:**
 ```json
@@ -211,6 +235,11 @@ Manager only.
 }
 ```
 
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `title` | Required. Max 100 characters. |
+
 **Response `200`:**
 ```json
 { "ok": true }
@@ -244,7 +273,7 @@ Returns a preview of the schedule before the user joins. Used in the Join Schedu
 **Query params:**
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
-| `code` | `string` | Yes | 6-char uppercase alphanumeric invite code |
+| `code` | `string` | Yes | Exactly 6 characters, uppercase alphanumeric (e.g. `"AB12CD"`). Returns `404` if not found, `409` if already a member. |
 
 **Response `200`:**
 ```json
@@ -278,6 +307,11 @@ Looks up the schedule by invite code and adds the authenticated user as a Member
   "inviteCode": "string"
 }
 ```
+
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `inviteCode` | Required. Exactly 6 characters, uppercase alphanumeric (e.g. `"AB12CD"`). |
 
 **Response `200` — schedule found and joined:**
 ```json
@@ -403,6 +437,15 @@ Manager only.
 }
 ```
 
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `employeeId` | Required. Must be a valid user ID that is a member of the schedule. |
+| `dayOfWeek` | Required. Integer 0–6 (0 = Mon, 6 = Sun). |
+| `startTime` | Required. 24-hour `"HH:mm"` format. Must be earlier than `endTime`. |
+| `endTime` | Required. 24-hour `"HH:mm"` format. Must be later than `startTime`. |
+| `shiftType` | Optional. One of: `Morning`, `Standard`, `Afternoon`, `Custom`. Defaults to `Custom`. |
+
 **Response `200`:**
 ```json
 {
@@ -428,6 +471,13 @@ Manager only.
   "shiftType": "Morning | Standard | Afternoon | Custom"
 }
 ```
+
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `startTime` | Required. 24-hour `"HH:mm"` format. Must be earlier than `endTime`. |
+| `endTime` | Required. 24-hour `"HH:mm"` format. Must be later than `startTime`. |
+| `shiftType` | Optional. One of: `Morning`, `Standard`, `Afternoon`, `Custom`. Defaults to `Custom`. |
 
 **Response `200`:**
 ```json
@@ -484,6 +534,11 @@ Polled every 30 seconds by the mobile client via TanStack Query `refetchInterval
   "notificationIds": ["string", "string"]
 }
 ```
+
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `notificationIds` | Required. Non-empty array of notification ID strings. IDs not belonging to the authenticated user are silently ignored. |
 
 **Response `200`:**
 ```json

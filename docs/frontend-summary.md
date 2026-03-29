@@ -106,8 +106,8 @@ interface ScheduleState {
 
 | Screen | Action | API Call | Status |
 |--------|--------|----------|--------|
-| `(auth)/login.tsx` | Google login | not yet designed | TODO |
-| `(auth)/login.tsx` | Apple login | not yet designed | TODO |
+| `(auth)/login.tsx` | Google login | `POST /api/auth/google` body: `{ idToken }` | TODO |
+| `(auth)/login.tsx` | Apple login | `POST /api/auth/apple` body: `{ idToken }` | TODO |
 | `(auth)/login.tsx` | Navigate to email login | — (local nav) | — |
 | `(auth)/email-login.tsx` | Sign in | `POST /api/auth/login` | TODO (hardcoded console.log) |
 | `(auth)/email-login.tsx` | Navigate to register | `POST /api/auth/register` | TODO (screen not built) |
@@ -137,7 +137,8 @@ interface ScheduleState {
   "description": "string | null (max 20 words)",
   "scheduleType": "shift | event | personal",
   "startWeek": "YYYY-MM-DD (ISO Monday)",
-  "memberPermission": "manager_only | full_collaboration"
+  "memberPermission": "manager_only | full_collaboration",
+  "iconBg": "string (color token, e.g. \"#FF6B6B\", chosen by client and stored as-is)"
 }
 ```
 
@@ -149,7 +150,7 @@ Two-step flow:
 
 | Step | Action | API Call | Status |
 |------|--------|----------|--------|
-| 1. Search | Look up schedule by invite code | `GET /api/schedules/lookup?code={inviteCode}` | **MISSING from API.md** |
+| 1. Search | Look up schedule by invite code | `GET /api/schedules/lookup?code={inviteCode}` | TODO (mock setTimeout) |
 | 2. Join | Join the found schedule | `POST /api/schedules/join` | TODO (mock setTimeout) |
 
 **Lookup response needed by frontend:**
@@ -206,6 +207,15 @@ canEdit = canEditShifts || canEditOwnShift
 
 ---
 
+### Notifications (`(app)/notifications` — polling)
+
+| Action | API Call | Status |
+|--------|----------|--------|
+| Load notifications (polled every 30s) | `GET /api/notifications` | TODO |
+| Mark notifications as read | `POST /api/notifications/read` body: `{ notificationIds: string[] }` | TODO |
+
+---
+
 ### Settings & Calendar (`(app)/settings.tsx`, `(app)/calendar.tsx`)
 > Both screens are placeholder "Coming soon" — no API calls yet.
 
@@ -216,9 +226,7 @@ canEdit = canEditShifts || canEditOwnShift
 
 ## 3. API Gaps (Missing from `docs/API.md`)
 
-| # | Missing Endpoint | Needed By | Notes |
-|---|-----------------|-----------|-------|
-| 1 | `POST /api/auth/register` | `email-login.tsx` | Register screen not built yet but referenced |
+> All previously identified gaps are now implemented. No missing endpoints.
 
 ---
 
@@ -232,7 +240,7 @@ canEdit = canEditShifts || canEditOwnShift
 | `schedules.invite_code` | `ScheduleItem.inviteCode` | 6-char uppercase alphanumeric |
 | `schedules.description` | `ScheduleItem.description` | optional, max 20 words, user-authored |
 | `schedules.current_week` | `ScheduleItem.currentWeek` | advances by 7 days each time Manager adds next week |
-| `team_members.role` | `AuthState.userRole` | "Manager" \| "Member" |
+| `schedule_members.role` | `AuthState.userRole` | "Manager" \| "Member" |
 | `shifts.user_id` | `Shift.userId` | |
 | `shifts.day_of_week` | `Shift.dayOfWeek` | 0=Mon … 6=Sun |
 | `shifts.start_time` | `Shift.startTime` | "HH:mm" string |
@@ -250,7 +258,7 @@ These fields are computed server-side and returned in API responses:
 |-------|-------|
 | `ScheduleItem.hours` | Sum of `endTime - startTime` for current user's shifts in `currentWeek` |
 | `ScheduleItem.days` | 7-element array for `currentWeek`; opacity per day = min(1.0, 0.35 + hours/8 * 0.65) for current user |
-| `ScheduleDetail.currentUserRole` | Look up `team_members.role` for the authenticated user |
+| `ScheduleDetail.currentUserRole` | Look up `schedule_members.role` for the authenticated user |
 | `Employee.avatarInitials` | First letter of first + last name (e.g. "Alex Rivera" → "AR") |
 
 ---

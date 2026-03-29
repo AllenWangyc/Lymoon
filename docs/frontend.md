@@ -15,6 +15,19 @@ When designing a screen or feature that will eventually need backend data, recor
 - If a new endpoint is needed, add it to `docs/API.md` with its method, path, request body, and expected response shape.
 - Mark the corresponding frontend code with a `// TODO: replace with <hookName> TanStack Query hook` comment so the integration point is easy to find later.
 
+## Members Sheet Pattern
+
+`ViewMembersSheet` owns its own data fetching — it accepts a `scheduleId` prop and calls `useScheduleMembers`, `useWorkHours`, and `useRemoveMember` internally. The parent screen (`[id].tsx`) does not pass an `employees` array; the sheet manages its own member state. This keeps schedule-membership data concerns encapsulated in one component.
+
+`WorkHoursView` maps API `{ weekStart, totalHours }` records onto the four computed week ranges by comparing `wh.weekStart.startsWith(isoStart)`. Weeks with no API entry default to 0 hours.
+
+## Schedule Detail Screen Patterns
+
+- `currentUserRole` (Manager | Member) is read from `ScheduleDetail` returned by `useScheduleDetail`, not from `authStore.userRole`. Role is schedule-scoped, so the API response is the authoritative source on the detail screen.
+- The `weekStart` query param passed to `useScheduleDetail` is computed from `weekOffset` state (integer) applied to the ISO Monday of the current week. This keeps a single source of truth for the visible week.
+- `useAddNextWeek` advances `weekOffset` on `onSuccess` (in addition to invalidating the TanStack Query cache) so the UI immediately navigates forward to the new week.
+- Leave and rename mutations call `showToast` inside their `onSuccess`/`onError` callbacks, keeping toast logic co-located with the mutation call site rather than in the mutation hook itself.
+
 ## Key Conventions
 - Use NativeWind classes for all styling — no inline `StyleSheet` objects
 - State lives in `src/stores/` (Zustand) — currently `scheduleStore.ts`

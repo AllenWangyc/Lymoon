@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
 import { BottomSheet } from '@/components/BottomSheet';
 import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
 import { OptionsMenuCard } from '@/components/OptionsMenuCard';
 import { UserAvatar } from '@/components/UserAvatar';
-import { MOCK_WORK_HOURS_HISTORY } from '@/features/schedule/constants';
+import { useScheduleMembers, useWorkHours, useRemoveMember } from '@/lib/queries/schedules';
 import type { Employee } from '@/types/schedule';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  employees: Employee[];
+  scheduleId: string;
   isManager: boolean;
-  onViewWorkHours?: (employee: Employee) => void;
-  onRemoveMember?: (employee: Employee) => void;
+  onRemoveSuccess?: () => void;
 };
 
 // ─── Week helpers ────────────────────────────────────────────────────────────
@@ -41,19 +40,26 @@ function formatWeekLabel(start: Date, end: Date, isCurrent: boolean): string {
 
 type WorkHoursViewProps = {
   employee: Employee;
+  scheduleId: string;
   onBack: () => void;
 };
 
-function WorkHoursView({ employee, onBack }: WorkHoursViewProps) {
+function WorkHoursView({ employee, scheduleId, onBack }: WorkHoursViewProps) {
   const weeks = computeWeekRanges();
-  const rawHours = MOCK_WORK_HOURS_HISTORY[employee.id] ?? [0, 0, 0, 0];
-  const maxHours = Math.max(...rawHours, 1);
+  const { data: workHours = [], isLoading } = useWorkHours(scheduleId, employee.id);
 
-  const weekData = weeks.map((week, i) => ({
-    label: formatWeekLabel(week.start, week.end, week.isCurrent),
-    hours: rawHours[i] ?? 0,
-    isCurrent: week.isCurrent,
-  }));
+  // Map API work hours (keyed by weekStart) onto the computed week ranges
+  const weekData = weeks.map((week) => {
+    const isoStart = format(week.start, 'yyyy-MM-dd');
+    const match = workHours.find((wh) => wh.weekStart.startsWith(isoStart));
+    return {
+      label: formatWeekLabel(week.start, week.end, week.isCurrent),
+      hours: match?.totalHours ?? 0,
+      isCurrent: week.isCurrent,
+    };
+  });
+
+  const maxHours = Math.max(...weekData.map((w) => w.hours), 1);
 
   return (
     <View className="h-[456px]">
@@ -76,61 +82,67 @@ function WorkHoursView({ employee, onBack }: WorkHoursViewProps) {
       </View>
 
       {/* Content */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 48 }}
-      >
-        {/* Section heading + badge */}
-        <View className="flex-row items-center justify-between mb-8">
-          <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', letterSpacing: -0.45 }}>
-            Work Hours History
-          </Text>
-          <View
-            className="px-3 py-1 rounded-full border border-[#b6ec13]"
-            style={{ backgroundColor: 'rgba(182,236,19,0.1)' }}
-          >
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: '700',
-                color: '#0f172a',
-                letterSpacing: 0.6,
-                textTransform: 'uppercase',
-              }}
-            >
-              Last 30 Days
+      {isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="small" color="#b6ec13" />
+        </View>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 48 }}
+        >
+          {/* Section heading + badge */}
+          <View className="flex-row items-center justify-between mb-8">
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', letterSpacing: -0.45 }}>
+              Work Hours History
             </Text>
-          </View>
-        </View>
-
-        {/* Bar chart rows */}
-        <View style={{ gap: 40 }}>
-          {weekData.map((week) => (
-            <View key={week.label} style={{ gap: 8 }}>
-              {/* Label row */}
-              <View className="flex-row items-center justify-between">
-                <Text
-                  style={{ fontSize: 14, fontWeight: '600', color: '#475569' }}
-                  numberOfLines={1}
-                  className="flex-1 pr-4"
-                >
-                  {week.label}
-                </Text>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#0f172a' }}>
-                  {week.hours % 1 === 0 ? `${week.hours}h` : `${week.hours}h`}
-                </Text>
-              </View>
-              {/* Progress bar */}
-              <View className="h-3 bg-slate-100 rounded-full w-full overflow-hidden">
-                <View
-                  className="h-full bg-[#b6ec13] rounded-full"
-                  style={{ width: `${(week.hours / maxHours) * 100}%` }}
-                />
-              </View>
+            <View
+              className="px-3 py-1 rounded-full border border-[#b6ec13]"
+              style={{ backgroundColor: 'rgba(182,236,19,0.1)' }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  letterSpacing: 0.6,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Last 30 Days
+              </Text>
             </View>
-          ))}
-        </View>
-      </ScrollView>
+          </View>
+
+          {/* Bar chart rows */}
+          <View style={{ gap: 40 }}>
+            {weekData.map((week) => (
+              <View key={week.label} style={{ gap: 8 }}>
+                {/* Label row */}
+                <View className="flex-row items-center justify-between">
+                  <Text
+                    style={{ fontSize: 14, fontWeight: '600', color: '#475569' }}
+                    numberOfLines={1}
+                    className="flex-1 pr-4"
+                  >
+                    {week.label}
+                  </Text>
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: '#0f172a' }}>
+                    {`${week.hours}h`}
+                  </Text>
+                </View>
+                {/* Progress bar */}
+                <View className="h-3 bg-slate-100 rounded-full w-full overflow-hidden">
+                  <View
+                    className="h-full bg-[#b6ec13] rounded-full"
+                    style={{ width: `${(week.hours / maxHours) * 100}%` }}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -208,11 +220,22 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
 
 // ─── ViewMembersSheet ────────────────────────────────────────────────────────
 
-export function ViewMembersSheet({ visible, onClose, employees, isManager, onRemoveMember }: Props) {
+export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, onRemoveSuccess }: Props) {
   const [menuState, setMenuState] = useState<MenuState>(null);
   const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
   const [workHoursEmployee, setWorkHoursEmployee] = useState<Employee | null>(null);
   const containerRef = useRef<View>(null);
+
+  const { data: members = [], isLoading: membersLoading } = useScheduleMembers(scheduleId);
+  const removeMember = useRemoveMember(scheduleId);
+
+  // Convert API member shape to Employee type
+  const employees: Employee[] = members.map((m) => ({
+    id: m.id,
+    name: m.name,
+    role: m.scheduleRole,
+    avatarInitials: m.avatarInitials,
+  }));
 
   useEffect(() => {
     if (!visible) {
@@ -231,10 +254,16 @@ export function ViewMembersSheet({ visible, onClose, employees, isManager, onRem
   }
 
   function handleRemoveConfirm() {
-    if (removeTarget) {
-      onRemoveMember?.(removeTarget);
-    }
+    if (!removeTarget) return;
+    const targetId = removeTarget.id;
     setRemoveTarget(null);
+    removeMember.mutate(targetId, {
+      onSuccess: () => onRemoveSuccess?.(),
+      onError: () => {
+        // Error is surfaced by the parent via showToast if needed;
+        // the sheet stays open so the manager can retry or dismiss.
+      },
+    });
   }
 
   return (
@@ -248,24 +277,37 @@ export function ViewMembersSheet({ visible, onClose, employees, isManager, onRem
         {workHoursEmployee ? (
           <WorkHoursView
             employee={workHoursEmployee}
+            scheduleId={scheduleId}
             onBack={() => setWorkHoursEmployee(null)}
           />
         ) : (
           <View ref={containerRef} className="h-[456px]">
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={!menuState}
-              contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 12 }}
-            >
-              {employees.map((emp) => (
-                <MemberCard
-                  key={emp.id}
-                  employee={emp}
-                  containerRef={containerRef}
-                  onMenuPress={(employee, top) => setMenuState({ employee, top })}
-                />
-              ))}
-            </ScrollView>
+            {membersLoading ? (
+              <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="small" color="#b6ec13" />
+              </View>
+            ) : employees.length === 0 ? (
+              <View className="flex-1 items-center justify-center px-6">
+                <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+                  No members found.
+                </Text>
+              </View>
+            ) : (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                scrollEnabled={!menuState}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 12 }}
+              >
+                {employees.map((emp) => (
+                  <MemberCard
+                    key={emp.id}
+                    employee={emp}
+                    containerRef={containerRef}
+                    onMenuPress={(employee, top) => setMenuState({ employee, top })}
+                  />
+                ))}
+              </ScrollView>
+            )}
 
             {menuState && (
               <>
@@ -293,6 +335,7 @@ export function ViewMembersSheet({ visible, onClose, employees, isManager, onRem
                     icon: 'person-remove-outline',
                     color: '#ba1a1a',
                     onPress: () => handleRemovePress(menuState.employee),
+                    disabled: removeMember.isPending,
                   } : undefined}
                 />
               </>

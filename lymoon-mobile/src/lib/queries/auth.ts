@@ -1,15 +1,11 @@
 // src/lib/queries/auth.ts
 import { useMutation } from '@tanstack/react-query';
 import { apiPost } from '@/lib/api';
-import { useAuthStore, type UserRole } from '@/stores/authStore';
-
-interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: { id: string; email: string; displayName: string };
-}
+import { useAuthStore } from '@/stores/authStore';
+import type { AuthResponse } from '@/types/auth';
 
 function computeInitials(displayName: string): string {
+  if (!displayName.trim()) return '?';
   const parts = displayName.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -24,7 +20,7 @@ export function useLoginMutation() {
       setUser({
         userId: data.user.id,
         userName: data.user.displayName,
-        userRole: 'Member' as UserRole, // role is per-schedule; authStore holds a fallback
+        userRole: 'Member', // role is per-schedule; authStore holds a fallback
         avatarInitials: computeInitials(data.user.displayName),
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
@@ -42,7 +38,7 @@ export function useRegisterMutation() {
       setUser({
         userId: data.user.id,
         userName: data.user.displayName,
-        userRole: 'Member' as UserRole,
+        userRole: 'Member', // role is per-schedule; authStore holds a fallback
         avatarInitials: computeInitials(data.user.displayName),
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,

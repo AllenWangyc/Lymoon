@@ -18,7 +18,18 @@
 - Auth endpoints live: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/google`, `POST /api/auth/apple`
 - Services: `AuthService`, `JwtService` (interfaces + implementations)
 - DTOs: `DTOs/Auth/` — `RegisterRequest`, `LoginRequest`, `RefreshRequest`, `AuthResponse`, `GoogleSignInRequest`, `AppleSignInRequest`
-- **Next:** Step 3 — Schedules Core
+- Schedules endpoints live: `GET /api/schedules`, `POST /api/schedules`, `GET /api/schedules/{id}`, `POST /api/schedules/{id}/rename`
+- Services: `ScheduleService` (interface + implementation)
+- DTOs: `DTOs/Schedules/` — `ScheduleItemDto`, `ScheduleDetailDto`, `EmployeeDto`, `ShiftDto`, `DayDto`, `CreateScheduleRequest`, `RenameRequest`
+- Helpers: `Helpers/InviteCodeGenerator`, `Helpers/AvatarHelper`
+- Migration `AddShiftType` applied — `shifts.ShiftType` column added
+- Shifts endpoints live: `POST /api/schedules/{id}/shifts`, `POST /api/shifts/{id}/update`, `POST /api/shifts/{id}/delete`
+- Services: `ShiftService` (interface + implementation)
+- DTOs: `DTOs/Shifts/` — `AddShiftRequest`, `UpdateShiftRequest`
+- Step 4 membership endpoints live: `GET /lookup`, `POST /join`, `POST /{id}/leave`, `GET /{id}/members`, `POST /{id}/members/remove`, `POST /{id}/weeks`
+- DTOs added: `LookupResponse`, `JoinRequest`, `JoinResponse`, `MemberDto`, `RemoveMemberRequest`
+- Step 6 complete: Notifications service + controller; Work hours endpoint; ShiftService/ScheduleService wired with notification calls
+- **All backend steps complete.**
 
 ---
 
@@ -278,27 +289,28 @@ Key computed fields the service must produce:
 
 ### Tasks
 
-- [ ] Create `DTOs/Schedules/ScheduleItemDto.cs` (all list fields from API.md)
-- [ ] Create `DTOs/Schedules/ScheduleDetailDto.cs` (list fields + employees + shifts + weekStartDate + currentUserRole)
-- [ ] Create `DTOs/Schedules/EmployeeDto.cs`
-- [ ] Create `DTOs/Schedules/ShiftDto.cs`
-- [ ] Create `DTOs/Schedules/CreateScheduleRequest.cs`
-- [ ] Create `DTOs/Schedules/RenameRequest.cs`
-- [ ] Create `Services/IScheduleService.cs` (interface)
-- [ ] Create `Services/ScheduleService.cs`
+- [x] Create `DTOs/Schedules/ScheduleItemDto.cs` (all list fields from API.md)
+- [x] Create `DTOs/Schedules/ScheduleDetailDto.cs` (list fields + employees + shifts + weekStartDate + currentUserRole)
+- [x] Create `DTOs/Schedules/EmployeeDto.cs`
+- [x] Create `DTOs/Schedules/ShiftDto.cs`
+- [x] Create `DTOs/Schedules/CreateScheduleRequest.cs`
+- [x] Create `DTOs/Schedules/RenameRequest.cs`
+- [x] Create `Services/IScheduleService.cs` (interface)
+- [x] Create `Services/ScheduleService.cs`
   - `GetUserSchedulesAsync(userId)` → list of ScheduleItemDto
   - `CreateScheduleAsync(userId, request)` → ScheduleItemDto (creator becomes Manager, invite code generated)
   - `GetScheduleDetailAsync(scheduleId, userId, weekStart?)` → ScheduleDetailDto or null
   - `RenameScheduleAsync(scheduleId, userId, newTitle)` → bool (checks Manager role)
-- [ ] Create utility `Helpers/InviteCodeGenerator.cs` — generates random 6-char uppercase alphanumeric, retries on collision
-- [ ] Create utility `Helpers/AvatarHelper.cs` — `GetInitials(displayName)`:
+- [x] Create utility `Helpers/InviteCodeGenerator.cs` — generates random 6-char uppercase alphanumeric, retries on collision
+- [x] Create utility `Helpers/AvatarHelper.cs` — `GetInitials(displayName)`:
   - Split on first space: `"Alex Rivera"` → `"AR"`
   - Single-word name: `"Alice"` → `"A"`
   - Empty/null: → `"?"`
-- [ ] `iconBg` is sent by the client in `POST /api/schedules` and stored as-is — no server-side palette logic needed
-- [ ] Create `Controllers/SchedulesController.cs` (thin — calls service, maps result to IActionResult)
-- [ ] Register `IScheduleService` as scoped in `Program.cs`
-- [ ] Authorization guard: `GetScheduleDetailAsync` must verify user is a member of the schedule
+- [x] `iconBg` is sent by the client in `POST /api/schedules` and stored as-is — no server-side palette logic needed
+- [x] Create `Controllers/SchedulesController.cs` (thin — calls service, maps result to IActionResult)
+- [x] Register `IScheduleService` as scoped in `Program.cs`
+- [x] Authorization guard: `GetScheduleDetailAsync` must verify user is a member of the schedule
+- [x] Add `ShiftType` (text, default 'Custom') to `Shift` model + migration `AddShiftType`
 
 ### Verification
 ```bash
@@ -340,19 +352,19 @@ Implements invite code lookup, join, leave, list members, remove member, and "Ad
 
 ### Tasks
 
-- [ ] Create `DTOs/Schedules/LookupResponse.cs` (scheduleName, managerName, memberCount)
-- [ ] Create `DTOs/Schedules/JoinRequest.cs` (inviteCode)
-- [ ] Create `DTOs/Schedules/JoinResponse.cs` (id, title, managerName, memberCount)
-- [ ] Create `DTOs/Schedules/MemberDto.cs` (id, name, role, avatarInitials, scheduleRole)
-- [ ] Create `DTOs/Schedules/RemoveMemberRequest.cs` (userId)
-- [ ] Add to `IScheduleService` + implement in `ScheduleService`:
+- [x] Create `DTOs/Schedules/LookupResponse.cs` (scheduleName, managerName, memberCount)
+- [x] Create `DTOs/Schedules/JoinRequest.cs` (inviteCode)
+- [x] Create `DTOs/Schedules/JoinResponse.cs` (id, title, managerName, memberCount)
+- [x] Create `DTOs/Schedules/MemberDto.cs` (id, name, role, avatarInitials, scheduleRole)
+- [x] Create `DTOs/Schedules/RemoveMemberRequest.cs` (userId)
+- [x] Add to `IScheduleService` + implement in `ScheduleService`:
   - `LookupByCodeAsync(code, userId)` → LookupResponse | 404 | 409-already-member
   - `JoinByCodeAsync(code, userId)` → JoinResponse | 404 | 409
   - `LeaveScheduleAsync(scheduleId, userId)` → bool (blocks if sole manager)
   - `GetMembersAsync(scheduleId, userId)` → IList<MemberDto> (membership check)
   - `RemoveMemberAsync(scheduleId, requesterId, targetUserId)` → bool (Manager only)
   - `AddNextWeekAsync(scheduleId, userId)` → new currentWeek date (Manager only)
-- [ ] Add routes to `SchedulesController`:
+- [x] Add routes to `SchedulesController`:
   - Constrain `{id}` to GUID: `[HttpGet("{id:guid}")]` — this prevents `lookup` from being matched as an id
   - `GET /lookup` uses `[HttpGet("lookup")]` (literal segment, resolved before `{id:guid}`)
   - `POST /join` (no {id})
@@ -360,8 +372,8 @@ Implements invite code lookup, join, leave, list members, remove member, and "Ad
   - `GET /{id}/members`
   - `POST /{id}/members/remove`
   - `POST /{id}/weeks`
-- [ ] AddNextWeek: guard that it is a one-way operation (new currentWeek = currentWeek + 7 days, never go back)
-- [ ] LeaveSchedule: return 409 if user is sole Manager
+- [x] AddNextWeek: guard that it is a one-way operation (new currentWeek = currentWeek + 7 days, never go back)
+- [x] LeaveSchedule: return 409 if user is sole Manager
 
 ### Verification
 ```bash
@@ -404,13 +416,13 @@ The shift must belong to the `currentWeek` of the schedule (assigned server-side
 
 ### Tasks
 
-- [ ] Create `DTOs/Shifts/AddShiftRequest.cs` (userId, dayOfWeek, startTime, endTime)
-- [ ] Create `DTOs/Shifts/UpdateShiftRequest.cs` (startTime, endTime)
-- [ ] Create `Services/IShiftService.cs`
-- [ ] Create `Services/ShiftService.cs`
+- [x] Create `DTOs/Shifts/AddShiftRequest.cs` (employeeId, dayOfWeek, startTime, endTime, shiftType)
+- [x] Create `DTOs/Shifts/UpdateShiftRequest.cs` (startTime, endTime, shiftType)
+- [x] Create `Services/IShiftService.cs`
+- [x] Create `Services/ShiftService.cs`
   - `AddShiftAsync(scheduleId, requesterId, request)`:
     - Verify requester is a member
-    - Authorization: isManager OR isFullCollab OR request.UserId == requesterId (member may only create shifts for themselves)
+    - Authorization: isManager OR isFullCollab OR request.EmployeeId == requesterId (member may only create shifts for themselves)
     - Validate `dayOfWeek` 0–6
     - Validate `startTime < endTime`
     - Shift is created for the `currentWeek` of the schedule
@@ -422,10 +434,10 @@ The shift must belong to the `currentWeek` of the schedule (assigned server-side
   - `DeleteShiftAsync(shiftId, requesterId)`:
     - Same authorization as Update
     - Returns bool
-- [ ] Create `Controllers/ShiftsController.cs` (thin, calls service)
-- [ ] Register `IShiftService` as scoped in `Program.cs`
-- [ ] `startTime` / `endTime` stored as `TimeOnly` in EF (maps to `time` in PostgreSQL), serialized as `"HH:mm"` string in DTO using a custom JSON converter
-- [ ] `WeekStart` on Shift: assigned server-side at creation time from `schedule.CurrentWeek` (not sent by client); this is how shifts are filtered by week in `GET /api/schedules/{id}`
+- [x] Create `Controllers/ShiftsController.cs` (thin, calls service)
+- [x] Register `IShiftService` as scoped in `Program.cs`
+- [x] `startTime` / `endTime` stored as `TimeOnly` in EF (maps to `time` in PostgreSQL), serialized as `"HH:mm"` string in DTO
+- [x] `WeekStart` on Shift: assigned server-side at creation time from `schedule.CurrentWeek` (not sent by client); this is how shifts are filtered by week in `GET /api/schedules/{id}`
 
 ### Verification
 ```bash
@@ -472,30 +484,30 @@ Notifications are **not** created when a user modifies or deletes their own shif
 ### Tasks
 
 **Work Hours:**
-- [ ] Create `DTOs/Schedules/WorkHourWeekDto.cs` (weekStart, weekEnd, totalHours)
-- [ ] Add to `IScheduleService` + implement in `ScheduleService`:
+- [x] Create `DTOs/Schedules/WorkHourWeekDto.cs` (weekStart, weekEnd, totalHours)
+- [x] Add to `IScheduleService` + implement in `ScheduleService`:
   - `GetMemberWorkHoursAsync(scheduleId, requesterId, targetUserId)`:
     - Verify requester is a member of the schedule (any role — not manager-only)
     - Compute current week and 3 preceding weeks (4 weeks total, newest first)
     - For each week: sum `(EndTime - StartTime)` for all shifts with matching ScheduleId + UserId + WeekStart
     - Return list of WorkHourWeekDto with `weekEnd = weekStart + 6 days`
-- [ ] Add route to `SchedulesController`
+- [x] Add route to `SchedulesController`
 
 **Notifications:**
-- [ ] Create `DTOs/Notifications/NotificationDto.cs` (id, type, message, isRead, createdAt)
-- [ ] Create `DTOs/Notifications/MarkReadRequest.cs` (notificationIds: List<string>)
-- [ ] Create `Services/INotificationService.cs`
-- [ ] Create `Services/NotificationService.cs`
+- [x] Create `DTOs/Notifications/NotificationDto.cs` (id, type, message, isRead, createdAt)
+- [x] Create `DTOs/Notifications/MarkReadRequest.cs` (notificationIds: List<string>)
+- [x] Create `Services/INotificationService.cs`
+- [x] Create `Services/NotificationService.cs`
   - `GetNotificationsAsync(userId)` → IList<NotificationDto>, ordered by createdAt DESC
   - `MarkReadAsync(userId, notificationIds)` → only marks notifications belonging to userId
   - `NotifyShiftModifiedAsync(shift, actorId)` → inserts `shift_modified` row for shift.UserId, skips if actorId == shift.UserId
   - `NotifyShiftDeletedAsync(shift, actorId)` → inserts `shift_deleted` row for shift.UserId, skips if actorId == shift.UserId
   - `NotifyNewWeekAsync(scheduleId, scheduleName)` → bulk-inserts `new_week_added` rows for all current members
-  - `NotifyRemovedFromScheduleAsync(userId, scheduleName)` → inserts `removed_from_schedule` row for the removed user
-- [ ] `ShiftService` (Step 5) calls `NotifyShiftModifiedAsync` / `NotifyShiftDeletedAsync` — inject `INotificationService` as dependency
-- [ ] `ScheduleService` (Steps 3–4) calls `NotifyNewWeekAsync` in `AddNextWeekAsync`, and `NotifyRemovedFromScheduleAsync` in `RemoveMemberAsync`
-- [ ] Create `Controllers/NotificationsController.cs` (thin)
-- [ ] Register `INotificationService` as scoped in `Program.cs`
+  - `NotifyRemovedFromScheduleAsync(userId, scheduleId, scheduleName)` → inserts `removed_from_schedule` row for the removed user
+- [x] `ShiftService` (Step 5) calls `NotifyShiftModifiedAsync` / `NotifyShiftDeletedAsync` — inject `INotificationService` as dependency
+- [x] `ScheduleService` (Steps 3–4) calls `NotifyNewWeekAsync` in `AddNextWeekAsync`, and `NotifyRemovedFromScheduleAsync` in `RemoveMemberAsync`
+- [x] Create `Controllers/NotificationsController.cs` (thin)
+- [x] Register `INotificationService` as scoped in `Program.cs`
 
 ### Verification
 ```bash

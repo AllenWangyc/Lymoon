@@ -10,6 +10,7 @@ type Props = {
   employee: Employee | null;
   weekStartDate: string;
   canEdit: boolean;
+  isPending?: boolean;
   onClose: () => void;
   onEditShift: (shift: Shift) => void;
   onDeleteShift: (shift: Shift) => void;
@@ -21,6 +22,7 @@ export function ShiftDetailBottomSheet({
   employee,
   weekStartDate,
   canEdit,
+  isPending = false,
   onClose,
   onEditShift,
   onDeleteShift,
@@ -102,7 +104,9 @@ export function ShiftDetailBottomSheet({
               <TouchableOpacity
                 onPress={() => onDeleteShift(shift)}
                 activeOpacity={0.7}
+                disabled={isPending}
                 className="flex-row items-center justify-center gap-2 h-14 rounded-[12px]"
+                style={{ opacity: isPending ? 0.5 : 1 }}
               >
                 <Ionicons name="trash-outline" size={16} color="#dc2626" />
                 <Text style={{ fontSize: 14, fontWeight: '700', color: '#dc2626' }}>

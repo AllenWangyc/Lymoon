@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { addDays, format } from 'date-fns';
-import type { Shift, Employee } from '@/types/schedule';
+import type { Shift, Employee, ShiftType } from '@/types/schedule';
 import { TimePicker } from './TimePicker';
 import { BottomSheet } from '@/components/BottomSheet';
 
@@ -26,6 +26,7 @@ export type ShiftConfirmResult = {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
+  shiftType: ShiftType;
   shiftId?: string;
 };
 
@@ -33,6 +34,7 @@ type Props = {
   visible: boolean;
   config: ShiftEditConfig | null;
   weekStartDate: string;
+  isPending?: boolean;
   onClose: () => void;
   onConfirm: (result: ShiftConfirmResult) => void;
 };
@@ -46,6 +48,7 @@ export function AddEditShiftBottomSheet({
   visible,
   config,
   weekStartDate,
+  isPending = false,
   onClose,
   onConfirm,
 }: Props) {
@@ -64,7 +67,7 @@ export function AddEditShiftBottomSheet({
       }
       setError(null);
     }
-  }, [visible]);
+  }, [visible, config]);
 
   if (!config) return null;
 
@@ -84,9 +87,9 @@ export function AddEditShiftBottomSheet({
       dayOfWeek,
       startTime,
       endTime,
+      shiftType: config!.mode === 'edit' ? config!.shift.shiftType : 'Custom',
       shiftId: config!.mode === 'edit' ? config!.shift.id : undefined,
     });
-    onClose();
   }
 
   return (
@@ -152,7 +155,9 @@ export function AddEditShiftBottomSheet({
         <TouchableOpacity
           onPress={handleConfirm}
           activeOpacity={0.8}
+          disabled={isPending}
           className="items-center justify-center rounded-[16px] bg-[#b6ec13] h-14 mt-6"
+          style={{ opacity: isPending ? 0.5 : 1 }}
         >
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
             {config.mode === 'add' ? 'Add Shift' : 'Save Changes'}

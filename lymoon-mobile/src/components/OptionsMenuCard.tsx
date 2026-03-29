@@ -7,6 +7,7 @@ export type OptionsMenuItem = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   color?: string;
   onPress: () => void;
+  disabled?: boolean;
 };
 
 type Props = {
@@ -52,7 +53,9 @@ export function OptionsMenuCard({ items, destructiveItem, style, iconSize = 16 }
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={destructiveItem.onPress}
+              disabled={destructiveItem.disabled}
               className="flex-row items-center gap-3 px-4 py-[10px]"
+              style={{ opacity: destructiveItem.disabled ? 0.4 : 1 }}
             >
               <Ionicons name={destructiveItem.icon} size={iconSize} color={destructiveItem.color} />
               <Text style={{ fontSize: 14, fontWeight: '500', color: destructiveItem.color }}>

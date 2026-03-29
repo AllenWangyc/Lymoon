@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { HomeHeader } from '@/components/HomeHeader';
@@ -9,6 +9,7 @@ import { NewScheduleBottomSheet } from '@/components/NewScheduleBottomSheet';
 import { SCHEDULE_CATEGORIES } from '@/features/schedule/constants';
 import { useToast } from '@/hooks/useToast';
 import { useScheduleStore } from '@/stores/scheduleStore';
+import { useSchedules } from '@/lib/queries/schedules';
 import type { ScheduleCategory } from '@/types/schedule';
 
 export default function HomeScreen() {
@@ -18,21 +19,22 @@ export default function HomeScreen() {
   const [searchFocused, setSearchFocused] = useState(false);
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
-  const { schedules, pendingToast, clearPendingToast, showNewScheduleSheet, setShowNewScheduleSheet } = useScheduleStore();
+  const { pendingToast, clearPendingToast, showNewScheduleSheet, setShowNewScheduleSheet } = useScheduleStore();
+  const { data: schedules = [], isLoading: schedulesLoading, isError: schedulesError } = useSchedules();
 
   useEffect(() => {
     if (pendingToast) {
       showToast(pendingToast);
       clearPendingToast();
     }
-  }, [pendingToast]);
+  }, [pendingToast, showToast, clearPendingToast]);
 
   useEffect(() => {
     if (showNewScheduleSheet) {
       setSheetVisible(true);
       setShowNewScheduleSheet(false);
     }
-  }, [showNewScheduleSheet]);
+  }, [showNewScheduleSheet, setShowNewScheduleSheet]);
 
   function handleScheduleOption(type: 'join') {
     if (type === 'join') {
@@ -45,8 +47,10 @@ export default function HomeScreen() {
     .filter((s) => activeCategory === 'All' || s.scheduleType?.toLowerCase() === activeCategory.toLowerCase())
     .filter((s) => !searchQuery.trim() || s.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Header height: status bar + 8pt padding + greeting block (~56px) + 16pt bottom padding
-  const headerHeight = insets.top + 8 + 56 + 16;
+  const HEADER_TOP_PADDING = 8;
+  const HEADER_GREETING_HEIGHT = 56;
+  const HEADER_BOTTOM_PADDING = 16;
+  const headerHeight = insets.top + HEADER_TOP_PADDING + HEADER_GREETING_HEIGHT + HEADER_BOTTOM_PADDING;
 
   return (
     <View className="flex-1 bg-[#f8f8f6]">
@@ -112,7 +116,21 @@ export default function HomeScreen() {
               <Text className="text-[14px] font-semibold text-[#b6ec13]">New</Text>
             </TouchableOpacity>
           </View>
-          {filteredSchedules.length === 0 ? (
+          {schedulesLoading ? (
+            <View className="items-center py-16">
+              <ActivityIndicator size="large" color="#b6ec13" />
+            </View>
+          ) : schedulesError ? (
+            <View className="items-center justify-center px-6 py-16">
+              <Ionicons name="alert-circle-outline" size={28} color="#ef4444" />
+              <Text className="text-[16px] font-bold text-center text-[rgba(15,23,42,0.7)] mt-4 mb-1">
+                Failed to load schedules
+              </Text>
+              <Text className="text-[14px] text-[#64748b] text-center max-w-[200px]" style={{ lineHeight: 20 }}>
+                Check your connection and try again.
+              </Text>
+            </View>
+          ) : filteredSchedules.length === 0 ? (
             <View className="items-center justify-center px-6 py-16">
               <View className="mb-6 items-center justify-center rounded-[24px] bg-[rgba(241,245,249,0.7)] size-16"
                 style={{ shadowColor: '#e2e8f0', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 2, elevation: 1 }}

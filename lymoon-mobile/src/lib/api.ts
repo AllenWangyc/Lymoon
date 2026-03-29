@@ -32,8 +32,11 @@ async function fetchWithAuth(path: string, options: ApiOptions = {}): Promise<Re
   if (response.status === 401) {
     const refreshed = await tryRefresh();
     if (refreshed) {
-      headers['Authorization'] = `Bearer ${useAuthStore.getState().accessToken}`;
-      return fetch(`${API_BASE}${path}`, init);
+      const retryHeaders = {
+        ...headers,
+        Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+      };
+      return fetch(`${API_BASE}${path}`, { ...init, headers: retryHeaders });
     }
   }
 

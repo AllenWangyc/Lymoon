@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useMemo, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { AddEditShiftBottomSheet } from '@/features/schedule/components/AddEditShiftBottomSheet';
 import type { ShiftEditConfig, ShiftConfirmResult } from '@/features/schedule/components/AddEditShiftBottomSheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { addWeeks, getDay } from 'date-fns';
+import { addWeeks, getDay, format } from 'date-fns';
 import { WeekNavigator } from '@/features/schedule/components/WeekNavigator';
 import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
@@ -15,9 +15,15 @@ import { RenameScheduleSheet } from '@/features/schedule/components/RenameSchedu
 import { ViewMembersSheet } from '@/features/schedule/components/ViewMembersSheet';
 import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
 import { PageHeader } from '@/components/PageHeader';
-import { useScheduleStore } from '@/stores/scheduleStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/useToast';
+import {
+  useScheduleDetail,
+  useRenameSchedule,
+  useLeaveSchedule,
+  useAddNextWeek,
+} from '@/lib/queries/schedules';
+import { useAddShift, useUpdateShift, useDeleteShift } from '@/lib/queries/shifts';
 import type { Shift } from '@/types/schedule';
 
 function toWeekIndex(jsDay: number): number {
@@ -29,27 +35,9 @@ export default function ScheduleDetailScreen() {
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
 
-  // Auth
   const userId = useAuthStore((s) => s.userId!);
-  const userRole = useAuthStore((s) => s.userRole);
-  const isManager = userRole === 'Manager';
 
-  // Schedule store
-  const scheduleItem = useScheduleStore((s) => s.schedules.find((sc) => sc.id === id));
-  const employees = useScheduleStore((s) => s.employeesBySchedule[id as string] ?? []);
-  const shifts = useScheduleStore((s) => s.shiftsBySchedule[id as string] ?? []);
-  const { removeSchedule, addShiftToSchedule, updateShiftInSchedule, deleteShiftFromSchedule } =
-    useScheduleStore();
-
-  const inviteCode = scheduleItem?.inviteCode;
-
-  // Week navigation
-  const baseWeekStart = useMemo(() => {
-    const stored = scheduleItem?.startWeek;
-    return stored ? new Date(stored) : new Date();
-  }, [scheduleItem?.startWeek]);
-
-  const today = new Date();
+  const today = useRef(new Date()).current;
   const todayIndex = toWeekIndex(getDay(today));
 
   const [weekOffset, setWeekOffset] = useState(0);
@@ -63,13 +51,41 @@ export default function ScheduleDetailScreen() {
   const [addEditVisible, setAddEditVisible] = useState(false);
   const [renameVisible, setRenameVisible] = useState(false);
 
-  const currentWeekStart = useMemo(
-    () => addWeeks(baseWeekStart, weekOffset),
-    [baseWeekStart, weekOffset],
-  );
+  // Derive the Monday for the currently viewed week
+  const currentWeekStart = useMemo(() => {
+    const monday = new Date(today);
+    // Align to Monday of the current week first
+    const dayOfWeek = monday.getDay();
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    monday.setDate(monday.getDate() + diff);
+    return addWeeks(monday, weekOffset);
+  }, [weekOffset]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const isFullCollab = (scheduleItem?.memberPermission ?? 'manager_only') === 'full_collaboration';
+  const weekStartParam = format(currentWeekStart, 'yyyy-MM-dd');
+
+  // ─── Server state ─────────────────────────────────────────────────────────
+  const {
+    data: scheduleDetail,
+    isLoading,
+    isError,
+    refetch,
+  } = useScheduleDetail(id as string, weekStartParam);
+
+  const renameMutation = useRenameSchedule(id as string);
+  const leaveMutation = useLeaveSchedule(id as string);
+  const addNextWeekMutation = useAddNextWeek(id as string);
+  const addShift = useAddShift(id as string);
+  const updateShift = useUpdateShift(id as string);
+  const deleteShift = useDeleteShift(id as string);
+
+  // ─── Derived values ───────────────────────────────────────────────────────
+  const isManager = scheduleDetail?.currentUserRole === 'Manager';
+  const isFullCollab =
+    (scheduleDetail?.memberPermission ?? 'manager_only') === 'full_collaboration';
   const canEditShifts = isManager || isFullCollab;
+
+  const employees = scheduleDetail?.employees ?? [];
+  const shifts = scheduleDetail?.shifts ?? [];
 
   const shiftsForDay = useMemo(
     () => shifts.filter((s) => s.dayOfWeek === selectedDayIndex),
@@ -79,6 +95,8 @@ export default function ScheduleDetailScreen() {
   function getEmployeeShifts(employeeId: string) {
     return shiftsForDay.filter((s) => s.employeeId === employeeId);
   }
+
+  // ─── Handlers ─────────────────────────────────────────────────────────────
 
   function handleAddShift(employeeId: string) {
     const employee = employees.find((e) => e.id === employeeId);
@@ -103,46 +121,113 @@ export default function ScheduleDetailScreen() {
   }
 
   function handleDeleteShift(shift: Shift) {
-    deleteShiftFromSchedule(id as string, shift.id);
     setShiftDetailVisible(false);
+    deleteShift.mutate(shift.id, {
+      onSuccess: () => showToast('Shift deleted', 'success'),
+      onError: (err) => showToast(err.message ?? 'Failed to delete shift', 'error'),
+    });
   }
 
   function handleShiftConfirm(result: ShiftConfirmResult) {
-    const newShift: Shift =
-      result.mode === 'edit' && result.shiftId
-        ? {
-            ...shifts.find((s) => s.id === result.shiftId)!,
-            startTime: result.startTime,
-            endTime: result.endTime,
-          }
-        : {
-            id: `shift-${Date.now()}`,
-            employeeId: result.employeeId,
-            dayOfWeek: result.dayOfWeek,
-            startTime: result.startTime,
-            endTime: result.endTime,
-            shiftType: 'Custom' as const,
-          };
-
-    if (result.mode === 'edit' && result.shiftId) {
-      updateShiftInSchedule(id as string, newShift, result.shiftId);
+    if (result.mode === 'add') {
+      addShift.mutate(
+        {
+          employeeId: result.employeeId,
+          dayOfWeek: result.dayOfWeek,
+          startTime: result.startTime,
+          endTime: result.endTime,
+          shiftType: result.shiftType,
+        },
+        {
+          onSuccess: () => {
+            setAddEditVisible(false);
+            showToast('Shift added', 'success');
+          },
+          onError: (err) => showToast(err.message ?? 'Failed to add shift', 'error'),
+        },
+      );
     } else {
-      addShiftToSchedule(id as string, newShift);
+      if (!result.shiftId) return;
+      updateShift.mutate(
+        {
+          shiftId: result.shiftId,
+          startTime: result.startTime,
+          endTime: result.endTime,
+          shiftType: result.shiftType,
+        },
+        {
+          onSuccess: () => {
+            setAddEditVisible(false);
+            showToast('Shift updated', 'success');
+          },
+          onError: (err) => showToast(err.message ?? 'Failed to update shift', 'error'),
+        },
+      );
     }
-    setAddEditVisible(false);
+  }
+
+  function handleAddNextWeek() {
+    addNextWeekMutation.mutate(undefined, {
+      onSuccess: () => {
+        setWeekOffset((o) => o + 1);
+        showToast('Next week added', 'success');
+      },
+      onError: () => {
+        showToast('Failed to add next week', 'error');
+      },
+    });
+  }
+
+  function handleRenameConfirm(newName: string) {
+    renameMutation.mutate(newName, {
+      onSuccess: () => showToast('Schedule renamed', 'success'),
+      onError: () => showToast('Failed to rename schedule', 'error'),
+    });
+  }
+
+  function handleLeaveConfirm() {
+    setLeaveConfirmVisible(false);
+    leaveMutation.mutate(undefined, {
+      onSuccess: () => {
+        showToast('You have left the schedule', 'success');
+        router.back();
+      },
+      onError: () => {
+        showToast('Failed to leave schedule', 'error');
+      },
+    });
   }
 
   const headerContentHeight = 40 + 16 + 38 + 16 + 44 + 8;
   const headerHeight = insets.top + 16 + headerContentHeight;
 
-  if (!scheduleItem) {
+  // ─── Loading / error states ───────────────────────────────────────────────
+  if (isLoading) {
     return (
       <View className="flex-1 bg-[#f8f8f6] items-center justify-center">
-        <Text className="text-[#64748b]">Schedule not found.</Text>
+        <ActivityIndicator size="large" color="#b6ec13" />
       </View>
     );
   }
 
+  if (isError || !scheduleDetail) {
+    return (
+      <View className="flex-1 bg-[#f8f8f6] items-center justify-center gap-4 px-6">
+        <Text style={{ fontSize: 15, color: '#64748b', textAlign: 'center' }}>
+          Failed to load schedule. Please try again.
+        </Text>
+        <TouchableOpacity
+          onPress={() => refetch()}
+          activeOpacity={0.8}
+          className="bg-[#b6ec13] px-6 h-11 rounded-2xl items-center justify-center"
+        >
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <View className="flex-1 bg-[#f8f8f6]">
       {/* Sticky Header */}
@@ -152,15 +237,21 @@ export default function ScheduleDetailScreen() {
       >
         {/* Title row */}
         <PageHeader
-          title={scheduleItem.title}
-          subtitle={scheduleItem.subtitle}
+          title={scheduleDetail.title}
+          subtitle={scheduleDetail.subtitle}
           onBack={() => router.back()}
           rightElement={
             <TouchableOpacity
               onPress={() => setMenuOpen(true)}
               activeOpacity={0.7}
               className="size-10 rounded-full bg-white items-center justify-center border border-[#f1f5f9]"
-              style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
             >
               <Ionicons name="ellipsis-horizontal" size={16} color="#0f172a" />
             </TouchableOpacity>
@@ -172,7 +263,7 @@ export default function ScheduleDetailScreen() {
           weekStartDate={currentWeekStart}
           onPrevWeek={() => setWeekOffset((o) => o - 1)}
           onNextWeek={() => setWeekOffset((o) => o + 1)}
-          onAddNextWeek={() => setWeekOffset((o) => o + 1)}
+          onAddNextWeek={handleAddNextWeek}
           isManager={isManager}
         />
 
@@ -193,7 +284,7 @@ export default function ScheduleDetailScreen() {
         onViewMembers={() => {
           setTimeout(() => setViewMembersVisible(true), 160);
         }}
-        inviteCode={inviteCode}
+        inviteCode={scheduleDetail.inviteCode}
         onInviteCopied={() => showToast('Invite code copied!', 'success')}
         isManager={isManager}
         onRename={() => setTimeout(() => setRenameVisible(true), 160)}
@@ -202,31 +293,23 @@ export default function ScheduleDetailScreen() {
       <ViewMembersSheet
         visible={viewMembersVisible}
         onClose={() => setViewMembersVisible(false)}
-        employees={employees}
+        scheduleId={id as string}
         isManager={isManager}
+        onRemoveSuccess={() => showToast('Member removed', 'success')}
       />
 
       <LeaveScheduleSheet
         visible={leaveConfirmVisible}
-        scheduleName={scheduleItem.title}
+        scheduleName={scheduleDetail.title}
         onClose={() => setLeaveConfirmVisible(false)}
-        onConfirm={() => {
-          setLeaveConfirmVisible(false);
-          // TODO: call leave API
-          removeSchedule(id as string);
-          showToast('You have left the schedule', 'success');
-          router.back();
-        }}
+        onConfirm={handleLeaveConfirm}
       />
 
       <RenameScheduleSheet
         visible={renameVisible}
         onClose={() => setRenameVisible(false)}
-        currentName={scheduleItem.title}
-        onConfirm={(_newName) => {
-          // TODO: call POST /api/schedules/{id}/rename
-          showToast('Schedule renamed', 'success');
-        }}
+        currentName={scheduleDetail.title}
+        onConfirm={handleRenameConfirm}
       />
 
       <ShiftDetailBottomSheet
@@ -239,6 +322,7 @@ export default function ScheduleDetailScreen() {
         }
         weekStartDate={currentWeekStart.toISOString()}
         canEdit={canEditShifts || selectedShift?.employeeId === userId}
+        isPending={deleteShift.isPending}
         onClose={() => setShiftDetailVisible(false)}
         onEditShift={handleEditShift}
         onDeleteShift={handleDeleteShift}
@@ -248,6 +332,7 @@ export default function ScheduleDetailScreen() {
         visible={addEditVisible}
         config={addEditConfig}
         weekStartDate={currentWeekStart.toISOString()}
+        isPending={addShift.isPending || updateShift.isPending}
         onClose={() => setAddEditVisible(false)}
         onConfirm={handleShiftConfirm}
       />
@@ -263,17 +348,25 @@ export default function ScheduleDetailScreen() {
           gap: 24,
         }}
       >
-        {employees.map((employee) => (
-          <EmployeeShiftRow
-            key={employee.id}
-            employee={employee}
-            shifts={getEmployeeShifts(employee.id)}
-            canEditShifts={canEditShifts}
-            currentUserId={userId}
-            onAddShift={handleAddShift}
-            onShiftPress={handleShiftPress}
-          />
-        ))}
+        {employees.length === 0 ? (
+          <View className="items-center justify-center pt-12">
+            <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+              No members in this schedule yet.
+            </Text>
+          </View>
+        ) : (
+          employees.map((employee) => (
+            <EmployeeShiftRow
+              key={employee.id}
+              employee={employee}
+              shifts={getEmployeeShifts(employee.id)}
+              canEditShifts={canEditShifts}
+              currentUserId={userId}
+              onAddShift={handleAddShift}
+              onShiftPress={handleShiftPress}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );

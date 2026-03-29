@@ -9,10 +9,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { parseISO, endOfWeek, format } from 'date-fns';
 import * as Clipboard from 'expo-clipboard';
 import { PageHeader } from '../../src/components/PageHeader';
-import { useScheduleStore } from '../../src/stores/scheduleStore';
 import { useToast } from '../../src/hooks/useToast';
 
 function InviteCodeDisplay({ code }: { code: string }) {
@@ -53,11 +51,12 @@ function HintRow({ icon, text }: { icon: string; text: string }) {
 }
 
 export default function ScheduleCreatedScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const schedules = useScheduleStore((s) => s.schedules);
+  const { id, inviteCode, title } = useLocalSearchParams<{
+    id: string;
+    inviteCode: string;
+    title: string;
+  }>();
   const { showToast } = useToast();
-
-  const schedule = schedules.find((s) => s.id === id);
 
   // Animations
   const iconScale = useRef(new Animated.Value(0)).current;
@@ -98,13 +97,11 @@ export default function ScheduleCreatedScreen() {
   }
 
   async function handleCopy() {
-    if (!schedule?.inviteCode) return;
-    await Clipboard.setStringAsync(schedule.inviteCode);
+    await Clipboard.setStringAsync(inviteCode);
     showToast('Code copied!', 'success');
   }
 
   function handleOpenSchedule() {
-    if (!id) return;
     router.replace(`/schedule/${id}`);
   }
 
@@ -112,13 +109,9 @@ export default function ScheduleCreatedScreen() {
     router.replace('/');
   }
 
-  const weekRange = schedule?.startWeek
-    ? (() => {
-        const start = parseISO(schedule.startWeek);
-        const end = endOfWeek(start, { weekStartsOn: 1 });
-        return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`;
-      })()
-    : null;
+  if (!id || !inviteCode || !title) {
+    return null; // should never happen
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#f8f8f6]">
@@ -168,24 +161,12 @@ export default function ScheduleCreatedScreen() {
           >
             Schedule Created!
           </Text>
-          {schedule && (
-            <>
-              <Text
-                className="mt-[6px] text-center"
-                style={{ fontSize: 16, color: '#64748b', fontWeight: '500' }}
-              >
-                {schedule.title}
-              </Text>
-              {weekRange && (
-                <Text
-                  className="mt-1 text-center"
-                  style={{ fontSize: 13, color: '#94a3b8' }}
-                >
-                  {weekRange}
-                </Text>
-              )}
-            </>
-          )}
+          <Text
+            className="mt-[6px] text-center"
+            style={{ fontSize: 16, color: '#64748b', fontWeight: '500' }}
+          >
+            {title}
+          </Text>
         </Animated.View>
 
         {/* ③ Invite Code Card */}
@@ -215,13 +196,7 @@ export default function ScheduleCreatedScreen() {
             </Text>
 
             {/* Character boxes */}
-            {schedule?.inviteCode ? (
-              <InviteCodeDisplay code={schedule.inviteCode} />
-            ) : (
-              <Text style={{ fontSize: 28, fontWeight: '700', color: '#0f172a', letterSpacing: 6 }}>
-                ------
-              </Text>
-            )}
+            <InviteCodeDisplay code={inviteCode} />
 
             {/* Copy button */}
             <Animated.View className="mt-2" style={{ transform: [{ scale: copyScale }] }}>

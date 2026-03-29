@@ -41,3 +41,9 @@ export type ScheduleDetail = ScheduleItem & {
   weekStartDate: string;      // ISO date "2024-10-14" (always a Monday)
   currentUserRole: 'Manager' | 'Member';
 };
+
+export type SchedulePreview = {
+  scheduleName: string;
+  managerName: string;
+  memberCount: number;
+};
