@@ -23,3 +23,7 @@ Each ADR documents the context, decision, alternatives considered, and consequen
 | [0016](0016-hook-scoped-scheduleid-parameter.md) | `scheduleId` passed as hook argument (closure), not mutation variable | accepted | 2026-03-29 |
 | [0017](0017-tanstack-query-list-empty-array-default.md) | Empty-array default for TanStack Query list data at call site | accepted | 2026-03-29 |
 | [0018](0018-post-mutation-navigation-via-url-params.md) | Post-mutation navigation passes result data as URL query params | accepted | 2026-03-29 |
+| [0019](0019-auth-gated-enabled-flag-on-polling-queries.md) | Auth-gated `enabled` flag on polling queries | accepted | 2026-03-30 |
+| [0020](0020-notification-type-exported-from-query-hook.md) | API response types exported from query hook file when no transformation is needed | accepted | 2026-03-30 |
+| [0021](0021-notifications-accessed-via-home-header-bell-not-tab.md) | Notifications accessed via home screen header bell icon, not a dedicated tab | accepted | 2026-03-30 |
+| [0022](0022-optimistic-mutation-uses-onsettled-not-onsuccess.md) | Optimistic-update mutations use `onSettled` for server re-sync, not `onSuccess` | accepted | 2026-03-30 |

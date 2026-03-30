@@ -2,8 +2,8 @@ import { View, Text } from 'react-native';
 import { getAvatarColor } from '@/utils/avatarColor';
 
 type Props = {
-  name: string;
-  initials: string;
+  name: string | null | undefined;
+  initials: string | null | undefined;
   size?: number;
 };
 

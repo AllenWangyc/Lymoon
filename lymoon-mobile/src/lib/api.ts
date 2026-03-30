@@ -1,8 +1,31 @@
 // src/lib/api.ts
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { useAuthStore } from '@/stores/authStore';
 import { tryRefresh } from './tokenRefresh';
 
-export const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? 'http://localhost:5000/api';
+function resolveApiBase(): string {
+  if (process.env.EXPO_PUBLIC_API_BASE) {
+    return process.env.EXPO_PUBLIC_API_BASE;
+  }
+  if (__DEV__) {
+    // Physical device (iOS/Android): derive host from Expo Go's Metro bundler address.
+    // debuggerHost is the LAN IP Expo is serving from (e.g. "192.168.1.5:8081").
+    // The API must also bind to 0.0.0.0 (not just localhost) to be reachable via LAN.
+    const debuggerHost = Constants.expoGoConfig?.debuggerHost;
+    if (debuggerHost) {
+      const host = debuggerHost.split(':')[0];
+      return `http://${host}:5253/api`;
+    }
+    // Emulator fallbacks when debuggerHost is unavailable
+    return Platform.OS === 'android'
+      ? 'http://10.0.2.2:5253/api'
+      : 'http://localhost:5253/api';
+  }
+  return 'http://localhost:5253/api';
+}
+
+export const API_BASE = resolveApiBase();
 
 type ApiOptions = Omit<RequestInit, 'body'> & { body?: unknown };
 

@@ -13,6 +13,7 @@ export default function AppLayout() {
         <Tabs.Screen name="schedule-created" options={{ tabBarStyle: { display: 'none' } }} />
         <Tabs.Screen name="create-schedule" options={{ tabBarStyle: { display: 'none' } }} />
         <Tabs.Screen name="schedule" options={{ tabBarStyle: { display: 'none' } }} />
+        <Tabs.Screen name="notifications" />
       </Tabs>
     </ToastProvider>
   );

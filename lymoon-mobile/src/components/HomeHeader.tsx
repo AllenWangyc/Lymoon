@@ -4,12 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { UserAvatar } from '@/components/UserAvatar';
+import { useNotifications } from '@/lib/queries/notifications';
 
 export function HomeHeader() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const userName = useAuthStore((s) => s.userName!);
   const avatarInitials = useAuthStore((s) => s.avatarInitials!);
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <View
@@ -44,7 +47,14 @@ export function HomeHeader() {
           elevation: 1,
         }}
       >
-        <Ionicons name="notifications-outline" size={20} color="#0f172a" />
+        <Ionicons
+          name={unreadCount > 0 ? 'notifications' : 'notifications-outline'}
+          size={20}
+          color="#0f172a"
+        />
+        {unreadCount > 0 && (
+          <View className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#b6ec13] items-center justify-center" />
+        )}
       </TouchableOpacity>
     </View>
   );

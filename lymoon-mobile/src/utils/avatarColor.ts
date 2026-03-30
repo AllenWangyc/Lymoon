@@ -9,7 +9,8 @@ const AVATAR_PALETTE = [
 
 export type AvatarColor = { bg: string; text: string };
 
-export function getAvatarColor(name: string): AvatarColor {
+export function getAvatarColor(name: string | null | undefined): AvatarColor {
+  if (!name) return AVATAR_PALETTE[0];
   const hash = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 }
