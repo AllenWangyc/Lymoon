@@ -1,4 +1,4 @@
-import { Alert, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -157,23 +157,25 @@ function ActionCard() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={handleApplePress}
-          activeOpacity={0.8}
-          className="w-full bg-black rounded-[16px] flex-row items-center justify-center h-[58px] gap-3"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1,
-          }}
-        >
-          <Ionicons name="logo-apple" size={20} color="white" />
-          <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>
-            Continue with Apple
-          </Text>
-        </TouchableOpacity>
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            onPress={handleApplePress}
+            activeOpacity={0.8}
+            className="w-full bg-black rounded-[16px] flex-row items-center justify-center h-[58px] gap-3"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <Ionicons name="logo-apple" size={20} color="white" />
+            <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>
+              Continue with Apple
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <View className="items-center pt-2">
           <TouchableOpacity

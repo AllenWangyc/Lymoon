@@ -27,3 +27,4 @@ Each ADR documents the context, decision, alternatives considered, and consequen
 | [0020](0020-notification-type-exported-from-query-hook.md) | API response types exported from query hook file when no transformation is needed | accepted | 2026-03-30 |
 | [0021](0021-notifications-accessed-via-home-header-bell-not-tab.md) | Notifications accessed via home screen header bell icon, not a dedicated tab | accepted | 2026-03-30 |
 | [0022](0022-optimistic-mutation-uses-onsettled-not-onsuccess.md) | Optimistic-update mutations use `onSettled` for server re-sync, not `onSuccess` | accepted | 2026-03-30 |
+| [0023](0023-weekbar-opacity-driven-by-shift-presence-and-duration.md) | WeekBar Day Opacity Driven by Shift Presence and Duration | accepted | 2026-03-30 |

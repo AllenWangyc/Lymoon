@@ -14,7 +14,10 @@ export function useAddShift(scheduleId: string) {
       endTime: string;
       shiftType: ShiftType;
     }) => apiPost<Shift>(`/schedules/${scheduleId}/shifts`, vars),
-    onSuccess: () => qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
   });
 }
 
@@ -32,7 +35,10 @@ export function useUpdateShift(scheduleId: string) {
         endTime: vars.endTime,
         shiftType: vars.shiftType,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
   });
 }
 
@@ -41,6 +47,9 @@ export function useDeleteShift(scheduleId: string) {
   return useMutation({
     mutationFn: (shiftId: string) =>
       apiPost<{ ok: boolean }>(`/shifts/${shiftId}/delete`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
   });
 }

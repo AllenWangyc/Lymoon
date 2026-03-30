@@ -369,7 +369,9 @@ public class ScheduleService : IScheduleService
                 .Where(s => s.DayOfWeek == i)
                 .Sum(s => (s.EndTime - s.StartTime).TotalMinutes);
             var dailyHours = dailyMinutes / 60.0;
-            var opacity = Math.Min(1.0, 0.35 + dailyHours / 8.0 * 0.65);
+            var opacity = dailyMinutes == 0
+                ? 0.0
+                : Math.Min(1.0, 0.3 + dailyHours / 8.0 * 0.7);
             var isToday = weekStart.AddDays(i) == today;
             return new DayDto(dayNames[i], Math.Round(opacity, 4), isToday);
         }).ToList();
