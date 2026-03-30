@@ -82,7 +82,7 @@ export default function EmailLoginScreen() {
               <TextInput
                 value={email}
                 onChangeText={setEmail}
-                placeholder="you@example.com"
+                placeholder="name@example.com"
                 placeholderTextColor="#94a3b8"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -103,7 +103,7 @@ export default function EmailLoginScreen() {
                 ref={passwordRef}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 placeholderTextColor="#94a3b8"
                 secureTextEntry
                 autoComplete="current-password"

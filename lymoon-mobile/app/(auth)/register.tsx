@@ -77,7 +77,7 @@ export default function RegisterScreen() {
               <TextInput
                 value={displayName}
                 onChangeText={setDisplayName}
-                placeholder="Alex Rivera"
+                placeholder="e.g. Alex Rivera"
                 placeholderTextColor="#94a3b8"
                 autoCapitalize="words"
                 autoComplete="name"
@@ -93,7 +93,7 @@ export default function RegisterScreen() {
                 ref={emailRef}
                 value={email}
                 onChangeText={setEmail}
-                placeholder="you@example.com"
+                placeholder="name@example.com"
                 placeholderTextColor="#94a3b8"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -111,7 +111,7 @@ export default function RegisterScreen() {
                 ref={passwordRef}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
                 placeholderTextColor="#94a3b8"
                 secureTextEntry
                 autoComplete="new-password"
