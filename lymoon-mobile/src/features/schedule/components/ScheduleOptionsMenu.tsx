@@ -13,9 +13,10 @@ type Props = {
   onInviteCopied?: () => void;
   isManager?: boolean;
   onRename?: () => void;
+  onAddNextWeek?: () => void;
 };
 
-export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, inviteCode, onInviteCopied, isManager, onRename }: Props) {
+export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, inviteCode, onInviteCopied, isManager, onRename, onAddNextWeek }: Props) {
   const insets = useSafeAreaInsets();
 
   const menuTop = insets.top + 56;
@@ -30,6 +31,15 @@ export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, 
         onViewMembers();
       },
     },
+    ...(isManager ? [{
+      key: 'add-next-week',
+      label: 'Add Next Week',
+      icon: 'calendar-outline' as const,
+      onPress: () => {
+        onClose();
+        onAddNextWeek?.();
+      },
+    }] : []),
     {
       key: 'copy-invite',
       label: 'Copy Invite Code',

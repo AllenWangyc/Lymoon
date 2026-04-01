@@ -21,7 +21,14 @@
       "Bash(lib \")",
       "Bash(find 'D:\\\\Vibe coding projects\\\\Lymoon\\\\lymoon-mobile' -name register.tsx -o -name *terms* -o -name *privacy* -o -name *legal*)",
       "Bash(find 'D:\\\\Vibe coding projects\\\\Lymoon\\\\lymoon-mobile' -type d -name *auth*)",
-      "Read(//d//**)"
+      "Read(//d//**)",
+      "Bash(\"d:/Vibe coding:*)",
+      "Bash(__NEW_LINE_e64f35b561fc99be__ cat:*)",
+      "Skill(commit-commands:commit)",
+      "Skill(commit-commands:commit:*)"
+    ],
+    "additionalDirectories": [
+      "d:\\Vibe coding projects\\Lymoon\\lymoon-mobile\\docs\\superpowers"
     ]
   }
 }

@@ -133,6 +133,9 @@ public class ScheduleService : IScheduleService
 
         schedule.Title = newTitle;
         await _db.SaveChangesAsync();
+
+        await _notifications.NotifyScheduleUpdatedAsync(scheduleId, newTitle);
+
         return true;
     }
 
@@ -179,6 +182,8 @@ public class ScheduleService : IScheduleService
             Role = "Member"
         });
         await _db.SaveChangesAsync();
+
+        await _notifications.NotifyMemberJoinedAsync(schedule.Id, schedule.Title, userId);
 
         var manager = schedule.Members.FirstOrDefault(m => m.Role == "Manager");
 

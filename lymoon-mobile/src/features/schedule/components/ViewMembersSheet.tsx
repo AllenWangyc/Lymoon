@@ -262,7 +262,13 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
     removeMember.mutate(targetId, {
       onSuccess: () => onRemoveSuccess?.(),
       onError: (err: Error) => {
-        onRemoveError?.(err.message ?? 'Failed to remove member');
+        const msg =
+          err.message === 'sole_manager'
+            ? 'Cannot remove the only manager of this schedule.'
+            : err.message === 'not_a_member'
+              ? 'This user is no longer a member of this schedule.'
+              : err.message || 'Failed to remove member.';
+        onRemoveError?.(msg);
       },
     });
   }

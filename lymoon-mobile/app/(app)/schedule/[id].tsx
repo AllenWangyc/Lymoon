@@ -83,6 +83,9 @@ export default function ScheduleDetailScreen() {
   const isFullCollab =
     (scheduleDetail?.memberPermission ?? 'manager_only') === 'full_collaboration';
   const canEditShifts = isManager || isFullCollab;
+  const isAtLatestWeek = scheduleDetail?.currentWeek
+    ? weekStartParam >= scheduleDetail.currentWeek
+    : false;
 
   const employees = scheduleDetail?.employees ?? [];
   const shifts = scheduleDetail?.shifts ?? [];
@@ -192,8 +195,12 @@ export default function ScheduleDetailScreen() {
         showToast('You have left the schedule', 'success');
         router.back();
       },
-      onError: () => {
-        showToast('Failed to leave schedule', 'error');
+      onError: (err) => {
+        const msg =
+          err.message === 'sole_manager'
+            ? 'You are the only manager. Assign another manager before leaving.'
+            : 'Failed to leave schedule.';
+        showToast(msg, 'error');
       },
     });
   }
@@ -263,8 +270,7 @@ export default function ScheduleDetailScreen() {
           weekStartDate={currentWeekStart}
           onPrevWeek={() => setWeekOffset((o) => o - 1)}
           onNextWeek={() => setWeekOffset((o) => o + 1)}
-          onAddNextWeek={handleAddNextWeek}
-          isManager={isManager}
+          isAtLatestWeek={isAtLatestWeek}
         />
 
         {/* Day selector */}
@@ -288,6 +294,7 @@ export default function ScheduleDetailScreen() {
         onInviteCopied={() => showToast('Invite code copied!', 'success')}
         isManager={isManager}
         onRename={() => setTimeout(() => setRenameVisible(true), 160)}
+        onAddNextWeek={handleAddNextWeek}
       />
 
       <ViewMembersSheet

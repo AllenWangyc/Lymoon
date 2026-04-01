@@ -116,6 +116,67 @@ public class NotificationService : INotificationService
         await _db.SaveChangesAsync();
     }
 
+    public async Task NotifyShiftAddedAsync(Shift shift, string actorId)
+    {
+        if (shift.UserId == actorId) return;
+
+        var actorName = await GetDisplayNameAsync(actorId);
+        var dayName = DayNames[shift.DayOfWeek];
+
+        _db.Notifications.Add(new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = shift.UserId,
+            ScheduleId = shift.ScheduleId,
+            Type = "shift_added",
+            Message = $"{actorName} added a shift for you on {dayName}"
+        });
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task NotifyMemberJoinedAsync(Guid scheduleId, string scheduleName, string newMemberUserId)
+    {
+        var newMemberName = await GetDisplayNameAsync(newMemberUserId);
+
+        var existingMemberIds = await _db.ScheduleMembers
+            .Where(m => m.ScheduleId == scheduleId && m.UserId != newMemberUserId)
+            .Select(m => m.UserId)
+            .ToListAsync();
+
+        var notifications = existingMemberIds.Select(userId => new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            ScheduleId = scheduleId,
+            Type = "member_joined",
+            Message = $"{newMemberName} joined {scheduleName}"
+        });
+
+        _db.Notifications.AddRange(notifications);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task NotifyScheduleUpdatedAsync(Guid scheduleId, string newTitle)
+    {
+        var memberIds = await _db.ScheduleMembers
+            .Where(m => m.ScheduleId == scheduleId)
+            .Select(m => m.UserId)
+            .ToListAsync();
+
+        var notifications = memberIds.Select(userId => new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            ScheduleId = scheduleId,
+            Type = "schedule_updated",
+            Message = $"Schedule was renamed to \"{newTitle}\""
+        });
+
+        _db.Notifications.AddRange(notifications);
+        await _db.SaveChangesAsync();
+    }
+
     private async Task<string> GetDisplayNameAsync(string userId)
     {
         var name = await _db.Users

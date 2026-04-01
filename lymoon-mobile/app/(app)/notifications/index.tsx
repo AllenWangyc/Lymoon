@@ -10,6 +10,9 @@ const TYPE_LABELS: Record<string, string> = {
   shift_deleted: 'Shift Deleted',
   new_week_added: 'New Week Added',
   removed_from_schedule: 'Removed from Schedule',
+  shift_added: 'Shift Added',
+  member_joined: 'New Member',
+  schedule_updated: 'Schedule Updated',
 };
 
 function formatRelativeTime(createdAt: string): string {

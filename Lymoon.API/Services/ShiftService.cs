@@ -58,6 +58,8 @@ public class ShiftService : IShiftService
         _db.Shifts.Add(shift);
         await _db.SaveChangesAsync();
 
+        await _notifications.NotifyShiftAddedAsync(shift, requesterId);
+
         return MapToDto(shift);
     }
 

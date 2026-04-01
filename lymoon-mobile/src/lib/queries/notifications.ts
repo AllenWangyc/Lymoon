@@ -7,7 +7,10 @@ export type NotificationType =
   | 'shift_modified'
   | 'shift_deleted'
   | 'new_week_added'
-  | 'removed_from_schedule';
+  | 'removed_from_schedule'
+  | 'shift_added'
+  | 'member_joined'
+  | 'schedule_updated';
 
 export interface Notification {
   id: string;

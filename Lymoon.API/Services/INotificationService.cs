@@ -19,4 +19,13 @@ public interface INotificationService
 
     /// <summary>Notify a specific user that they were removed from a schedule.</summary>
     Task NotifyRemovedFromScheduleAsync(string userId, Guid scheduleId, string scheduleName);
+
+    /// <summary>Notify shift owner that another user added a shift for them. No-op if actorId == shift owner.</summary>
+    Task NotifyShiftAddedAsync(Shift shift, string actorId);
+
+    /// <summary>Notify all existing schedule members (excluding the new joiner) that someone joined.</summary>
+    Task NotifyMemberJoinedAsync(Guid scheduleId, string scheduleName, string newMemberUserId);
+
+    /// <summary>Notify all schedule members that the schedule was renamed.</summary>
+    Task NotifyScheduleUpdatedAsync(Guid scheduleId, string newTitle);
 }

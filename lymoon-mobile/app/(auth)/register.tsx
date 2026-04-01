@@ -18,16 +18,22 @@ export default function RegisterScreen() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const register = useRegisterMutation();
   const submittingRef = useRef(false);
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   function handleRegister() {
     if (submittingRef.current) return;
-    if (!displayName.trim() || !email.trim() || !password) {
+    if (!displayName.trim() || !email.trim() || !password || !confirmPassword) {
       setErrorMsg('All fields are required.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
       return;
     }
     setErrorMsg(null);
@@ -41,7 +47,11 @@ export default function RegisterScreen() {
         },
         onError: (err) => {
           submittingRef.current = false;
-          setErrorMsg(err.message || 'Registration failed');
+          const msg =
+            err.message === 'email_taken'
+              ? 'An account with this email already exists.'
+              : err.message || 'Registration failed. Please try again.';
+          setErrorMsg(msg);
         },
       },
     );
@@ -112,6 +122,22 @@ export default function RegisterScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="At least 6 characters"
+                placeholderTextColor="#94a3b8"
+                secureTextEntry
+                autoComplete="new-password"
+                returnKeyType="next"
+                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                className="h-[52px] bg-white border border-[#e2e8f0] rounded-[14px] px-4"
+                style={{ fontSize: 15, color: '#0f172a' }}
+              />
+            </View>
+            <View>
+              <Text className="mb-2" style={{ fontSize: 13, fontWeight: '500', color: '#475569' }}>Confirm Password</Text>
+              <TextInput
+                ref={confirmPasswordRef}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Re-enter your password"
                 placeholderTextColor="#94a3b8"
                 secureTextEntry
                 autoComplete="new-password"

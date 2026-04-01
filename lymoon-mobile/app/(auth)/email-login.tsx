@@ -38,7 +38,11 @@ export default function EmailLoginScreen() {
         },
         onError: (err) => {
           submittingRef.current = false;
-          setErrorMsg(err.message || 'Login failed');
+          const msg =
+            err.message === 'invalid_credentials'
+              ? 'Incorrect email or password.'
+              : err.message || 'Login failed. Please try again.';
+          setErrorMsg(msg);
         },
       },
     );
