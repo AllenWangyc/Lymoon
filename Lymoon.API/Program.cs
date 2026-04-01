@@ -9,7 +9,17 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var firstError = context.ModelState.Values
+                .SelectMany(v => v.Errors)
+                .FirstOrDefault()?.ErrorMessage ?? "Invalid request.";
+            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new { error = firstError });
+        };
+    });
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 

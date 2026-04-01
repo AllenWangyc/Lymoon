@@ -75,8 +75,8 @@ export default function CreateScheduleScreen() {
             `/schedule-created?id=${schedule.id}&inviteCode=${schedule.inviteCode}&title=${encodeURIComponent(schedule.title)}`,
           );
         },
-        onError: (err) => {
-          showToast(err.message ?? 'Failed to create schedule', 'error');
+        onError: () => {
+          showToast('Failed to create schedule', 'error');
         },
       },
     );

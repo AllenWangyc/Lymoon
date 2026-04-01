@@ -92,7 +92,10 @@ export default function ScheduleDetailScreen() {
   const shifts = scheduleDetail?.shifts ?? [];
 
   const shiftsForDay = useMemo(
-    () => shifts.filter((s) => s.dayOfWeek === selectedDayIndex),
+    () =>
+      shifts
+        .filter((s) => s.dayOfWeek === selectedDayIndex)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime)),
     [shifts, selectedDayIndex],
   );
 
@@ -128,7 +131,7 @@ export default function ScheduleDetailScreen() {
     setShiftDetailVisible(false);
     deleteShift.mutate(shift.id, {
       onSuccess: () => showToast('Shift deleted', 'success'),
-      onError: (err) => showToast(err.message ?? 'Failed to delete shift', 'error'),
+      onError: () => showToast('Failed to delete shift', 'error'),
     });
   }
 
@@ -147,7 +150,7 @@ export default function ScheduleDetailScreen() {
             setAddEditVisible(false);
             showToast('Shift added', 'success');
           },
-          onError: (err) => showToast(err.message ?? 'Failed to add shift', 'error'),
+          onError: () => showToast('Failed to add shift', 'error'),
         },
       );
     } else {
@@ -164,7 +167,7 @@ export default function ScheduleDetailScreen() {
             setAddEditVisible(false);
             showToast('Shift updated', 'success');
           },
-          onError: (err) => showToast(err.message ?? 'Failed to update shift', 'error'),
+          onError: () => showToast('Failed to update shift', 'error'),
         },
       );
     }

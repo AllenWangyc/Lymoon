@@ -41,7 +41,7 @@ export default function EmailLoginScreen() {
           const msg =
             err.message === 'invalid_credentials'
               ? 'Incorrect email or password.'
-              : err.message || 'Login failed. Please try again.';
+              : 'Login failed. Please try again.';
           setErrorMsg(msg);
         },
       },

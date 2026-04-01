@@ -51,5 +51,5 @@ export function computeTotalHours(shifts: Shift[], userId: string): string {
   if (total === 0) return '0';
   const h = Math.floor(total);
   const m = Math.round((total - h) * 60);
-  return m > 0 ? `${h}.${Math.round((m / 60) * 10)}` : `${h}`;
+  return total.toString();
 }

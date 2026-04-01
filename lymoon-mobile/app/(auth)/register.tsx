@@ -50,7 +50,7 @@ export default function RegisterScreen() {
           const msg =
             err.message === 'email_taken'
               ? 'An account with this email already exists.'
-              : err.message || 'Registration failed. Please try again.';
+              : 'Registration failed. Please try again.';
           setErrorMsg(msg);
         },
       },

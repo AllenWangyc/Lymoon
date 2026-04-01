@@ -360,7 +360,7 @@ public class ScheduleService : IScheduleService
         if (hours == 0) return "0";
         return hours == Math.Floor(hours)
             ? ((int)hours).ToString()
-            : hours.ToString("0.#");
+            : hours.ToString("0.####");
     }
 
     private static List<DayDto> ComputeDays(List<Shift> userShifts, DateOnly weekStart)

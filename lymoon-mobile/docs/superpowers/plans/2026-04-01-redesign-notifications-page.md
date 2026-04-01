@@ -26,13 +26,13 @@
 
 **File:** `app/(app)/notifications/index.tsx` (inline helper)
 
-- [ ] Import `isToday`, `isYesterday`, `differenceInCalendarDays` from `date-fns`
-- [ ] Write pure function `groupNotificationsByPeriod(notifications: Notification[])` that returns `Array<{ title: string; data: Notification[] }>` with sections:
+- [x] Import `isToday`, `isYesterday`, `differenceInCalendarDays` from `date-fns`
+- [x] Write pure function `groupNotificationsByPeriod(notifications: Notification[])` that returns `Array<{ title: string; data: Notification[] }>` with sections:
   - `TODAY` — `isToday(createdAt)`
   - `YESTERDAY` — `isYesterday(createdAt)`
   - `THIS WEEK` — 2–6 days ago (`differenceInCalendarDays` in [2, 6])
   - `EARLIER` — 7+ days ago
-- [ ] Filter out empty sections
+- [x] Filter out empty sections
 
 **Exit criteria:** Given a mixed array of notifications spanning multiple days, the function returns only non-empty sections in the correct order.
 
@@ -69,9 +69,9 @@
 - Unread: `bg-white`, shadow (`shadowColor #000, offset 0/1, opacity 0.05, radius 2, elevation 1`), border-radius 14, `mb-3`
 - Read: background `rgba(255,255,255,0.6)`, no shadow, border-radius 14, `mb-3`
 
-- [ ] Implement `NotificationCard` component per spec above
-- [ ] Use `formatDistanceToNow` (existing helper) for timestamp
-- [ ] Use existing `TYPE_LABELS` constant for type label text
+- [x] Implement `NotificationCard` component per spec above
+- [x] Use `formatDistanceToNow` (existing helper) for timestamp
+- [x] Use existing `TYPE_LABELS` constant for type label text
 
 **Exit criteria:** Unread card renders with brand-tinted icon container and green dot; read card renders with grey icon container and no dot.
 
@@ -81,7 +81,7 @@
 
 **File:** `app/(app)/notifications/index.tsx` (inline component)
 
-- [ ] Implement `SectionHeader({ title }: { title: string })`:
+- [x] Implement `SectionHeader({ title }: { title: string })`:
   ```tsx
   <Text style={{ fontSize: 11, fontWeight: '700', color: '#94a3b8', letterSpacing: 1.2 }}
         className="mt-5 mb-2 px-1">
@@ -98,33 +98,33 @@
 **File:** `app/(app)/notifications/index.tsx`
 
 ### Header
-- [ ] Import `useRouter` from `expo-router`
-- [ ] Import `PageHeader` from `@/components/PageHeader`
-- [ ] Wrap header in `View` with `paddingTop: insets.top + 12`, `px-4 pb-3`, `bg-[#f8f8f6]`
-- [ ] Pass to `PageHeader`:
+- [x] Import `useRouter` from `expo-router`
+- [x] Import `PageHeader` from `@/components/PageHeader`
+- [x] Wrap header in `View` with `paddingTop: insets.top + 12`, `px-4 pb-3`, `bg-[#f8f8f6]`
+- [x] Pass to `PageHeader`:
   - `title="Notifications"`
   - `onBack={() => router.back()}`
   - `rightElement`: TouchableOpacity "Clear All" button, color `#b6ec13` when `unreadCount > 0`, else `#94a3b8`; disabled when `markRead.isPending`
 
 ### Clear All handler
-- [ ] Implement `handleClearAll`: calls `markRead.mutate(notifications.map(n => n.id))` with error toast on failure
+- [x] Implement `handleClearAll`: calls `markRead.mutate(notifications.map(n => n.id))` with error toast on failure
 
 ### SectionList
-- [ ] `sections` = `groupNotificationsByPeriod(notifications)`
-- [ ] `renderItem` = `<NotificationCard item={item} />`
-- [ ] `renderSectionHeader` = `<SectionHeader title={section.title} />`
-- [ ] `stickySectionHeadersEnabled={false}`
-- [ ] `contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}`
-- [ ] `keyExtractor={(item) => item.id}`
-- [ ] Add `RefreshControl` with `tintColor="#b6ec13"`
+- [x] `sections` = `groupNotificationsByPeriod(notifications)`
+- [x] `renderItem` = `<NotificationCard item={item} />`
+- [x] `renderSectionHeader` = `<SectionHeader title={section.title} />`
+- [x] `stickySectionHeadersEnabled={false}`
+- [x] `contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}`
+- [x] `keyExtractor={(item) => item.id}`
+- [x] Add `RefreshControl` with `tintColor="#b6ec13"`
 
 ### Page background
-- [ ] Outer `View className="flex-1 bg-[#f8f8f6]"`
+- [x] Outer `View className="flex-1 bg-[#f8f8f6]"`
 
 ### Loading / Error / Empty states
-- [ ] **Loading:** `ActivityIndicator` centered, `color="#b6ec13"`
-- [ ] **Error:** Centered error text + pull-to-refresh hint
-- [ ] **Empty:** Centered `Ionicons notifications-off-outline` (size 48, color `#94a3b8`) + "You're all caught up" text (16px, `#94a3b8`)
+- [x] **Loading:** `ActivityIndicator` centered, `color="#b6ec13"`
+- [x] **Error:** Centered error text + pull-to-refresh hint
+- [x] **Empty:** Centered `Ionicons notifications-off-outline` (size 48, color `#94a3b8`) + "You're all caught up" text (16px, `#94a3b8`)
 
 **Exit criteria:**
 - Page background is `#f8f8f6`
