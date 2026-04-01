@@ -7,7 +7,9 @@ import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
 import { OptionsMenuCard } from '@/components/OptionsMenuCard';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useScheduleMembers, useWorkHours, useRemoveMember } from '@/lib/queries/schedules';
+import { useAuthStore } from '@/stores/authStore';
 import type { Employee } from '@/types/schedule';
+import { sortEmployees } from '@/features/schedule/utils/sortEmployees';
 
 type Props = {
   visible: boolean;
@@ -157,10 +159,12 @@ type MemberCardProps = {
   employee: Employee;
   containerRef: React.RefObject<View | null>;
   onMenuPress: (employee: Employee, top: number) => void;
+  currentUserId: string;
+  currentUserName: string | null;
 };
 
-function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
-  const buttonRef = useRef<TouchableOpacity>(null);
+function MemberCard({ employee, containerRef, onMenuPress, currentUserId, currentUserName }: MemberCardProps) {
+  const buttonRef = useRef<View>(null);
   const isOwnerManager = employee.role === 'Manager';
 
   function handleMenuPress() {
@@ -184,7 +188,11 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
     >
       {/* Avatar + Name + Badge */}
       <View className="flex-row items-center gap-4">
-        <UserAvatar name={employee.name} initials={employee.avatarInitials} size={40} />
+        <UserAvatar
+          name={employee.id === currentUserId ? currentUserName : employee.name}
+          initials={employee.avatarInitials}
+          size={40}
+        />
         <View className="flex-row items-center gap-2">
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
             {employee.name}
@@ -223,6 +231,7 @@ function MemberCard({ employee, containerRef, onMenuPress }: MemberCardProps) {
 // ─── ViewMembersSheet ────────────────────────────────────────────────────────
 
 export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, currentUserId, onRemoveSuccess, onRemoveError }: Props) {
+  const { userName } = useAuthStore();
   const [menuState, setMenuState] = useState<MenuState>(null);
   const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
   const [workHoursEmployee, setWorkHoursEmployee] = useState<Employee | null>(null);
@@ -231,13 +240,17 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
   const { data: members = [], isLoading: membersLoading, isError: membersError } = useScheduleMembers(scheduleId);
   const removeMember = useRemoveMember(scheduleId);
 
-  // Convert API member shape to Employee type
-  const employees: Employee[] = members.map((m) => ({
-    id: m.id,
-    name: m.name,
-    role: m.scheduleRole,
-    avatarInitials: m.avatarInitials,
-  }));
+  // Convert API member shape to Employee type, then sort:
+  //   1. Current user  2. Managers (A–Z)  3. Members (A–Z)
+  const employees: Employee[] = sortEmployees(
+    members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      role: m.scheduleRole,
+      avatarInitials: m.avatarInitials,
+    })),
+    currentUserId,
+  );
 
   useEffect(() => {
     if (!visible) {
@@ -317,6 +330,8 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
                     employee={emp}
                     containerRef={containerRef}
                     onMenuPress={(employee, top) => setMenuState({ employee, top })}
+                    currentUserId={currentUserId}
+                    currentUserName={userName}
                   />
                 ))}
               </ScrollView>
