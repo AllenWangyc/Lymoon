@@ -14,6 +14,7 @@ import { LeaveScheduleSheet } from '@/features/schedule/components/LeaveSchedule
 import { RenameScheduleSheet } from '@/features/schedule/components/RenameScheduleSheet';
 import { ViewMembersSheet } from '@/features/schedule/components/ViewMembersSheet';
 import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
+import { sortEmployees } from '@/features/schedule/utils/sortEmployees';
 import { PageHeader } from '@/components/PageHeader';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/useToast';
@@ -87,7 +88,7 @@ export default function ScheduleDetailScreen() {
     ? weekStartParam >= scheduleDetail.currentWeek
     : false;
 
-  const employees = scheduleDetail?.employees ?? [];
+  const employees = sortEmployees(scheduleDetail?.employees ?? [], userId);
   const shifts = scheduleDetail?.shifts ?? [];
 
   const shiftsForDay = useMemo(
