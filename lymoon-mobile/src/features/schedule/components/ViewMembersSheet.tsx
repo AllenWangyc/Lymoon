@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, Pressable, ActivityIndicator 
 import { Ionicons } from '@expo/vector-icons';
 import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
 import { BottomSheet } from '@/components/BottomSheet';
-import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
 import { OptionsMenuCard } from '@/components/OptionsMenuCard';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useScheduleMembers, useWorkHours, useRemoveMember } from '@/lib/queries/schedules';
@@ -151,6 +150,73 @@ function WorkHoursView({ employee, scheduleId, onBack }: WorkHoursViewProps) {
   );
 }
 
+// ─── ConfirmRemoveView ───────────────────────────────────────────────────────
+
+type ConfirmRemoveViewProps = {
+  employee: Employee;
+  onBack: () => void;
+  onConfirm: () => void;
+  isPending: boolean;
+};
+
+function ConfirmRemoveView({ employee, onBack, onConfirm, isPending }: ConfirmRemoveViewProps) {
+  return (
+    <View className="h-[456px] px-6 pt-4 pb-6">
+      {/* Header */}
+      <View className="h-10 flex-row items-center mb-2">
+        <TouchableOpacity
+          onPress={onBack}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          className="w-8 h-8 items-center justify-center"
+        >
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Confirmation content */}
+      <View className="flex-1 items-center justify-center gap-5">
+        <View
+          className="size-16 rounded-full items-center justify-center"
+          style={{ backgroundColor: 'rgba(220,38,38,0.10)' }}
+        >
+          <Ionicons name="person-remove-outline" size={30} color="#dc2626" />
+        </View>
+        <View className="items-center gap-2">
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#1e293b', textAlign: 'center' }}>
+            Remove {employee.name}?
+          </Text>
+          <Text style={{ fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 18 }}>
+            {employee.name} will be removed from this schedule and lose access to all shifts.
+          </Text>
+        </View>
+      </View>
+
+      {/* Buttons */}
+      <View className="gap-3">
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={onConfirm}
+          disabled={isPending}
+          className="h-12 rounded-[12px] items-center justify-center"
+          style={{ backgroundColor: isPending ? '#f87171' : '#dc2626' }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#fff' }}>
+            {isPending ? 'Removing…' : 'Remove'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={onBack}
+          disabled={isPending}
+          className="h-12 rounded-[12px] items-center justify-center border border-[#e2e8f0]"
+        >
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#0f172a' }}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── MemberCard ──────────────────────────────────────────────────────────────
 
 type MenuState = { employee: Employee; top: number } | null;
@@ -256,6 +322,7 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
     if (!visible) {
       setMenuState(null);
       setWorkHoursEmployee(null);
+      setRemoveTarget(null);
     }
   }, [visible]);
 
@@ -287,102 +354,95 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
   }
 
   return (
-    <>
-      <BottomSheet
-        visible={visible}
-        onClose={onClose}
-        height={480}
-        backgroundColor="#ffffff"
-      >
-        {workHoursEmployee ? (
-          <WorkHoursView
-            employee={workHoursEmployee}
-            scheduleId={scheduleId}
-            onBack={() => setWorkHoursEmployee(null)}
-          />
-        ) : (
-          <View ref={containerRef} className="h-[456px]">
-            {membersLoading ? (
-              <View className="flex-1 items-center justify-center">
-                <ActivityIndicator size="small" color="#b6ec13" />
-              </View>
-            ) : membersError ? (
-              <View className="flex-1 items-center justify-center px-6">
-                <Text style={{ fontSize: 14, color: '#ef4444', textAlign: 'center' }}>
-                  Failed to load members.
-                </Text>
-              </View>
-            ) : employees.length === 0 ? (
-              <View className="flex-1 items-center justify-center px-6">
-                <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
-                  No members found.
-                </Text>
-              </View>
-            ) : (
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={!menuState}
-                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 12 }}
-              >
-                {employees.map((emp) => (
-                  <MemberCard
-                    key={emp.id}
-                    employee={emp}
-                    containerRef={containerRef}
-                    onMenuPress={(employee, top) => setMenuState({ employee, top })}
-                    currentUserId={currentUserId}
-                    currentUserName={userName}
-                  />
-                ))}
-              </ScrollView>
-            )}
-
-            {menuState && (
-              <>
-                <Pressable
-                  className="absolute inset-0"
-                  onPress={closeMenu}
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      height={480}
+      backgroundColor="#ffffff"
+    >
+      {workHoursEmployee ? (
+        <WorkHoursView
+          employee={workHoursEmployee}
+          scheduleId={scheduleId}
+          onBack={() => setWorkHoursEmployee(null)}
+        />
+      ) : removeTarget ? (
+        <ConfirmRemoveView
+          employee={removeTarget}
+          onBack={() => setRemoveTarget(null)}
+          onConfirm={handleRemoveConfirm}
+          isPending={removeMember.isPending}
+        />
+      ) : (
+        <View ref={containerRef} className="h-[456px]">
+          {membersLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="small" color="#b6ec13" />
+            </View>
+          ) : membersError ? (
+            <View className="flex-1 items-center justify-center px-6">
+              <Text style={{ fontSize: 14, color: '#ef4444', textAlign: 'center' }}>
+                Failed to load members.
+              </Text>
+            </View>
+          ) : employees.length === 0 ? (
+            <View className="flex-1 items-center justify-center px-6">
+              <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+                No members found.
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={!menuState}
+              contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 12 }}
+            >
+              {employees.map((emp) => (
+                <MemberCard
+                  key={emp.id}
+                  employee={emp}
+                  containerRef={containerRef}
+                  onMenuPress={(employee, top) => setMenuState({ employee, top })}
+                  currentUserId={currentUserId}
+                  currentUserName={userName}
                 />
-                <OptionsMenuCard
-                  iconSize={15}
-                  style={{ position: 'absolute', right: 12, top: menuState.top, width: 192, zIndex: 100 }}
-                  items={[
-                    {
-                      key: 'view-work-hours',
-                      label: 'View Work Hours',
-                      icon: 'time-outline',
-                      onPress: () => {
-                        closeMenu();
-                        setWorkHoursEmployee(menuState.employee);
-                      },
+              ))}
+            </ScrollView>
+          )}
+
+          {menuState && (
+            <>
+              <Pressable
+                className="absolute inset-0"
+                onPress={closeMenu}
+              />
+              <OptionsMenuCard
+                iconSize={15}
+                style={{ position: 'absolute', right: 12, top: menuState.top, width: 192, zIndex: 100 }}
+                items={[
+                  {
+                    key: 'view-work-hours',
+                    label: 'View Work Hours',
+                    icon: 'time-outline',
+                    onPress: () => {
+                      closeMenu();
+                      setWorkHoursEmployee(menuState.employee);
                     },
-                  ]}
-                  destructiveItem={isManager && menuState.employee.id !== currentUserId ? {
-                    key: 'remove',
-                    label: 'Remove',
-                    icon: 'person-remove-outline',
-                    color: '#ba1a1a',
-                    onPress: () => handleRemovePress(menuState.employee),
-                    disabled: removeMember.isPending,
-                  } : undefined}
-                />
-              </>
-            )}
-          </View>
-        )}
-      </BottomSheet>
-
-      <ConfirmActionSheet
-        visible={removeTarget !== null}
-        onClose={() => setRemoveTarget(null)}
-        onConfirm={handleRemoveConfirm}
-        title="Remove Member?"
-        message={`${removeTarget?.name} will be removed from this schedule and lose access to all shifts.`}
-        confirmLabel="Remove"
-        iconName="person-remove-outline"
-        iconColor="#dc2626"
-        iconBg="rgba(220,38,38,0.10)"
-      />
-    </>
+                  },
+                ]}
+                destructiveItem={isManager && menuState.employee.id !== currentUserId ? {
+                  key: 'remove',
+                  label: 'Remove',
+                  icon: 'person-remove-outline',
+                  color: '#ba1a1a',
+                  onPress: () => handleRemovePress(menuState.employee),
+                  disabled: removeMember.isPending,
+                } : undefined}
+              />
+            </>
+          )}
+        </View>
+      )}
+    </BottomSheet>
   );
 }
