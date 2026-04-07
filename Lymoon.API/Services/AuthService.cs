@@ -19,23 +19,28 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _cache;
+    private readonly IEmailVerificationService _verificationService;
 
     public AuthService(
         UserManager<AppUser> userManager,
         IJwtService jwtService,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IEmailVerificationService verificationService)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
         _cache = cache;
+        _verificationService = verificationService;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        _verificationService.VerifyCode(request.Email, request.VerificationCode);
+
         var existing = await _userManager.FindByEmailAsync(request.Email);
         if (existing != null)
             throw new InvalidOperationException("email_taken");

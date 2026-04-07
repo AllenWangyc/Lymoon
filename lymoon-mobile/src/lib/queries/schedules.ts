@@ -184,13 +184,24 @@ export function useWorkHours(scheduleId: string, userId: string) {
   });
 }
 
+type MemberDto = {
+  id: string;
+  name: string;
+  role: string;
+  avatarInitials: string;
+  scheduleRole: 'Manager' | 'Member';
+};
+
 export function useRemoveMember(scheduleId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
       apiPost<{ ok: boolean }>(`/schedules/${scheduleId}/members/remove`, { userId }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: scheduleKeys.members(scheduleId) });
+    onSuccess: (_data, userId) => {
+      qc.setQueryData<MemberDto[]>(
+        scheduleKeys.members(scheduleId),
+        (old) => old?.filter((m) => m.id !== userId) ?? [],
+      );
       qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
     },
   });

@@ -69,6 +69,11 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 
+// Email services
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<IEmailVerificationService, EmailVerificationService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

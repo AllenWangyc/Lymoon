@@ -29,11 +29,22 @@ export function useLoginMutation() {
   });
 }
 
+export function useSendVerificationMutation() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      apiPost<{ ok: boolean }>('/auth/send-verification', { email }),
+  });
+}
+
 export function useRegisterMutation() {
   const { setUser } = useAuthStore();
   return useMutation({
-    mutationFn: (vars: { email: string; password: string; displayName: string }) =>
-      apiPost<AuthResponse>('/auth/register', vars),
+    mutationFn: (vars: {
+      email: string;
+      password: string;
+      displayName: string;
+      verificationCode: string;
+    }) => apiPost<AuthResponse>('/auth/register', vars),
     onSuccess: (data) => {
       setUser({
         userId: data.user.id,

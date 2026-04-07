@@ -22,7 +22,8 @@ This document defines all API endpoints required by the mobile frontend. It serv
 {
   "email": "string",
   "password": "string",
-  "displayName": "string"
+  "displayName": "string",
+  "verificationCode": "string"
 }
 ```
 
@@ -32,6 +33,14 @@ This document defines all API endpoints required by the mobile frontend. It serv
 | `email` | Required. Must be a valid email address. |
 | `password` | Required. Min 6 characters, max 100 characters. |
 | `displayName` | Required. Max 50 characters. |
+| `verificationCode` | Required. Exactly 6 digits. Must match the OTP sent via `POST /api/auth/send-verification`. |
+
+**Additional error codes:**
+| Error | Meaning |
+|-------|---------|
+| `code_expired` | OTP not found or expired (10 min TTL) |
+| `invalid_code` | Wrong code entered |
+| `too_many_attempts` | 5+ wrong attempts — request a new code |
 
 **Response `200`:**
 ```json
@@ -45,6 +54,33 @@ This document defines all API endpoints required by the mobile frontend. It serv
   }
 }
 ```
+
+---
+
+### Send Verification Code
+`POST /api/auth/send-verification`
+
+Generates and emails a 6-digit OTP to the given address. Rate-limited to once per 60 seconds per email. OTP expires in 10 minutes.
+
+**Request body:**
+```json
+{
+  "email": "string"
+}
+```
+
+**Constraints:**
+| Field | Rules |
+|-------|-------|
+| `email` | Required. Must be a valid email address. |
+
+**Responses:**
+| Status | Body | Meaning |
+|--------|------|---------|
+| 200 | `{ "ok": true }` | Code sent (or logged to console in dev) |
+| 429 | `{ "error": "rate_limited" }` | Sent too recently (< 60 s) |
+| 400 | `{ "error": "..." }` | Validation error |
+| 500 | `{ "error": "..." }` | Email send failed |
 
 ---
 
