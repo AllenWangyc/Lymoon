@@ -9,10 +9,17 @@ namespace Lymoon.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IEmailService _emailService;
+    private readonly IEmailVerificationService _verificationService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IAuthService authService,
+        IEmailService emailService,
+        IEmailVerificationService verificationService)
     {
         _authService = authService;
+        _emailService = emailService;
+        _verificationService = verificationService;
     }
 
     [HttpPost("register")]
@@ -26,6 +33,25 @@ public class AuthController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("send-verification")]
+    public async Task<IActionResult> SendVerification([FromBody] SendVerificationRequest request)
+    {
+        try
+        {
+            var code = _verificationService.GenerateCode(request.Email);
+            await _emailService.SendVerificationCodeAsync(request.Email, code);
+            return Ok(new { ok = true });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "rate_limited")
+        {
+            return StatusCode(429, new { error = "rate_limited" });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Failed to send verification email." });
         }
     }
 
