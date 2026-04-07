@@ -15,4 +15,8 @@ public class RegisterRequest
     [Required]
     [MaxLength(50)]
     public string DisplayName { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(6, MinimumLength = 6)]
+    public string VerificationCode { get; set; } = string.Empty;
 }

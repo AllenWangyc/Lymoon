@@ -30,6 +30,11 @@ public class AuthController : ControllerBase
             var response = await _authService.RegisterAsync(request);
             return Ok(response);
         }
+        catch (InvalidOperationException ex) when (
+            ex.Message is "code_expired" or "invalid_code" or "too_many_attempts")
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
