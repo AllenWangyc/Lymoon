@@ -189,28 +189,23 @@ export default function RegisterScreen() {
                 />
                 <TouchableOpacity
                   onPress={handleSendCode}
-                  activeOpacity={0.8}
+                  activeOpacity={0.75}
                   disabled={sendButtonDisabled}
-                  className="h-[52px] rounded-[14px] items-center justify-center px-3"
+                  className="h-[52px] rounded-[14px] items-center justify-center px-3 bg-white border border-[#e2e8f0]"
                   style={{
-                    backgroundColor: sendButtonDisabled ? '#e2e8f0' : '#b6ec13',
-                    minWidth: 76,
-                    shadowColor: sendButtonDisabled ? 'transparent' : '#b6ec13',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: sendButtonDisabled ? 0 : 0.2,
-                    shadowRadius: 8,
-                    elevation: sendButtonDisabled ? 0 : 4,
+                    minWidth: 100,
+                    opacity: sendButtonDisabled ? 0.5 : 1,
                   }}
                 >
                   {sendVerification.isPending ? (
-                    <ActivityIndicator size="small" color="#0f172a" />
+                    <ActivityIndicator size="small" color="#64748b" />
                   ) : (
                     <Text style={{
                       fontSize: 13,
-                      fontWeight: '600',
-                      color: sendButtonDisabled ? '#94a3b8' : '#0f172a',
+                      fontWeight: '500',
+                      color: '#64748b',
                     }}>
-                      {countdown > 0 ? `${countdown}s` : codeSent ? 'Resend' : 'Send'}
+                      {countdown > 0 ? `${countdown}s` : codeSent ? 'Resend Code' : 'Send Code'}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -256,7 +251,7 @@ export default function RegisterScreen() {
                 returnKeyType="next"
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                 className="h-[52px] bg-white border border-[#e2e8f0] rounded-[14px] px-4"
-                style={{ fontSize: 15, color: '#0f172a' }}
+                style={{ fontSize: 15, color: '#0f172a', letterSpacing: 0 }}
               />
             </View>
 
@@ -274,7 +269,7 @@ export default function RegisterScreen() {
                 returnKeyType="done"
                 onSubmitEditing={handleRegister}
                 className="h-[52px] bg-white border border-[#e2e8f0] rounded-[14px] px-4"
-                style={{ fontSize: 15, color: '#0f172a' }}
+                style={{ fontSize: 15, color: '#0f172a', letterSpacing: 0 }}
               />
             </View>
 
