@@ -7,7 +7,7 @@ This document defines all API endpoints required by the mobile frontend. It serv
 - **Base URL:** `http://localhost:5000/api` (dev) / `https://<production-domain>/api` (prod)
 - **Auth:** All endpoints except `POST /api/auth/*` require `Authorization: Bearer <jwt>` header
 - **Content-Type:** `application/json` for all requests and responses
-- **Methods:** Only `GET` and `POST` are used across the entire API
+- **Methods:** `GET`, `POST`, and `DELETE` are used across the API
 - **Error shape:** All errors return `{ "error": "<message>" }` with an appropriate HTTP status code
 
 ---
@@ -454,6 +454,50 @@ Manager only.
 ```json
 { "ok": true }
 ```
+
+---
+
+### Dissolve Schedule
+`DELETE /api/schedules/{id}`
+
+Manager only. Permanently deletes the schedule, all its shifts, and all member records. All other members receive a `schedule_dissolved` notification. This operation is wrapped in a database transaction and cannot be partially applied.
+
+**Response `200`:**
+```json
+{ "ok": true }
+```
+
+**Error codes:**
+| Error | HTTP | Meaning |
+|-------|------|---------|
+| `Only a Manager can dissolve a schedule.` | 403 | Requester is not a Manager |
+| `Schedule not found.` | 404 | Schedule does not exist |
+
+---
+
+### Transfer Manager
+`POST /api/schedules/{id}/members/transfer-manager`
+
+Manager only. Transfers the Manager role from the requester to a Member. The requester is downgraded to Member. The target receives a `became_manager` notification.
+
+**Request body:**
+```json
+{
+  "userId": "string"
+}
+```
+
+**Response `200`:**
+```json
+{ "ok": true }
+```
+
+**Error codes:**
+| Error | HTTP | Meaning |
+|-------|------|---------|
+| `Only a Manager can transfer manager rights.` | 403 | Requester is not a Manager |
+| `member_not_found` | 404 | Target user is not a member |
+| `target_is_already_manager` | 409 | Target is already a Manager |
 
 ---
 

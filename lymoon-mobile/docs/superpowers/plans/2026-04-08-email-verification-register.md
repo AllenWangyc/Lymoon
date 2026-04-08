@@ -654,7 +654,7 @@ git commit -m "feat(auth): add useSendVerificationMutation hook"
 **Files:**
 - Modify: `lymoon-mobile/app/(auth)/register.tsx`
 
-- [x] **Step 1: Rewrite register.tsx with email verification UX**
+- [ ] **Step 1: Rewrite register.tsx with email verification UX**
 
 Replace the full content of `lymoon-mobile/app/(auth)/register.tsx` with:
 
@@ -850,26 +850,21 @@ export default function RegisterScreen() {
                 />
                 <TouchableOpacity
                   onPress={handleSendCode}
-                  activeOpacity={0.8}
+                  activeOpacity={0.75}
                   disabled={sendButtonDisabled}
-                  className="h-[52px] rounded-[14px] items-center justify-center px-3"
+                  className="h-[52px] rounded-[14px] items-center justify-center px-3 bg-white border border-[#e2e8f0]"
                   style={{
-                    backgroundColor: sendButtonDisabled ? '#e2e8f0' : '#b6ec13',
-                    minWidth: 76,
-                    shadowColor: sendButtonDisabled ? 'transparent' : '#b6ec13',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: sendButtonDisabled ? 0 : 0.2,
-                    shadowRadius: 8,
-                    elevation: sendButtonDisabled ? 0 : 4,
+                    minWidth: 100,
+                    opacity: sendButtonDisabled ? 0.5 : 1,
                   }}
                 >
                   {sendVerification.isPending ? (
-                    <ActivityIndicator size="small" color="#0f172a" />
+                    <ActivityIndicator size="small" color="#64748b" />
                   ) : (
                     <Text style={{
                       fontSize: 13,
-                      fontWeight: '600',
-                      color: sendButtonDisabled ? '#94a3b8' : '#0f172a',
+                      fontWeight: '500',
+                      color: '#64748b',
                     }}>
                       {countdown > 0 ? `${countdown}s` : codeSent ? 'Resend' : 'Send'}
                     </Text>
@@ -917,7 +912,7 @@ export default function RegisterScreen() {
                 returnKeyType="next"
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                 className="h-[52px] bg-white border border-[#e2e8f0] rounded-[14px] px-4"
-                style={{ fontSize: 15, color: '#0f172a' }}
+                style={{ fontSize: 15, color: '#0f172a', letterSpacing: 0 }}
               />
             </View>
 
@@ -935,7 +930,7 @@ export default function RegisterScreen() {
                 returnKeyType="done"
                 onSubmitEditing={handleRegister}
                 className="h-[52px] bg-white border border-[#e2e8f0] rounded-[14px] px-4"
-                style={{ fontSize: 15, color: '#0f172a' }}
+                style={{ fontSize: 15, color: '#0f172a', letterSpacing: 0 }}
               />
             </View>
 
@@ -981,7 +976,7 @@ export default function RegisterScreen() {
 }
 ```
 
-- [x] **Step 2: Verify TypeScript compiles (no red squiggles)**
+- [ ] **Step 2: Verify TypeScript compiles (no red squiggles)**
 
 In the Expo dev server terminal, check for TypeScript errors:
 ```bash
@@ -1005,17 +1000,21 @@ Test checklist:
 5. Enter valid email → tap "Send" → button shows spinner → then "59s" countdown
 6. Check API console output for the code (dev mode)
 7. Verification code field appears with "Code sent to …" label
-8. Tap "Send" again during countdown → button is disabled (no action)
-9. Enter the 6-digit code → "Create Account" button becomes active/bright
-10. Enter wrong code → tap "Create Account" → error: "Invalid verification code"
-11. Start fresh: enter correct code → tap "Create Account" → navigates to app
+8. Tap button again during countdown → button is disabled (shows "59s", no action)
+9. Enter the 6-digit code in the verification field → confirm letterSpacing: 6 applies only to that field
+10. Tap back → re-enter register screen → confirm Password field has NO extra letter spacing
+11. Enter correct code → fill password + confirm → "Create Account" becomes active
+12. Enter wrong code → tap "Create Account" → error: "Invalid verification code"
+13. After countdown reaches 0 → button reads "Resend" and becomes tappable again
+14. Start fresh: enter correct code → tap "Create Account" → navigates to app
+15. Visual check: "Send Code"/"Resend" button should appear as a subtle secondary button (white bg, gray border, gray text) — NOT the bold lime-green primary style
 
-- [x] **Step 4: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 cd "d:\Vibe coding projects\Lymoon"
 git add lymoon-mobile/app/(auth)/register.tsx
-git commit -m "feat(register): add email OTP verification with Send button and countdown UX"
+git commit -m "fix(register): rename Send→Send Code, downgrade to secondary button, fix letter-spacing bleed on password inputs"
 ```
 
 ---

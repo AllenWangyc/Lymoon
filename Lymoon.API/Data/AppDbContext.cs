@@ -70,7 +70,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
             entity.HasOne(e => e.Schedule)
                   .WithMany(s => s.Notifications)
                   .HasForeignKey(e => e.ScheduleId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

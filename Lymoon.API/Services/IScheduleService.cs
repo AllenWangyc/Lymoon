@@ -36,4 +36,13 @@ public interface IScheduleService
     // Step 6 — Work Hours
     /// <exception cref="UnauthorizedAccessException">Requester is not a member of this schedule.</exception>
     Task<List<WorkHourWeekDto>> GetMemberWorkHoursAsync(Guid scheduleId, string requesterId, string targetUserId);
+
+    /// <exception cref="KeyNotFoundException">Schedule not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Requester is not a Manager.</exception>
+    Task DissolveScheduleAsync(Guid scheduleId, string requesterId);
+
+    /// <exception cref="KeyNotFoundException">Target member not found (message: "member_not_found").</exception>
+    /// <exception cref="InvalidOperationException">Target is already a Manager (message: "target_is_already_manager").</exception>
+    /// <exception cref="UnauthorizedAccessException">Requester is not a Manager.</exception>
+    Task TransferManagerAsync(Guid scheduleId, string requesterId, string targetUserId);
 }

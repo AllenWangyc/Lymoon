@@ -322,6 +322,94 @@ public class ScheduleService : IScheduleService
         return result;
     }
 
+    public async Task DissolveScheduleAsync(Guid scheduleId, string requesterId)
+    {
+        // Guard: requester must be a Manager (outside transaction — read-only check)
+        var requesterMembership = await _db.ScheduleMembers
+            .FirstOrDefaultAsync(m => m.ScheduleId == scheduleId && m.UserId == requesterId);
+
+        if (requesterMembership == null)
+            throw new KeyNotFoundException("Schedule not found.");
+
+        if (requesterMembership.Role != "Manager")
+            throw new UnauthorizedAccessException("Only a Manager can dissolve a schedule.");
+
+        var schedule = await _db.Schedules.FindAsync(scheduleId)
+            ?? throw new KeyNotFoundException("Schedule not found.");
+
+        // Collect notification targets before deletion
+        var memberIds = await _db.ScheduleMembers
+            .Where(m => m.ScheduleId == scheduleId && m.UserId != requesterId)
+            .Select(m => m.UserId)
+            .ToListAsync();
+
+        // Atomic transaction: insert notifications, delete all data
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        try
+        {
+            // Insert dissolved notifications (ScheduleId becomes null after schedule is deleted via SET NULL)
+            var notifications = memberIds.Select(uid => new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = uid,
+                ScheduleId = scheduleId,
+                Type = "schedule_dissolved",
+                Message = $"The schedule \"{schedule.Title}\" has been dissolved."
+            });
+            await _db.Notifications.AddRangeAsync(notifications);
+
+            // Delete shifts (cascade would handle this, but explicit is safer)
+            var shifts = await _db.Shifts
+                .Where(s => s.ScheduleId == scheduleId)
+                .ToListAsync();
+            _db.Shifts.RemoveRange(shifts);
+
+            // Delete members
+            var members = await _db.ScheduleMembers
+                .Where(m => m.ScheduleId == scheduleId)
+                .ToListAsync();
+            _db.ScheduleMembers.RemoveRange(members);
+
+            // Delete schedule (ON DELETE SET NULL nullifies the ScheduleId in the notifications we just inserted)
+            _db.Schedules.Remove(schedule);
+
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task TransferManagerAsync(Guid scheduleId, string requesterId, string targetUserId)
+    {
+        var requesterMembership = await _db.ScheduleMembers
+            .FirstOrDefaultAsync(m => m.ScheduleId == scheduleId && m.UserId == requesterId);
+
+        if (requesterMembership == null || requesterMembership.Role != "Manager")
+            throw new UnauthorizedAccessException("Only a Manager can transfer manager rights.");
+
+        var targetMembership = await _db.ScheduleMembers
+            .FirstOrDefaultAsync(m => m.ScheduleId == scheduleId && m.UserId == targetUserId);
+
+        if (targetMembership == null)
+            throw new KeyNotFoundException("member_not_found");
+
+        if (targetMembership.Role == "Manager")
+            throw new InvalidOperationException("target_is_already_manager");
+
+        var schedule = await _db.Schedules.FindAsync(scheduleId)
+            ?? throw new KeyNotFoundException("Schedule not found.");
+
+        requesterMembership.Role = "Member";
+        targetMembership.Role = "Manager";
+        await _db.SaveChangesAsync();
+
+        await _notifications.NotifyBecameManagerAsync(targetUserId, scheduleId, schedule.Title);
+    }
+
     // --- Private helpers ---
 
     private static ScheduleItemDto MapToItemDto(Schedule schedule, string userId)

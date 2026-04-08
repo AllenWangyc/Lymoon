@@ -9,6 +9,7 @@ type Props = {
   onClose: () => void;
   onLeave: () => void;
   onViewMembers: () => void;
+  onDissolve?: () => void;
   inviteCode?: string;
   onInviteCopied?: () => void;
   isManager?: boolean;
@@ -16,7 +17,7 @@ type Props = {
   onAddNextWeek?: () => void;
 };
 
-export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, inviteCode, onInviteCopied, isManager, onRename, onAddNextWeek }: Props) {
+export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, onDissolve, inviteCode, onInviteCopied, isManager, onRename, onAddNextWeek }: Props) {
   const insets = useSafeAreaInsets();
 
   const menuTop = insets.top + 56;
@@ -52,27 +53,50 @@ export function ScheduleOptionsMenu({ visible, onClose, onLeave, onViewMembers, 
         onClose();
       },
     },
-    ...(isManager ? [{
-      key: 'rename',
-      label: 'Rename',
-      icon: 'pencil-outline' as const,
-      onPress: () => {
-        onClose();
-        onRename?.();
+    ...(isManager ? [
+      {
+        key: 'rename',
+        label: 'Rename',
+        icon: 'pencil-outline' as const,
+        onPress: () => {
+          onClose();
+          onRename?.();
+        },
       },
-    }] : []),
+      {
+        key: 'leave',
+        label: 'Leave Schedule',
+        icon: 'exit-outline' as const,
+        color: '#dc2626',
+        onPress: () => {
+          onClose();
+          onLeave();
+        },
+      },
+    ] : []),
   ];
 
-  const destructiveItem: OptionsMenuItem = {
-    key: 'leave',
-    label: 'Leave Schedule',
-    icon: 'exit-outline',
-    color: '#dc2626',
-    onPress: () => {
-      onClose();
-      onLeave();
-    },
-  };
+  const destructiveItem: OptionsMenuItem = isManager
+    ? {
+        key: 'dissolve',
+        label: 'Dissolve Schedule',
+        icon: 'trash-outline',
+        color: '#dc2626',
+        onPress: () => {
+          onClose();
+          onDissolve?.();
+        },
+      }
+    : {
+        key: 'leave',
+        label: 'Leave Schedule',
+        icon: 'exit-outline',
+        color: '#dc2626',
+        onPress: () => {
+          onClose();
+          onLeave();
+        },
+      };
 
   return (
     <Modal

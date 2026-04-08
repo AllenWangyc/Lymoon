@@ -177,6 +177,20 @@ public class NotificationService : INotificationService
         await _db.SaveChangesAsync();
     }
 
+    public async Task NotifyBecameManagerAsync(string targetUserId, Guid scheduleId, string scheduleName)
+    {
+        _db.Notifications.Add(new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = targetUserId,
+            ScheduleId = scheduleId,
+            Type = "became_manager",
+            Message = $"You are now the Manager of \"{scheduleName}\"."
+        });
+
+        await _db.SaveChangesAsync();
+    }
+
     private async Task<string> GetDisplayNameAsync(string userId)
     {
         var name = await _db.Users
