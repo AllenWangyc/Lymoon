@@ -28,4 +28,7 @@ public interface INotificationService
 
     /// <summary>Notify all schedule members that the schedule was renamed.</summary>
     Task NotifyScheduleUpdatedAsync(Guid scheduleId, string newTitle);
+
+    /// <summary>Notify a user that they have been made the Manager of a schedule.</summary>
+    Task NotifyBecameManagerAsync(string targetUserId, Guid scheduleId, string scheduleName);
 }

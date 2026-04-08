@@ -201,6 +201,42 @@ public class SchedulesController : ControllerBase
         }
     }
 
+    // DELETE /api/schedules/{id}
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DissolveSchedule(Guid id)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        try
+        {
+            await _scheduleService.DissolveScheduleAsync(id, userId);
+            return Ok(new { ok = true });
+        }
+        catch (Exception ex) when (ex is KeyNotFoundException or UnauthorizedAccessException)
+        {
+            return HandleDomainException(ex);
+        }
+    }
+
+    // POST /api/schedules/{id}/members/transfer-manager
+    [HttpPost("{id:guid}/members/transfer-manager")]
+    public async Task<IActionResult> TransferManager(Guid id, [FromBody] TransferManagerRequest request)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        try
+        {
+            await _scheduleService.TransferManagerAsync(id, userId, request.UserId);
+            return Ok(new { ok = true });
+        }
+        catch (Exception ex) when (ex is KeyNotFoundException or InvalidOperationException or UnauthorizedAccessException)
+        {
+            return HandleDomainException(ex);
+        }
+    }
+
     // POST /api/schedules/{id}/weeks
     [HttpPost("{id:guid}/weeks")]
     public async Task<IActionResult> AddNextWeek(Guid id)
