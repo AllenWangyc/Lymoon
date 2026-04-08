@@ -193,7 +193,7 @@ export default function RegisterScreen() {
                   disabled={sendButtonDisabled}
                   className="h-[52px] rounded-[14px] items-center justify-center px-3"
                   style={{
-                    backgroundColor: sendButtonDisabled ? '#e2e8f0' : '#edfba0',
+                    backgroundColor: sendButtonDisabled ? '#e2e8f0' : '#c8f03a',
                     minWidth: 100,
                   }}
                 >
