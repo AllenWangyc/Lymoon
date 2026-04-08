@@ -191,19 +191,19 @@ export default function RegisterScreen() {
                   onPress={handleSendCode}
                   activeOpacity={0.75}
                   disabled={sendButtonDisabled}
-                  className="h-[52px] rounded-[14px] items-center justify-center px-3 bg-white border border-[#e2e8f0]"
+                  className="h-[52px] rounded-[14px] items-center justify-center px-3"
                   style={{
+                    backgroundColor: sendButtonDisabled ? '#e2e8f0' : '#edfba0',
                     minWidth: 100,
-                    opacity: sendButtonDisabled ? 0.5 : 1,
                   }}
                 >
                   {sendVerification.isPending ? (
-                    <ActivityIndicator size="small" color="#64748b" />
+                    <ActivityIndicator size="small" color="#3d5200" />
                   ) : (
                     <Text style={{
                       fontSize: 13,
-                      fontWeight: '500',
-                      color: '#64748b',
+                      fontWeight: '600',
+                      color: sendButtonDisabled ? '#94a3b8' : '#3d5200',
                     }}>
                       {countdown > 0 ? `${countdown}s` : codeSent ? 'Resend Code' : 'Send Code'}
                     </Text>
