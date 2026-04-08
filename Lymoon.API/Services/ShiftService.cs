@@ -43,6 +43,26 @@ public class ShiftService : IShiftService
         if (startTime >= endTime)
             throw new ArgumentException("startTime must be earlier than endTime.");
 
+        // Merge any overlapping or adjacent shifts for the same user/day/week
+        var overlapping = await _db.Shifts
+            .Where(s => s.ScheduleId == scheduleId
+                     && s.UserId == request.EmployeeId
+                     && s.DayOfWeek == request.DayOfWeek
+                     && s.WeekStart == schedule.CurrentWeek
+                     && s.StartTime <= endTime
+                     && startTime <= s.EndTime)
+            .ToListAsync();
+
+        var mergedStart = overlapping.Count > 0
+            ? overlapping.Aggregate(startTime, (min, s) => s.StartTime < min ? s.StartTime : min)
+            : startTime;
+        var mergedEnd = overlapping.Count > 0
+            ? overlapping.Aggregate(endTime, (max, s) => s.EndTime > max ? s.EndTime : max)
+            : endTime;
+
+        if (overlapping.Count > 0)
+            _db.Shifts.RemoveRange(overlapping);
+
         var shift = new Shift
         {
             Id = Guid.NewGuid(),
@@ -50,8 +70,8 @@ public class ShiftService : IShiftService
             UserId = request.EmployeeId,
             WeekStart = schedule.CurrentWeek,
             DayOfWeek = request.DayOfWeek,
-            StartTime = startTime,
-            EndTime = endTime,
+            StartTime = mergedStart,
+            EndTime = mergedEnd,
             ShiftType = request.ShiftType
         };
 
@@ -96,6 +116,24 @@ public class ShiftService : IShiftService
         shift.StartTime = startTime;
         shift.EndTime = endTime;
         shift.ShiftType = request.ShiftType;
+
+        // Merge any overlapping or adjacent shifts for the same user/day/week
+        var overlapping = await _db.Shifts
+            .Where(s => s.Id != shift.Id
+                     && s.ScheduleId == shift.ScheduleId
+                     && s.UserId == shift.UserId
+                     && s.DayOfWeek == shift.DayOfWeek
+                     && s.WeekStart == shift.WeekStart
+                     && s.StartTime <= endTime
+                     && startTime <= s.EndTime)
+            .ToListAsync();
+
+        if (overlapping.Count > 0)
+        {
+            shift.StartTime = overlapping.Aggregate(startTime, (min, s) => s.StartTime < min ? s.StartTime : min);
+            shift.EndTime = overlapping.Aggregate(endTime, (max, s) => s.EndTime > max ? s.EndTime : max);
+            _db.Shifts.RemoveRange(overlapping);
+        }
 
         await _db.SaveChangesAsync();
         await _notifications.NotifyShiftModifiedAsync(shift, requesterId);

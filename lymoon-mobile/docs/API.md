@@ -526,6 +526,8 @@ Manager only. Transfers the Manager role from the requester to a Member. The req
 | `endTime` | Required. 24-hour `"HH:mm"` format. Must be later than `startTime`. |
 | `shiftType` | Optional. One of: `Morning`, `Standard`, `Afternoon`, `Custom`. Defaults to `Custom`. |
 
+**Merge behaviour:** If the new shift overlaps or is adjacent to one or more existing shifts for the same employee on the same day, the server merges them all into a single shift with the earliest `startTime` and latest `endTime`. The absorbed shifts are deleted. The merged shift's `shiftType` is taken from the request.
+
 **Response `200`:**
 ```json
 {
@@ -558,6 +560,8 @@ Manager only. Transfers the Manager role from the requester to a Member. The req
 | `startTime` | Required. 24-hour `"HH:mm"` format. Must be earlier than `endTime`. |
 | `endTime` | Required. 24-hour `"HH:mm"` format. Must be later than `startTime`. |
 | `shiftType` | Optional. One of: `Morning`, `Standard`, `Afternoon`, `Custom`. Defaults to `Custom`. |
+
+**Merge behaviour:** After applying the update, if the updated time range overlaps or is adjacent to other shifts for the same employee on the same day, those shifts are merged into the updated shift (earliest `startTime`, latest `endTime`) and the absorbed records are deleted.
 
 **Response `200`:**
 ```json
