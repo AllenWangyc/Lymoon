@@ -113,6 +113,14 @@ export default function ScheduleDetailScreen() {
     [shifts, selectedDayIndex],
   );
 
+  const displayEmployees = useMemo(() => {
+    const shouldFilter = !isManager && !isFullCollab;
+    if (!shouldFilter) return employees;
+
+    const employeesWithShifts = new Set(shiftsForDay.map((s) => s.employeeId));
+    return employees.filter((e) => e.id === userId || employeesWithShifts.has(e.id));
+  }, [employees, shiftsForDay, isManager, isFullCollab, userId]);
+
   function getEmployeeShifts(employeeId: string) {
     return shiftsForDay.filter((s) => s.employeeId === employeeId);
   }
@@ -438,14 +446,14 @@ export default function ScheduleDetailScreen() {
           gap: 24,
         }}
       >
-        {employees.length === 0 ? (
+        {displayEmployees.length === 0 ? (
           <View className="items-center justify-center pt-12">
             <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
               No members in this schedule yet.
             </Text>
           </View>
         ) : (
-          employees.map((employee) => (
+          displayEmployees.map((employee) => (
             <EmployeeShiftRow
               key={employee.id}
               employee={employee}
