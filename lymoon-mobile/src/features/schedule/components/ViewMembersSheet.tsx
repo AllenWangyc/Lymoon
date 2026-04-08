@@ -5,7 +5,7 @@ import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
 import { BottomSheet } from '@/components/BottomSheet';
 import { OptionsMenuCard } from '@/components/OptionsMenuCard';
 import { UserAvatar } from '@/components/UserAvatar';
-import { useScheduleMembers, useWorkHours, useRemoveMember } from '@/lib/queries/schedules';
+import { useScheduleMembers, useWorkHours, useRemoveMember, useTransferManager } from '@/lib/queries/schedules';
 import { useAuthStore } from '@/stores/authStore';
 import type { Employee } from '@/types/schedule';
 import { sortEmployees } from '@/features/schedule/utils/sortEmployees';
@@ -18,6 +18,8 @@ type Props = {
   currentUserId: string;
   onRemoveSuccess?: () => void;
   onRemoveError?: (msg: string) => void;
+  onTransferSuccess?: () => void;
+  onTransferError?: (msg: string) => void;
 };
 
 // ─── Week helpers ────────────────────────────────────────────────────────────
@@ -217,6 +219,73 @@ function ConfirmRemoveView({ employee, onBack, onConfirm, isPending }: ConfirmRe
   );
 }
 
+// ─── ConfirmTransferView ─────────────────────────────────────────────────────
+
+type ConfirmTransferViewProps = {
+  employee: Employee;
+  onBack: () => void;
+  onConfirm: () => void;
+  isPending: boolean;
+};
+
+function ConfirmTransferView({ employee, onBack, onConfirm, isPending }: ConfirmTransferViewProps) {
+  return (
+    <View className="h-[456px] px-6 pt-4 pb-6">
+      {/* Header */}
+      <View className="h-10 flex-row items-center mb-2">
+        <TouchableOpacity
+          onPress={onBack}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          className="w-8 h-8 items-center justify-center"
+        >
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Confirmation content */}
+      <View className="flex-1 items-center justify-center gap-5">
+        <View
+          className="size-16 rounded-full items-center justify-center"
+          style={{ backgroundColor: 'rgba(234,179,8,0.12)' }}
+        >
+          <Ionicons name="shield-checkmark-outline" size={30} color="#ca8a04" />
+        </View>
+        <View className="items-center gap-2">
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#1e293b', textAlign: 'center' }}>
+            Transfer Manager to {employee.name}?
+          </Text>
+          <Text style={{ fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 18 }}>
+            {employee.name} will become the Manager. You will become a Member and lose manager permissions.
+          </Text>
+        </View>
+      </View>
+
+      {/* Buttons */}
+      <View className="gap-3">
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={onConfirm}
+          disabled={isPending}
+          className="h-12 rounded-[12px] items-center justify-center"
+          style={{ backgroundColor: isPending ? '#bef264' : '#65a30d' }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#fff' }}>
+            {isPending ? 'Transferring…' : 'Transfer'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={onBack}
+          disabled={isPending}
+          className="h-12 rounded-[12px] items-center justify-center border border-[#e2e8f0]"
+        >
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#0f172a' }}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── MemberCard ──────────────────────────────────────────────────────────────
 
 type MenuState = { employee: Employee; top: number } | null;
@@ -296,15 +365,17 @@ function MemberCard({ employee, containerRef, onMenuPress, currentUserId, curren
 
 // ─── ViewMembersSheet ────────────────────────────────────────────────────────
 
-export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, currentUserId, onRemoveSuccess, onRemoveError }: Props) {
+export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, currentUserId, onRemoveSuccess, onRemoveError, onTransferSuccess, onTransferError }: Props) {
   const { userName } = useAuthStore();
   const [menuState, setMenuState] = useState<MenuState>(null);
   const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
+  const [transferTarget, setTransferTarget] = useState<Employee | null>(null);
   const [workHoursEmployee, setWorkHoursEmployee] = useState<Employee | null>(null);
   const containerRef = useRef<View>(null);
 
   const { data: members = [], isLoading: membersLoading, isError: membersError } = useScheduleMembers(scheduleId);
   const removeMember = useRemoveMember(scheduleId);
+  const transferManager = useTransferManager(scheduleId);
 
   // Convert API member shape to Employee type, then sort:
   //   1. Current user  2. Managers (A–Z)  3. Members (A–Z)
@@ -323,6 +394,7 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
       setMenuState(null);
       setWorkHoursEmployee(null);
       setRemoveTarget(null);
+      setTransferTarget(null);
     }
   }, [visible]);
 
@@ -333,6 +405,29 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
   function handleRemovePress(employee: Employee) {
     closeMenu();
     setRemoveTarget(employee);
+  }
+
+  function handleTransferPress(employee: Employee) {
+    closeMenu();
+    setTransferTarget(employee);
+  }
+
+  function handleTransferConfirm() {
+    if (!transferTarget) return;
+    const targetId = transferTarget.id;
+    setTransferTarget(null);
+    transferManager.mutate(targetId, {
+      onSuccess: () => onTransferSuccess?.(),
+      onError: (err: Error) => {
+        const msg =
+          err.message === 'target_is_already_manager'
+            ? 'This member is already a Manager.'
+            : err.message === 'member_not_found'
+              ? 'This user is no longer a member of this schedule.'
+              : 'Failed to transfer manager role.';
+        onTransferError?.(msg);
+      },
+    });
   }
 
   function handleRemoveConfirm() {
@@ -372,6 +467,13 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
           onBack={() => setRemoveTarget(null)}
           onConfirm={handleRemoveConfirm}
           isPending={removeMember.isPending}
+        />
+      ) : transferTarget ? (
+        <ConfirmTransferView
+          employee={transferTarget}
+          onBack={() => setTransferTarget(null)}
+          onConfirm={handleTransferConfirm}
+          isPending={transferManager.isPending}
         />
       ) : (
         <View ref={containerRef} className="h-[456px]">
@@ -429,6 +531,17 @@ export function ViewMembersSheet({ visible, onClose, scheduleId, isManager, curr
                       setWorkHoursEmployee(menuState.employee);
                     },
                   },
+                  ...(isManager &&
+                    menuState.employee.id !== currentUserId &&
+                    menuState.employee.role !== 'Manager'
+                    ? [{
+                        key: 'transfer-manager',
+                        label: 'Transfer Manager',
+                        icon: 'shield-checkmark-outline' as const,
+                        onPress: () => handleTransferPress(menuState.employee),
+                        disabled: transferManager.isPending,
+                      }]
+                    : []),
                 ]}
                 destructiveItem={isManager && menuState.employee.id !== currentUserId ? {
                   key: 'remove',

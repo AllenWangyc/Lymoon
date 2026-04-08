@@ -1,7 +1,7 @@
 // src/lib/queries/schedules.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { apiGet, apiPost } from '@/lib/api';
+import { apiGet, apiPost, apiDelete } from '@/lib/api';
 import type { ScheduleItem, ScheduleDetail, Employee, ShiftType, SchedulePreview } from '@/types/schedule';
 
 // ─── Response shapes from API ────────────────────────────────────────────────
@@ -203,6 +203,29 @@ export function useRemoveMember(scheduleId: string) {
         (old) => old?.filter((m) => m.id !== userId) ?? [],
       );
       qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+    },
+  });
+}
+
+export function useDissolveSchedule(scheduleId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiDelete<{ ok: boolean }>(`/schedules/${scheduleId}`),
+    onSuccess: () => {
+      qc.removeQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
+  });
+}
+
+export function useTransferManager(scheduleId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiPost<{ ok: boolean }>(`/schedules/${scheduleId}/members/transfer-manager`, { userId }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.members(scheduleId) });
     },
   });
 }

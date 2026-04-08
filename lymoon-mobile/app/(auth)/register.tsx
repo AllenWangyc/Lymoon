@@ -232,7 +232,7 @@ export default function RegisterScreen() {
                   returnKeyType="next"
                   onSubmitEditing={() => passwordRef.current?.focus()}
                   className="h-[52px] bg-white border border-[#e2e8f0] rounded-[14px] px-4"
-                  style={{ fontSize: 20, fontWeight: '600', color: '#0f172a', letterSpacing: 6 }}
+                  style={{ color: '#0f172a', letterSpacing: 0 }}
                 />
               </View>
             )}

@@ -23,7 +23,9 @@ import {
   useRenameSchedule,
   useLeaveSchedule,
   useAddNextWeek,
+  useDissolveSchedule,
 } from '@/lib/queries/schedules';
+import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
 import { useAddShift, useUpdateShift, useDeleteShift } from '@/lib/queries/shifts';
 import type { Shift } from '@/types/schedule';
 
@@ -51,6 +53,8 @@ export default function ScheduleDetailScreen() {
   const [addEditConfig, setAddEditConfig] = useState<ShiftEditConfig | null>(null);
   const [addEditVisible, setAddEditVisible] = useState(false);
   const [renameVisible, setRenameVisible] = useState(false);
+  const [dissolveStep1Visible, setDissolveStep1Visible] = useState(false);
+  const [dissolveStep2Visible, setDissolveStep2Visible] = useState(false);
 
   // Derive the Monday for the currently viewed week
   const currentWeekStart = useMemo(() => {
@@ -74,6 +78,7 @@ export default function ScheduleDetailScreen() {
 
   const renameMutation = useRenameSchedule(id as string);
   const leaveMutation = useLeaveSchedule(id as string);
+  const dissolveMutation = useDissolveSchedule(id as string);
   const addNextWeekMutation = useAddNextWeek(id as string);
   const addShift = useAddShift(id as string);
   const updateShift = useUpdateShift(id as string);
@@ -192,6 +197,23 @@ export default function ScheduleDetailScreen() {
     });
   }
 
+  function handleDissolveStep1Confirm() {
+    setDissolveStep1Visible(false);
+    setTimeout(() => setDissolveStep2Visible(true), 200);
+  }
+
+  function handleDissolveStep2Confirm() {
+    setDissolveStep2Visible(false);
+    dissolveMutation.mutate(undefined, {
+      onSuccess: () => {
+        router.replace('/');
+      },
+      onError: (err) => {
+        showToast(err instanceof Error ? err.message : 'Failed to dissolve schedule.', 'error');
+      },
+    });
+  }
+
   function handleLeaveConfirm() {
     setLeaveConfirmVisible(false);
     leaveMutation.mutate(undefined, {
@@ -294,6 +316,9 @@ export default function ScheduleDetailScreen() {
         onViewMembers={() => {
           setTimeout(() => setViewMembersVisible(true), 160);
         }}
+        onDissolve={() => {
+          setTimeout(() => setDissolveStep1Visible(true), 160);
+        }}
         inviteCode={scheduleDetail.inviteCode}
         onInviteCopied={() => showToast('Invite code copied!', 'success')}
         isManager={isManager}
@@ -309,6 +334,8 @@ export default function ScheduleDetailScreen() {
         currentUserId={userId}
         onRemoveSuccess={() => showToast('Member removed', 'success')}
         onRemoveError={(msg) => showToast(msg, 'error')}
+        onTransferSuccess={() => showToast('Manager role transferred', 'success')}
+        onTransferError={(msg) => showToast(msg, 'error')}
       />
 
       <LeaveScheduleSheet
@@ -323,6 +350,32 @@ export default function ScheduleDetailScreen() {
         onClose={() => setRenameVisible(false)}
         currentName={scheduleDetail.title}
         onConfirm={handleRenameConfirm}
+      />
+
+      <ConfirmActionSheet
+        visible={dissolveStep1Visible}
+        onClose={() => setDissolveStep1Visible(false)}
+        onConfirm={handleDissolveStep1Confirm}
+        title="Dissolve Schedule?"
+        message="This will permanently delete all shifts and remove all members. This action cannot be undone."
+        confirmLabel="Dissolve"
+        iconName="warning-outline"
+        iconColor="#dc2626"
+        iconBg="rgba(220,38,38,0.10)"
+        confirmColor="#dc2626"
+      />
+
+      <ConfirmActionSheet
+        visible={dissolveStep2Visible}
+        onClose={() => setDissolveStep2Visible(false)}
+        onConfirm={handleDissolveStep2Confirm}
+        title="Are you absolutely sure?"
+        message={`You're about to dissolve "${scheduleDetail?.title ?? 'this schedule'}". All data will be lost forever.`}
+        confirmLabel="Yes, Dissolve"
+        iconName="trash-outline"
+        iconColor="#dc2626"
+        iconBg="rgba(220,38,38,0.10)"
+        confirmColor="#dc2626"
       />
 
       <ShiftDetailBottomSheet
