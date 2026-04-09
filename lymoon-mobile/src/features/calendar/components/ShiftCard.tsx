@@ -39,9 +39,22 @@ export function ShiftCard({ shift, onPress }: ShiftCardProps) {
           borderTopLeftRadius: 12,
           borderBottomLeftRadius: 12,
         }}
-      />
+      >
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            borderTopLeftRadius: 12,
+            borderBottomLeftRadius: 12,
+          }}
+        />
+      </View>
 
-      <View className="flex-1 px-[14px] py-[12px]">
+      <View className="flex-1 pl-[18px] pr-[10px] py-[12px]">
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}>
           {shift.scheduleTitle}
         </Text>
@@ -50,7 +63,7 @@ export function ShiftCard({ shift, onPress }: ShiftCardProps) {
         </Text>
       </View>
 
-      <View className="justify-center pr-[14px]">
+      <View className="justify-center pr-[18px]">
         <Text style={{ fontSize: 13, fontWeight: '600', color: '#64748b' }}>
           {formatDuration(shift.startTime, shift.endTime)}
         </Text>
