@@ -6,6 +6,12 @@ interface ShiftCardProps {
   onPress: () => void;
 }
 
+function toSolidColor(color: string): string {
+  const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (match) return `rgb(${match[1]}, ${match[2]}, ${match[3]})`;
+  return color;
+}
+
 function formatDuration(startTime: string, endTime: string): string {
   const [startH, startM] = startTime.split(':').map(Number);
   const [endH, endM] = endTime.split(':').map(Number);
@@ -35,24 +41,11 @@ export function ShiftCard({ shift, onPress }: ShiftCardProps) {
       <View
         style={{
           width: 4,
-          backgroundColor: shift.scheduleIconBg,
+          backgroundColor: toSolidColor(shift.scheduleIconBg),
           borderTopLeftRadius: 12,
           borderBottomLeftRadius: 12,
         }}
-      >
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'rgba(0,0,0,0.2)',
-            borderTopLeftRadius: 12,
-            borderBottomLeftRadius: 12,
-          }}
-        />
-      </View>
+      />
 
       <View className="flex-1 pl-[18px] pr-[10px] py-[12px]">
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}>
