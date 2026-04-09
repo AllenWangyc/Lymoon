@@ -628,3 +628,39 @@ Polled every 30 seconds by the mobile client via TanStack Query `refetchInterval
 ```json
 { "ok": true }
 ```
+
+---
+
+## Calendar
+
+### Get My Shifts
+`GET /api/shifts/mine?from=2026-01-01&to=2026-12-31`
+
+Returns all shifts belonging to the authenticated user across all their schedules, filtered to a date range.
+
+**Query parameters:**
+| Param | Type | Rules |
+|-------|------|-------|
+| `from` | string | Required. ISO date `yyyy-MM-dd`. |
+| `to` | string | Required. ISO date `yyyy-MM-dd`. Must be ≥ `from`. |
+
+**Response `200`:** Array of shift objects, ordered by date then start time.
+```json
+[
+  {
+    "date": "2026-03-16",
+    "startTime": "09:00",
+    "endTime": "17:00",
+    "shiftType": "Standard",
+    "scheduleId": "uuid-string",
+    "scheduleTitle": "Main Store",
+    "scheduleIconBg": "#b6ec13"
+  }
+]
+```
+
+**Error responses:**
+| Status | Meaning |
+|--------|---------|
+| `400` | Invalid `from` or `to` format, or `from` > `to` |
+| `401` | Missing or invalid JWT |

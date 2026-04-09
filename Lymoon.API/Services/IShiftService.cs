@@ -1,4 +1,3 @@
-using Lymoon.API.DTOs.Schedules;
 using Lymoon.API.DTOs.Shifts;
 
 namespace Lymoon.API.Services;
@@ -27,4 +26,10 @@ public interface IShiftService
     /// Throws UnauthorizedAccessException if requester lacks permission.
     /// </summary>
     Task<bool> DeleteShiftAsync(Guid shiftId, string requesterId);
+
+    /// <summary>
+    /// Returns all shifts belonging to the requester across all their schedules,
+    /// filtered to those whose computed date falls within [from, to] inclusive.
+    /// </summary>
+    Task<List<MyShiftDto>> GetMyShiftsAsync(string requesterId, DateOnly from, DateOnly to);
 }

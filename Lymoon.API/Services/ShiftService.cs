@@ -178,6 +178,44 @@ public class ShiftService : IShiftService
         return true;
     }
 
+    public async Task<List<MyShiftDto>> GetMyShiftsAsync(string requesterId, DateOnly from, DateOnly to)
+    {
+        // Only return shifts from schedules the user is currently a member of.
+        var memberScheduleIds = await _db.ScheduleMembers
+            .Where(m => m.UserId == requesterId)
+            .Select(m => m.ScheduleId)
+            .ToListAsync();
+
+        // A shift's actual date = weekStart + dayOfWeek days.
+        // Broaden the weekStart range to cover all possible dates in [from, to].
+        var weekStartMin = from.AddDays(-6);
+
+        var shifts = await _db.Shifts
+            .Include(s => s.Schedule)
+            .Where(s => s.UserId == requesterId
+                     && memberScheduleIds.Contains(s.ScheduleId)
+                     && s.WeekStart >= weekStartMin
+                     && s.WeekStart <= to)
+            .ToListAsync();
+
+        return shifts
+            .Select(s => new { Shift = s, Date = s.WeekStart.AddDays(s.DayOfWeek) })
+            .Where(x => x.Date >= from && x.Date <= to)
+            .OrderBy(x => x.Date)
+            .ThenBy(x => x.Shift.StartTime)
+            .Select(x => new MyShiftDto
+            {
+                Date = x.Date.ToString("yyyy-MM-dd"),
+                StartTime = x.Shift.StartTime.ToString("HH:mm"),
+                EndTime = x.Shift.EndTime.ToString("HH:mm"),
+                ShiftType = x.Shift.ShiftType,
+                ScheduleId = x.Shift.ScheduleId.ToString(),
+                ScheduleTitle = x.Shift.Schedule.Title,
+                ScheduleIconBg = x.Shift.Schedule.IconBg
+            })
+            .ToList();
+    }
+
     private static ShiftDto MapToDto(Shift shift) => new()
     {
         Id = shift.Id.ToString(),
