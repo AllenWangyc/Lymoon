@@ -45,6 +45,8 @@ export default function CalendarScreen() {
     setSheetVisible(true);
   }, []);
 
+  const handleClose = useCallback(() => setSheetVisible(false), []);
+
   const handleShiftPress = useCallback((scheduleId: string) => {
     setSheetVisible(false);
     router.push(`/(app)/schedule/${scheduleId}` as never);
@@ -137,7 +139,7 @@ export default function CalendarScreen() {
         visible={sheetVisible}
         date={selectedDate}
         shifts={selectedShifts}
-        onClose={() => setSheetVisible(false)}
+        onClose={handleClose}
         onShiftPress={handleShiftPress}
       />
     </SafeAreaView>

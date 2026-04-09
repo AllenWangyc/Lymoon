@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { format, getDaysInMonth, getDay, startOfMonth } from 'date-fns';
 import { Text, TouchableOpacity, View } from 'react-native';
 import type { MyShift } from '@/types/calendar';
@@ -11,7 +12,7 @@ interface CalendarGridProps {
 
 const TODAY = format(new Date(), 'yyyy-MM-dd');
 
-export function CalendarGrid({ year, month, shiftMap, onDayPress }: CalendarGridProps) {
+export const CalendarGrid = memo(function CalendarGrid({ year, month, shiftMap, onDayPress }: CalendarGridProps) {
   const firstDay = startOfMonth(new Date(year, month, 1));
   // Convert getDay (0=Sun…6=Sat) to Monday-start offset (Mon=0…Sun=6)
   const startOffset = (getDay(firstDay) + 6) % 7;
@@ -82,12 +83,10 @@ export function CalendarGrid({ year, month, shiftMap, onDayPress }: CalendarGrid
                     >
                       {day}
                     </Text>
-                    {hasShifts && (
-                      <View
-                        className="rounded-full mt-0.5"
-                        style={{ width: 5, height: 5, backgroundColor: '#b6ec13' }}
-                      />
-                    )}
+                    <View
+                      className="rounded-full mt-0.5"
+                      style={{ width: 5, height: 5, backgroundColor: hasShifts ? '#b6ec13' : 'transparent' }}
+                    />
                   </View>
                 )}
               </TouchableOpacity>
@@ -97,4 +96,4 @@ export function CalendarGrid({ year, month, shiftMap, onDayPress }: CalendarGrid
       ))}
     </View>
   );
-}
+});
