@@ -6,19 +6,24 @@ interface ShiftCardProps {
   onPress: () => void;
 }
 
-const SHIFT_TYPE_LABELS: Record<string, string> = {
-  Morning: 'Morning',
-  Standard: 'Standard',
-  Afternoon: 'Afternoon',
-  Custom: 'Custom',
-};
+function formatDuration(startTime: string, endTime: string): string {
+  const [startH, startM] = startTime.split(':').map(Number);
+  const [endH, endM] = endTime.split(':').map(Number);
+  const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+  const minutes = totalMinutes < 0 ? totalMinutes + 24 * 60 : totalMinutes;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
 
 export function ShiftCard({ shift, onPress }: ShiftCardProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="flex-row items-center bg-white rounded-xl px-4 py-3 mb-2"
+      className="flex-row items-stretch bg-white rounded-xl mb-2 overflow-hidden"
       style={{
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
@@ -28,11 +33,15 @@ export function ShiftCard({ shift, onPress }: ShiftCardProps) {
       }}
     >
       <View
-        className="rounded-full mr-3"
-        style={{ width: 10, height: 10, backgroundColor: shift.scheduleIconBg }}
+        style={{
+          width: 4,
+          backgroundColor: shift.scheduleIconBg,
+          borderTopLeftRadius: 12,
+          borderBottomLeftRadius: 12,
+        }}
       />
 
-      <View className="flex-1">
+      <View className="flex-1 px-[14px] py-[12px]">
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#0f172a' }}>
           {shift.scheduleTitle}
         </Text>
@@ -41,12 +50,9 @@ export function ShiftCard({ shift, onPress }: ShiftCardProps) {
         </Text>
       </View>
 
-      <View
-        className="rounded-full px-2.5 py-0.5"
-        style={{ backgroundColor: 'rgba(182,236,19,0.15)' }}
-      >
-        <Text style={{ fontSize: 11, fontWeight: '600', color: '#5a8a00' }}>
-          {SHIFT_TYPE_LABELS[shift.shiftType] ?? shift.shiftType}
+      <View className="justify-center pr-[14px]">
+        <Text style={{ fontSize: 13, fontWeight: '600', color: '#64748b' }}>
+          {formatDuration(shift.startTime, shift.endTime)}
         </Text>
       </View>
     </TouchableOpacity>
