@@ -526,6 +526,8 @@ Manager only. Transfers the Manager role from the requester to a Member. The req
 | `endTime` | Required. 24-hour `"HH:mm"` format. Must be later than `startTime`. |
 | `shiftType` | Optional. One of: `Morning`, `Standard`, `Afternoon`, `Custom`. Defaults to `Custom`. |
 
+**Merge behaviour:** If the new shift overlaps or is adjacent to one or more existing shifts for the same employee on the same day, the server merges them all into a single shift with the earliest `startTime` and latest `endTime`. The absorbed shifts are deleted. The merged shift's `shiftType` is taken from the request.
+
 **Response `200`:**
 ```json
 {
@@ -558,6 +560,8 @@ Manager only. Transfers the Manager role from the requester to a Member. The req
 | `startTime` | Required. 24-hour `"HH:mm"` format. Must be earlier than `endTime`. |
 | `endTime` | Required. 24-hour `"HH:mm"` format. Must be later than `startTime`. |
 | `shiftType` | Optional. One of: `Morning`, `Standard`, `Afternoon`, `Custom`. Defaults to `Custom`. |
+
+**Merge behaviour:** After applying the update, if the updated time range overlaps or is adjacent to other shifts for the same employee on the same day, those shifts are merged into the updated shift (earliest `startTime`, latest `endTime`) and the absorbed records are deleted.
 
 **Response `200`:**
 ```json
@@ -624,3 +628,39 @@ Polled every 30 seconds by the mobile client via TanStack Query `refetchInterval
 ```json
 { "ok": true }
 ```
+
+---
+
+## Calendar
+
+### Get My Shifts
+`GET /api/shifts/mine?from=2026-01-01&to=2026-12-31`
+
+Returns all shifts belonging to the authenticated user across all their schedules, filtered to a date range.
+
+**Query parameters:**
+| Param | Type | Rules |
+|-------|------|-------|
+| `from` | string | Required. ISO date `yyyy-MM-dd`. |
+| `to` | string | Required. ISO date `yyyy-MM-dd`. Must be ≥ `from`. |
+
+**Response `200`:** Array of shift objects, ordered by date then start time.
+```json
+[
+  {
+    "date": "2026-03-16",
+    "startTime": "09:00",
+    "endTime": "17:00",
+    "shiftType": "Standard",
+    "scheduleId": "uuid-string",
+    "scheduleTitle": "Main Store",
+    "scheduleIconBg": "#b6ec13"
+  }
+]
+```
+
+**Error responses:**
+| Status | Meaning |
+|--------|---------|
+| `400` | Invalid `from` or `to` format, or `from` > `to` |
+| `401` | Missing or invalid JWT |

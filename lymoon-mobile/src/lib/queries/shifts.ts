@@ -1,8 +1,24 @@
 // src/lib/queries/shifts.ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiPost } from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiGet, apiPost } from '@/lib/api';
 import type { Shift, ShiftType } from '@/types/schedule';
+import type { MyShift } from '@/types/calendar';
 import { scheduleKeys } from './schedules';
+
+export function useMyShifts(from: string, to: string) {
+  return useQuery({
+    queryKey: ['myShifts', from, to],
+    queryFn: async () => {
+      const list = await apiGet<MyShift[]>(`/shifts/mine?from=${from}&to=${to}`);
+      const map = new Map<string, MyShift[]>();
+      for (const shift of list) {
+        const existing = map.get(shift.date) ?? [];
+        map.set(shift.date, [...existing, shift]);
+      }
+      return map;
+    },
+  });
+}
 
 export function useAddShift(scheduleId: string) {
   const qc = useQueryClient();

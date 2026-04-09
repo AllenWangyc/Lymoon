@@ -105,6 +105,7 @@ export function BottomSheet({
             backgroundColor,
             borderTopLeftRadius: borderRadius,
             borderTopRightRadius: borderRadius,
+            height,
             ...(showTopBorder && {
               borderTopWidth: 1,
               borderTopColor: 'rgba(255,255,255,0.5)',

@@ -18,6 +18,26 @@ public class ShiftsController : ControllerBase
         _shiftService = shiftService;
     }
 
+    // GET /api/shifts/mine?from=2026-01-01&to=2026-12-31
+    [HttpGet("mine")]
+    public async Task<IActionResult> GetMyShifts([FromQuery] string from, [FromQuery] string to)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        if (!DateOnly.TryParse(from, out var fromDate))
+            return BadRequest(new { error = "Invalid 'from' date. Expected yyyy-MM-dd." });
+
+        if (!DateOnly.TryParse(to, out var toDate))
+            return BadRequest(new { error = "Invalid 'to' date. Expected yyyy-MM-dd." });
+
+        if (fromDate > toDate)
+            return BadRequest(new { error = "'from' must not be after 'to'." });
+
+        var shifts = await _shiftService.GetMyShiftsAsync(userId, fromDate, toDate);
+        return Ok(shifts);
+    }
+
     // POST /api/shifts/{id}/update
     [HttpPost("{id:guid}/update")]
     public async Task<IActionResult> UpdateShift(Guid id, [FromBody] UpdateShiftRequest request)

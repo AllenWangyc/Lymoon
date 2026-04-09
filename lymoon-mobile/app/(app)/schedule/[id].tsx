@@ -11,6 +11,7 @@ import { DaySelector } from '@/features/schedule/components/DaySelector';
 import { EmployeeShiftRow } from '@/features/schedule/components/EmployeeShiftRow';
 import { ScheduleOptionsMenu } from '@/features/schedule/components/ScheduleOptionsMenu';
 import { LeaveScheduleSheet } from '@/features/schedule/components/LeaveScheduleSheet';
+import { SoleManagerLeaveSheet } from '@/features/schedule/components/SoleManagerLeaveSheet';
 import { RenameScheduleSheet } from '@/features/schedule/components/RenameScheduleSheet';
 import { ViewMembersSheet } from '@/features/schedule/components/ViewMembersSheet';
 import { ShiftDetailBottomSheet } from '@/features/schedule/components/ShiftDetailBottomSheet';
@@ -24,6 +25,7 @@ import {
   useLeaveSchedule,
   useAddNextWeek,
   useDissolveSchedule,
+  useScheduleMembers,
 } from '@/lib/queries/schedules';
 import { ConfirmActionSheet } from '@/components/ConfirmActionSheet';
 import { useAddShift, useUpdateShift, useDeleteShift } from '@/lib/queries/shifts';
@@ -47,6 +49,7 @@ export default function ScheduleDetailScreen() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex);
   const [menuOpen, setMenuOpen] = useState(false);
   const [leaveConfirmVisible, setLeaveConfirmVisible] = useState(false);
+  const [soleManagerSheetVisible, setSoleManagerSheetVisible] = useState(false);
   const [viewMembersVisible, setViewMembersVisible] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [shiftDetailVisible, setShiftDetailVisible] = useState(false);
@@ -84,8 +87,14 @@ export default function ScheduleDetailScreen() {
   const updateShift = useUpdateShift(id as string);
   const deleteShift = useDeleteShift(id as string);
 
+  const { data: members } = useScheduleMembers(id as string);
+
   // ─── Derived values ───────────────────────────────────────────────────────
   const isManager = scheduleDetail?.currentUserRole === 'Manager';
+  const isSoleManager = useMemo(() => {
+    if (!members || !isManager) return false;
+    return members.filter((m) => m.scheduleRole === 'Manager').length === 1;
+  }, [members, isManager]);
   const isFullCollab =
     (scheduleDetail?.memberPermission ?? 'manager_only') === 'full_collaboration';
   const canEditShifts = isManager || isFullCollab;
@@ -103,6 +112,14 @@ export default function ScheduleDetailScreen() {
         .sort((a, b) => a.startTime.localeCompare(b.startTime)),
     [shifts, selectedDayIndex],
   );
+
+  const displayEmployees = useMemo(() => {
+    const shouldFilter = !isManager && !isFullCollab;
+    if (!shouldFilter) return employees;
+
+    const employeesWithShifts = new Set(shiftsForDay.map((s) => s.employeeId));
+    return employees.filter((e) => e.id === userId || employeesWithShifts.has(e.id));
+  }, [employees, shiftsForDay, isManager, isFullCollab, userId]);
 
   function getEmployeeShifts(employeeId: string) {
     return shiftsForDay.filter((s) => s.employeeId === employeeId);
@@ -311,7 +328,13 @@ export default function ScheduleDetailScreen() {
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
         onLeave={() => {
-          setTimeout(() => setLeaveConfirmVisible(true), 160);
+          setTimeout(() => {
+            if (isSoleManager) {
+              setSoleManagerSheetVisible(true);
+            } else {
+              setLeaveConfirmVisible(true);
+            }
+          }, 160);
         }}
         onViewMembers={() => {
           setTimeout(() => setViewMembersVisible(true), 160);
@@ -343,6 +366,15 @@ export default function ScheduleDetailScreen() {
         scheduleName={scheduleDetail.title}
         onClose={() => setLeaveConfirmVisible(false)}
         onConfirm={handleLeaveConfirm}
+      />
+
+      <SoleManagerLeaveSheet
+        visible={soleManagerSheetVisible}
+        onClose={() => setSoleManagerSheetVisible(false)}
+        onChooseMember={() => {
+          setSoleManagerSheetVisible(false);
+          setTimeout(() => setViewMembersVisible(true), 160);
+        }}
       />
 
       <RenameScheduleSheet
@@ -414,14 +446,14 @@ export default function ScheduleDetailScreen() {
           gap: 24,
         }}
       >
-        {employees.length === 0 ? (
+        {displayEmployees.length === 0 ? (
           <View className="items-center justify-center pt-12">
             <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
               No members in this schedule yet.
             </Text>
           </View>
         ) : (
-          employees.map((employee) => (
+          displayEmployees.map((employee) => (
             <EmployeeShiftRow
               key={employee.id}
               employee={employee}

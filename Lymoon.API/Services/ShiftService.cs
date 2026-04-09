@@ -43,6 +43,26 @@ public class ShiftService : IShiftService
         if (startTime >= endTime)
             throw new ArgumentException("startTime must be earlier than endTime.");
 
+        // Merge any overlapping or adjacent shifts for the same user/day/week
+        var overlapping = await _db.Shifts
+            .Where(s => s.ScheduleId == scheduleId
+                     && s.UserId == request.EmployeeId
+                     && s.DayOfWeek == request.DayOfWeek
+                     && s.WeekStart == schedule.CurrentWeek
+                     && s.StartTime <= endTime
+                     && startTime <= s.EndTime)
+            .ToListAsync();
+
+        var mergedStart = overlapping.Count > 0
+            ? overlapping.Aggregate(startTime, (min, s) => s.StartTime < min ? s.StartTime : min)
+            : startTime;
+        var mergedEnd = overlapping.Count > 0
+            ? overlapping.Aggregate(endTime, (max, s) => s.EndTime > max ? s.EndTime : max)
+            : endTime;
+
+        if (overlapping.Count > 0)
+            _db.Shifts.RemoveRange(overlapping);
+
         var shift = new Shift
         {
             Id = Guid.NewGuid(),
@@ -50,8 +70,8 @@ public class ShiftService : IShiftService
             UserId = request.EmployeeId,
             WeekStart = schedule.CurrentWeek,
             DayOfWeek = request.DayOfWeek,
-            StartTime = startTime,
-            EndTime = endTime,
+            StartTime = mergedStart,
+            EndTime = mergedEnd,
             ShiftType = request.ShiftType
         };
 
@@ -97,6 +117,24 @@ public class ShiftService : IShiftService
         shift.EndTime = endTime;
         shift.ShiftType = request.ShiftType;
 
+        // Merge any overlapping or adjacent shifts for the same user/day/week
+        var overlapping = await _db.Shifts
+            .Where(s => s.Id != shift.Id
+                     && s.ScheduleId == shift.ScheduleId
+                     && s.UserId == shift.UserId
+                     && s.DayOfWeek == shift.DayOfWeek
+                     && s.WeekStart == shift.WeekStart
+                     && s.StartTime <= endTime
+                     && startTime <= s.EndTime)
+            .ToListAsync();
+
+        if (overlapping.Count > 0)
+        {
+            shift.StartTime = overlapping.Aggregate(startTime, (min, s) => s.StartTime < min ? s.StartTime : min);
+            shift.EndTime = overlapping.Aggregate(endTime, (max, s) => s.EndTime > max ? s.EndTime : max);
+            _db.Shifts.RemoveRange(overlapping);
+        }
+
         await _db.SaveChangesAsync();
         await _notifications.NotifyShiftModifiedAsync(shift, requesterId);
 
@@ -138,6 +176,44 @@ public class ShiftService : IShiftService
         await _notifications.NotifyShiftDeletedAsync(shiftSnapshot, requesterId);
 
         return true;
+    }
+
+    public async Task<List<MyShiftDto>> GetMyShiftsAsync(string requesterId, DateOnly from, DateOnly to)
+    {
+        // Only return shifts from schedules the user is currently a member of.
+        var memberScheduleIds = await _db.ScheduleMembers
+            .Where(m => m.UserId == requesterId)
+            .Select(m => m.ScheduleId)
+            .ToListAsync();
+
+        // A shift's actual date = weekStart + dayOfWeek days.
+        // Broaden the weekStart range to cover all possible dates in [from, to].
+        var weekStartMin = from.AddDays(-6);
+
+        var shifts = await _db.Shifts
+            .Include(s => s.Schedule)
+            .Where(s => s.UserId == requesterId
+                     && memberScheduleIds.Contains(s.ScheduleId)
+                     && s.WeekStart >= weekStartMin
+                     && s.WeekStart <= to)
+            .ToListAsync();
+
+        return shifts
+            .Select(s => new { Shift = s, Date = s.WeekStart.AddDays(s.DayOfWeek) })
+            .Where(x => x.Date >= from && x.Date <= to)
+            .OrderBy(x => x.Date)
+            .ThenBy(x => x.Shift.StartTime)
+            .Select(x => new MyShiftDto
+            {
+                Date = x.Date.ToString("yyyy-MM-dd"),
+                StartTime = x.Shift.StartTime.ToString("HH:mm"),
+                EndTime = x.Shift.EndTime.ToString("HH:mm"),
+                ShiftType = x.Shift.ShiftType,
+                ScheduleId = x.Shift.ScheduleId.ToString(),
+                ScheduleTitle = x.Shift.Schedule.Title,
+                ScheduleIconBg = x.Shift.Schedule.IconBg
+            })
+            .ToList();
     }
 
     private static ShiftDto MapToDto(Shift shift) => new()
