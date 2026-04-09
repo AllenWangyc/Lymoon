@@ -38,29 +38,21 @@ public class AccountService : IAccountService
     public async Task DeleteAccountAsync(string userId)
     {
         // Check for sole-manager schedules before touching data
-        var managedScheduleIds = await _context.ScheduleMembers
+        var soloManagedIds = await _context.ScheduleMembers
             .Where(m => m.UserId == userId && m.Role == "Manager")
+            .Where(m => !_context.ScheduleMembers.Any(
+                o => o.ScheduleId == m.ScheduleId && o.UserId != userId && o.Role == "Manager"))
             .Select(m => m.ScheduleId)
             .ToListAsync();
 
-        var blockingTitles = new List<string>();
-        foreach (var scheduleId in managedScheduleIds)
+        if (soloManagedIds.Count > 0)
         {
-            var otherManagerExists = await _context.ScheduleMembers
-                .AnyAsync(m => m.ScheduleId == scheduleId && m.UserId != userId && m.Role == "Manager");
-
-            if (!otherManagerExists)
-            {
-                var title = await _context.Schedules
-                    .Where(s => s.Id == scheduleId)
-                    .Select(s => s.Title)
-                    .FirstOrDefaultAsync();
-                blockingTitles.Add(title ?? "Unknown Schedule");
-            }
-        }
-
-        if (blockingTitles.Count > 0)
+            var blockingTitles = await _context.Schedules
+                .Where(s => soloManagedIds.Contains(s.Id))
+                .Select(s => s.Title)
+                .ToListAsync();
             throw new SoleManagerBlockingException(blockingTitles);
+        }
 
         // Hard delete inside a transaction
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -80,7 +72,10 @@ public class AccountService : IAccountService
 
             var user = await _userManager.FindByIdAsync(userId)
                 ?? throw new InvalidOperationException("user_not_found");
-            await _userManager.DeleteAsync(user);
+            var deleteResult = await _userManager.DeleteAsync(user);
+            if (!deleteResult.Succeeded)
+                throw new InvalidOperationException(
+                    string.Join("; ", deleteResult.Errors.Select(e => e.Description)));
 
             await transaction.CommitAsync();
         }
