@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useAuthStore } from '@/stores/authStore';
 import { useDeleteAccountMutation, useUpdateDisplayNameMutation } from '@/lib/queries/account';
-import type { DeleteAccountError } from '@/lib/queries/account';
+import { ApiError } from '@/lib/api';
 import { EditDisplayNameSheet } from '@/features/settings/components/EditDisplayNameSheet';
 import { DeleteAccountSheet } from '@/features/settings/components/DeleteAccountSheet';
 
@@ -46,9 +46,18 @@ export default function SettingsScreen() {
       },
       onError: (err: unknown) => {
         setDeleteSheetVisible(false);
-        const parsed = err as DeleteAccountError;
-        if (parsed?.error === 'sole_manager_blocking' && parsed.schedules?.length) {
-          const list = parsed.schedules.join(', ');
+        if (
+          err instanceof ApiError &&
+          err.status === 409 &&
+          err.body &&
+          typeof err.body === 'object' &&
+          'error' in err.body &&
+          (err.body as { error: string }).error === 'sole_manager_blocking' &&
+          'schedules' in err.body &&
+          Array.isArray((err.body as { schedules: unknown }).schedules)
+        ) {
+          const schedules = (err.body as { schedules: string[] }).schedules;
+          const list = schedules.join(', ');
           Alert.alert(
             'Cannot Delete Account',
             `You are the sole manager of: ${list}. Transfer the manager role or dissolve these schedules before deleting your account.`,

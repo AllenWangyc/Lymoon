@@ -23,6 +23,7 @@ export function DeleteAccountSheet({ visible, onClose, onConfirm, isLoading }: P
 
   function handleConfirm() {
     if (!canDelete || isLoading) return;
+    setInput('');
     onConfirm();
   }
 
