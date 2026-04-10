@@ -1,6 +1,6 @@
 // src/lib/queries/notifications.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiGet, apiPost } from '@/lib/api';
+import { apiGet, apiPost, apiDelete } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 
 export type NotificationType =
@@ -48,6 +48,25 @@ export function useMarkNotificationsRead() {
       return { previous };
     },
     onError: (_err, _ids, context) => {
+      if (context?.previous) {
+        qc.setQueryData(notificationKeys.all, context.previous);
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: notificationKeys.all }),
+  });
+}
+
+export function useDeleteAllNotifications() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiDelete<void>('/notifications'),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: notificationKeys.all });
+      const previous = qc.getQueryData<Notification[]>(notificationKeys.all);
+      qc.setQueryData<Notification[]>(notificationKeys.all, []);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
       if (context?.previous) {
         qc.setQueryData(notificationKeys.all, context.previous);
       }
