@@ -1,6 +1,13 @@
-import { Alert, Image, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Image, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { useGoogleSignInMutation, useAppleSignInMutation } from '@/lib/queries/auth';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   return (
@@ -119,13 +126,63 @@ function GoogleIcon({ size = 20 }: { size?: number }) {
 }
 
 function ActionCard() {
-  function handleGooglePress() {
-    Alert.alert('即将推出', 'Google 登录功能即将推出，敬请期待。');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const googleSignIn = useGoogleSignInMutation();
+  const appleSignIn = useAppleSignInMutation();
+
+  // useIdTokenAuthRequest handles PKCE code exchange automatically and returns id_token directly
+  const [request, , promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
+  });
+
+  async function handleGooglePress() {
+    setErrorMsg(null);
+    try {
+      const result = await promptAsync();
+      if (result.type !== 'success') return;
+
+      const idToken = result.params.id_token;
+      if (!idToken) {
+        setErrorMsg('Google sign-in failed. Please try again.');
+        return;
+      }
+
+      googleSignIn.mutate(idToken, {
+        onSuccess: () => router.replace('/(app)'),
+        onError: () => setErrorMsg('Google sign-in failed. Please try again.'),
+      });
+    } catch {
+      setErrorMsg('Google sign-in failed. Please try again.');
+    }
   }
 
-  function handleApplePress() {
-    Alert.alert('即将推出', 'Apple 登录功能即将推出，敬请期待。');
+  async function handleApplePress() {
+    setErrorMsg(null);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        setErrorMsg('Apple sign-in failed. Please try again.');
+        return;
+      }
+
+      appleSignIn.mutate(credential.identityToken, {
+        onSuccess: () => router.replace('/(app)'),
+        onError: () => setErrorMsg('Apple sign-in failed. Please try again.'),
+      });
+    } catch (e: unknown) {
+      const code = (e as { code?: string }).code;
+      if (code === 'ERR_CANCELED') return; // user dismissed the sheet
+      setErrorMsg('Apple sign-in failed. Please try again.');
+    }
   }
+
+  const isLoading = googleSignIn.isPending || appleSignIn.isPending;
 
   return (
     <View
@@ -142,6 +199,7 @@ function ActionCard() {
         <TouchableOpacity
           onPress={handleGooglePress}
           activeOpacity={0.8}
+          disabled={!request || isLoading}
           className="w-full bg-white border border-[#e2e8f0] rounded-[16px] flex-row items-center justify-center h-[58px] gap-3"
           style={{
             shadowColor: '#000',
@@ -149,18 +207,26 @@ function ActionCard() {
             shadowOpacity: 0.05,
             shadowRadius: 2,
             elevation: 1,
+            opacity: !request || isLoading ? 0.6 : 1,
           }}
         >
-          <GoogleIcon size={20} />
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#334155' }}>
-            Continue with Google
-          </Text>
+          {googleSignIn.isPending ? (
+            <ActivityIndicator size="small" color="#334155" />
+          ) : (
+            <>
+              <GoogleIcon size={20} />
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#334155' }}>
+                Continue with Google
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {Platform.OS === 'ios' && (
           <TouchableOpacity
             onPress={handleApplePress}
             activeOpacity={0.8}
+            disabled={isLoading}
             className="w-full bg-black rounded-[16px] flex-row items-center justify-center h-[58px] gap-3"
             style={{
               shadowColor: '#000',
@@ -168,14 +234,25 @@ function ActionCard() {
               shadowOpacity: 0.05,
               shadowRadius: 2,
               elevation: 1,
+              opacity: isLoading ? 0.6 : 1,
             }}
           >
-            <Ionicons name="logo-apple" size={20} color="white" />
-            <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>
-              Continue with Apple
-            </Text>
+            {appleSignIn.isPending ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <Ionicons name="logo-apple" size={20} color="white" />
+                <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>
+                  Continue with Apple
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         )}
+
+        {errorMsg ? (
+          <Text style={{ fontSize: 13, color: '#ef4444', textAlign: 'center' }}>{errorMsg}</Text>
+        ) : null}
 
         <View className="items-center pt-2">
           <TouchableOpacity

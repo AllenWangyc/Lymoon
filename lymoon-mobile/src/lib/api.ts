@@ -29,11 +29,28 @@ export const API_BASE = resolveApiBase();
 
 type ApiOptions = Omit<RequestInit, 'body'> & { body?: unknown };
 
+export class ApiError extends Error {
+  readonly status: number;
+  readonly body: unknown;
+
+  constructor(status: number, body: unknown) {
+    const message =
+      body && typeof body === 'object' && 'error' in body && typeof (body as Record<string, unknown>).error === 'string'
+        ? (body as Record<string, unknown>).error as string
+        : `HTTP ${status}`;
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
+  }
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    const err = (await res.json().catch(() => ({ error: 'Unknown error' }))) as { error: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
+    const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+    throw new ApiError(res.status, body);
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 

@@ -20,7 +20,8 @@ export function useLoginMutation() {
       setUser({
         userId: data.user.id,
         userName: data.user.displayName,
-        userRole: 'Member', // role is per-schedule; authStore holds a fallback
+        userEmail: data.user.email,
+        userRole: 'Member',
         avatarInitials: computeInitials(data.user.displayName),
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
@@ -49,7 +50,46 @@ export function useRegisterMutation() {
       setUser({
         userId: data.user.id,
         userName: data.user.displayName,
-        userRole: 'Member', // role is per-schedule; authStore holds a fallback
+        userEmail: data.user.email,
+        userRole: 'Member',
+        avatarInitials: computeInitials(data.user.displayName),
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
+    },
+  });
+}
+
+export function useGoogleSignInMutation() {
+  const { setUser } = useAuthStore();
+  return useMutation({
+    mutationFn: (idToken: string) =>
+      apiPost<AuthResponse>('/auth/google', { idToken }),
+    onSuccess: (data) => {
+      setUser({
+        userId: data.user.id,
+        userName: data.user.displayName,
+        userEmail: data.user.email,
+        userRole: 'Member',
+        avatarInitials: computeInitials(data.user.displayName),
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
+    },
+  });
+}
+
+export function useAppleSignInMutation() {
+  const { setUser } = useAuthStore();
+  return useMutation({
+    mutationFn: (idToken: string) =>
+      apiPost<AuthResponse>('/auth/apple', { idToken }),
+    onSuccess: (data) => {
+      setUser({
+        userId: data.user.id,
+        userName: data.user.displayName,
+        userEmail: data.user.email,
+        userRole: 'Member',
         avatarInitials: computeInitials(data.user.displayName),
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,

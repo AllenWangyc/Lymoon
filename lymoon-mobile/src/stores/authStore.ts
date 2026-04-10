@@ -5,6 +5,7 @@ export type UserRole = 'Manager' | 'Member';
 interface AuthState {
   userId: string | null;
   userName: string | null;
+  userEmail: string | null;
   userRole: UserRole | null;
   avatarInitials: string | null;
   accessToken: string | null;
@@ -14,6 +15,7 @@ interface AuthState {
   setUser: (data: {
     userId: string;
     userName: string;
+    userEmail: string;
     userRole: UserRole;
     avatarInitials: string;
     accessToken: string;
@@ -26,6 +28,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   userId: null,
   userName: null,
+  userEmail: null,
   userRole: null,
   avatarInitials: null,
   accessToken: null,
@@ -36,6 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       userId: data.userId,
       userName: data.userName,
+      userEmail: data.userEmail,
       userRole: data.userRole,
       avatarInitials: data.avatarInitials,
       accessToken: data.accessToken,
@@ -49,6 +53,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       userId: null,
       userName: null,
+      userEmail: null,
       userRole: null,
       avatarInitials: null,
       accessToken: null,

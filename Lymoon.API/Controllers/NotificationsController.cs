@@ -40,6 +40,17 @@ public class NotificationsController : ControllerBase
         return Ok(new { ok = true });
     }
 
+    // DELETE /api/notifications
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAll()
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        await _notificationService.DeleteAllAsync(userId);
+        return NoContent();
+    }
+
     private string? GetUserId() =>
         User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 }

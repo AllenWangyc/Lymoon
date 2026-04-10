@@ -44,6 +44,13 @@ public class NotificationService : INotificationService
         await _db.SaveChangesAsync();
     }
 
+    public async Task DeleteAllAsync(string userId)
+    {
+        await _db.Notifications
+            .Where(n => n.UserId == userId)
+            .ExecuteDeleteAsync();
+    }
+
     public async Task NotifyShiftModifiedAsync(Shift shift, string actorId)
     {
         if (shift.UserId == actorId) return;

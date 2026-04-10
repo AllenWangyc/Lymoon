@@ -26,62 +26,136 @@ export default function TermsScreen() {
         </Text>
 
         <BodyText className="mb-8">
-          Welcome to our scheduling platform. These Terms of Service ("Terms") govern your access
-          to and use of our services, including our mobile application and website. Please read them
-          carefully before using the service.
+          These Terms of Service ("Terms") govern your access to and use of Lymoon, a shift
+          scheduling platform ("Service") operated by Yuchen Wang ("I," "me," or "my"). By
+          creating an account or using the Service, you agree to be bound by these Terms.
         </BodyText>
 
         <Section title="1. Acceptance of Terms">
           <Text style={{ fontSize: 16, color: '#334155', lineHeight: 26 }}>
-            By creating an account or using our services, you agree to be bound by these Terms and
-            our{' '}
-            <Text onPress={() => router.push('/(auth)/privacy')} suppressHighlighting style={{ fontWeight: '600', color: '#b6ec13' }}>Privacy Policy</Text>. If you do
-            not agree to these terms, please do not use the service.
+            By registering for or using Lymoon, you confirm that you have read, understood, and
+            agree to these Terms and our{' '}
+            <Text
+              onPress={() => router.push('/(auth)/privacy')}
+              suppressHighlighting
+              style={{ fontWeight: '600', color: '#b6ec13' }}
+            >
+              Privacy Policy
+            </Text>
+            . If you do not agree, you may not use the Service. These Terms form a binding
+            agreement between you and Yuchen Wang, the individual developer operating Lymoon.
           </Text>
         </Section>
 
-        <Section title="2. User Accounts">
+        <Section title="2. Description of Service">
           <BodyText>
-            To access certain features of the service, you must register for an account. You agree
-            to provide accurate, current, and complete information during the registration process
-            and to update such information to keep it accurate.
+            Lymoon is a mobile shift scheduling platform for small business teams. Managers can
+            create schedules, assign shifts, and manage team members. Team members can view their
+            assigned shifts and receive in-app notifications for schedule updates.
+          </BodyText>
+          <BodyText className="mt-3">
+            Access to a team schedule is granted via a unique invitation code issued by a schedule
+            manager. All notifications are delivered within the app only.
+          </BodyText>
+        </Section>
+
+        <Section title="3. User Accounts">
+          <BodyText>
+            To use Lymoon, you must register for an account. By registering, you agree to:
           </BodyText>
           <View className="mt-2 gap-1">
-            <BulletItem>You are responsible for safeguarding your password.</BulletItem>
-            <BulletItem>You agree not to disclose your password to any third party.</BulletItem>
+            <BulletItem>Provide accurate, current, and complete information at registration.</BulletItem>
+            <BulletItem>Keep your login credentials confidential and not share them with others.</BulletItem>
+            <BulletItem>Not transfer your account to any other person.</BulletItem>
             <BulletItem>
-              You must notify us immediately upon becoming aware of any breach of security.
+              Notify us immediately of any suspected unauthorized access to your account.
             </BulletItem>
           </View>
         </Section>
 
-        <Section title="3. Service Usage & Restrictions">
+        <Section title="4. Roles and Permissions">
+          <BodyText>Each schedule in Lymoon has two user roles:</BodyText>
+          <View className="mt-2 gap-1">
+            <BulletItem>
+              Manager: Can create and publish schedules, assign or modify any shift, and add or
+              remove team members.
+            </BulletItem>
+            <BulletItem>
+              Member: Can view assigned shifts and, depending on the schedule's settings, may
+              add or edit their own shifts.
+            </BulletItem>
+          </View>
+          <BodyText className="mt-3">
+            Managers are responsible for ensuring their use of team member data complies with
+            applicable employment and privacy laws.
+          </BodyText>
+        </Section>
+
+        <Section title="5. Service Usage & Restrictions">
           <BodyText>
-            Our platform is designed to help you stay in sync and plan your week efficiently. You
-            agree not to use the service for any illegal purposes or to interfere with the proper
-            functioning of the platform.
+            You agree to use the Service only for its intended purpose of shift scheduling and
+            team management. You must not use the Service for any unlawful purpose or in any way
+            that interferes with its proper functioning.
           </BodyText>
           <CalloutBox>
-            Prohibited activities include reverse engineering the software, scraping data, or
-            attempting to bypass security measures.
+            Prohibited activities include: reverse engineering or decompiling the software,
+            scraping or bulk-downloading data, attempting to bypass security measures, or
+            impersonating any other user or organization.
           </CalloutBox>
         </Section>
 
-        <Section title="4. Subscription and Payments">
+        <Section title="6. Account Termination">
           <BodyText>
-            Some parts of the Service are billed on a subscription basis. You will be billed in
-            advance on a recurring and periodic basis. Billing cycles are set on a monthly or annual
-            basis, depending on the type of subscription plan you select when purchasing.
+            You may delete your account at any time by contacting us at a.wangyc@gmail.com. We
+            may suspend or terminate your access to the Service without notice if we determine
+            that you have violated these Terms or that your actions may harm other users or the
+            platform.
           </BodyText>
         </Section>
 
-        <Section title="5. Limitation of Liability" last>
+        <Section title="7. Disclaimer of Warranties">
           <BodyText>
-            In no event shall our company, nor its directors, employees, partners, agents,
-            suppliers, or affiliates, be liable for any indirect, incidental, special, consequential
-            or punitive damages, including without limitation, loss of profits, data, use, goodwill,
-            or other intangible losses.
+            The Service is provided "as is" and "as available," without warranties of any kind,
+            either express or implied. To the fullest extent permitted by applicable law, we
+            disclaim all warranties, including implied warranties of merchantability, fitness for
+            a particular purpose, and non-infringement. We do not warrant that the Service will
+            be uninterrupted or error-free.
           </BodyText>
+        </Section>
+
+        <Section title="8. Limitation of Liability">
+          <BodyText>
+            To the maximum extent permitted by applicable law, Yuchen Wang (the developer of
+            Lymoon) shall not be liable for any indirect, incidental, special, consequential,
+            or punitive damages — including loss of profits, data, or goodwill — arising from
+            your use of or inability to use the Service.
+          </BodyText>
+        </Section>
+
+        <Section title="9. Governing Law">
+          <BodyText>
+            These Terms shall be governed by and construed in accordance with the laws of the
+            jurisdiction in which Lymoon operates, without regard to its conflict of law
+            provisions. Any disputes shall be resolved in the competent courts of that
+            jurisdiction.
+          </BodyText>
+        </Section>
+
+        <Section title="10. Changes to These Terms">
+          <BodyText>
+            We may update these Terms from time to time. We will notify you of material changes
+            via an in-app notification. Your continued use of the Service after the updated Terms
+            take effect constitutes your acceptance of the changes.
+          </BodyText>
+        </Section>
+
+        <Section title="11. Contact Us" last>
+          <BodyText>
+            If you have any questions about these Terms, please contact us at:
+          </BodyText>
+          <View className="mt-2">
+            <BodyText>Email: a.wangyc@gmail.com</BodyText>
+          </View>
         </Section>
       </ScrollView>
     </View>
