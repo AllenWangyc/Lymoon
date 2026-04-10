@@ -75,7 +75,7 @@ function formatRelativeTime(createdAt: string): string {
   }
 }
 
-function NotificationCard({ item, onPress }: { item: Notification; onPress: () => void }) {
+function NotificationCard({ item, onPress }: { item: Notification; onPress?: () => void }) {
   const typeLabel = TYPE_LABELS[item.type] ?? item.type;
   const iconName = TYPE_ICONS[item.type] ?? 'notifications-outline';
 
@@ -233,7 +233,7 @@ export default function NotificationsScreen() {
           renderItem={({ item }) => (
             <NotificationCard
               item={item}
-              onPress={() =>
+              onPress={item.isRead ? undefined : () =>
                 markRead.mutate([item.id], {
                   onError: () => showToast('Failed to mark as read'),
                 })

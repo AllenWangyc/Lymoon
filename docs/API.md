@@ -69,3 +69,19 @@ Permanently deletes the authenticated user's account and all associated data.
 2. notifications where userId = currentUser
 3. schedule_members where userId = currentUser
 4. AppUser row
+
+### DELETE /api/notifications
+
+Permanently deletes all notifications for the authenticated user.
+
+**Auth:** Required
+
+**Request body:** none
+
+**Response 204:** No Content
+
+**Errors:**
+
+| Status | Meaning |
+|--------|---------|
+| 401 | Missing or invalid JWT |
