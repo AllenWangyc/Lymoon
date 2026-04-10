@@ -31,48 +31,125 @@ export default function PrivacyPolicyScreen() {
         </View>
 
         <BodyText className="mb-8">
-          At Lymoon, we respect your privacy and are committed to protecting your personal data.
-          This policy explains how we handle your information when you use our scheduling services.
+          Lymoon is a shift scheduling platform for small business teams. This Privacy Policy
+          describes how Lymoon ("we," "us," or "our") collects, uses, and protects your
+          information when you use our mobile application.
         </BodyText>
 
-        <Section icon="sync-outline" title="Information We Collect">
-          <BodyText>We collect information that you provide directly to us, including:</BodyText>
+        <Section icon="document-text-outline" title="Information We Collect">
+          <BodyText>We collect only the information necessary to provide our service:</BodyText>
           <View className="mt-3 gap-3 pl-2">
             <BulletItem label="Account Data:">
-              {' '}Name, email address, and profile photo when you sign up using Google or Apple.
+              {' '}Your name and email address, provided when you create an account.
             </BulletItem>
-            <BulletItem label="Calendar Data:">
-              {' '}Events, attendees, and schedule availability synced from your connected calendars.
+            <BulletItem label="Schedule & Shift Data:">
+              {' '}Team memberships, assigned shifts, and scheduling information created within
+              the app by you or your managers.
             </BulletItem>
             <BulletItem label="Usage Data:">
-              {' '}Information about how you interact with our app features.
+              {' '}Basic information about how you interact with app features, used solely to
+              improve the service.
             </BulletItem>
           </View>
         </Section>
 
-        <Section icon="shield-checkmark-outline" title="How We Use Data">
+        <Section icon="shield-checkmark-outline" title="How We Use Your Data">
+          <BodyText>We use your information only to provide and improve Lymoon:</BodyText>
+          <View className="mt-3 gap-3 pl-2">
+            <BulletItem>Delivering the shift scheduling and team management service.</BulletItem>
+            <BulletItem>
+              Sending in-app notifications about shift assignments, changes, and updates.
+            </BulletItem>
+            <BulletItem>Enabling managers to create and publish team schedules.</BulletItem>
+            <BulletItem>
+              Maintaining platform security and preventing unauthorized access.
+            </BulletItem>
+            <BulletItem>Improving app performance and user experience.</BulletItem>
+          </View>
+        </Section>
+
+        <Section icon="share-social-outline" title="Data Sharing">
           <BodyText>
-            We use the collected information for specific purposes to provide our service:
+            We do not sell your personal data. We share your information only in these limited
+            circumstances:
           </BodyText>
           <View className="mt-3 gap-3 pl-2">
-            <BulletItem>
-              Optimizing your weekly schedule and suggesting ideal sync times.
+            <BulletItem label="Service Providers:">
+              {' '}Trusted third-party providers who help us operate the platform (such as cloud
+              database hosting), bound by strict confidentiality agreements.
             </BulletItem>
-            <BulletItem>
-              Providing push notifications for upcoming events and changes.
-            </BulletItem>
-            <BulletItem>
-              Maintaining and improving the security of the Lymoon platform.
+            <BulletItem label="Legal Requirements:">
+              {' '}When required by applicable law, court order, or to protect the rights and
+              safety of our users and the public.
             </BulletItem>
           </View>
         </Section>
 
-        <Section icon="share-social-outline" title="Data Sharing" last>
+        <Section icon="time-outline" title="Data Retention">
           <BodyText>
-            We do not sell your personal data. We only share information with third-party providers
-            who help us operate our services (like cloud storage) or when required by legal
-            obligation.
+            We retain your personal data for as long as your account is active. Upon account
+            deletion, we will remove your personal data within 30 days, unless a longer retention
+            period is required by applicable law.
           </BodyText>
+        </Section>
+
+        <Section icon="person-outline" title="Your Rights">
+          <BodyText>
+            Depending on your location, you may have the following rights regarding your personal
+            data:
+          </BodyText>
+          <View className="mt-3 gap-3 pl-2">
+            <BulletItem label="Access:">
+              {' '}Request a copy of the personal data we hold about you.
+            </BulletItem>
+            <BulletItem label="Correction:">
+              {' '}Update your account information at any time within the app settings.
+            </BulletItem>
+            <BulletItem label="Deletion:">
+              {' '}Request deletion of your account and all associated personal data.
+            </BulletItem>
+            <BulletItem label="Portability:">
+              {' '}Request a copy of your data in a portable format (where technically feasible).
+            </BulletItem>
+          </View>
+          <BodyText className="mt-3">
+            To exercise these rights, contact us at a.wangyc@gmail.com.
+          </BodyText>
+        </Section>
+
+        <Section icon="lock-closed-outline" title="Security">
+          <BodyText>
+            We protect your data using industry-standard security measures, including encrypted
+            data transmission (HTTPS/TLS) and secure cloud infrastructure. While we take
+            reasonable precautions, no method of internet transmission is 100% secure, and we
+            cannot guarantee absolute security.
+          </BodyText>
+        </Section>
+
+        <Section icon="people-outline" title="Children's Privacy">
+          <BodyText>
+            Lymoon is not directed at children under 13 years of age. We do not knowingly collect
+            personal information from children under 13. If you believe a child has provided us
+            with personal data, please contact us and we will delete it promptly.
+          </BodyText>
+        </Section>
+
+        <Section icon="refresh-outline" title="Changes to This Policy">
+          <BodyText>
+            We may update this Privacy Policy from time to time. We will notify you of significant
+            changes via an in-app notification. Continued use of Lymoon after changes take effect
+            constitutes your acceptance of the updated policy.
+          </BodyText>
+        </Section>
+
+        <Section icon="mail-outline" title="Contact Us" last>
+          <BodyText>
+            If you have any questions about this Privacy Policy or how we handle your data,
+            please contact us:
+          </BodyText>
+          <View className="mt-3 gap-1 pl-2">
+            <BodyText>Email: a.wangyc@gmail.com</BodyText>
+          </View>
         </Section>
       </ScrollView>
     </View>

@@ -59,3 +59,41 @@ export function useRegisterMutation() {
     },
   });
 }
+
+export function useGoogleSignInMutation() {
+  const { setUser } = useAuthStore();
+  return useMutation({
+    mutationFn: (idToken: string) =>
+      apiPost<AuthResponse>('/auth/google', { idToken }),
+    onSuccess: (data) => {
+      setUser({
+        userId: data.user.id,
+        userName: data.user.displayName,
+        userEmail: data.user.email,
+        userRole: 'Member',
+        avatarInitials: computeInitials(data.user.displayName),
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
+    },
+  });
+}
+
+export function useAppleSignInMutation() {
+  const { setUser } = useAuthStore();
+  return useMutation({
+    mutationFn: (idToken: string) =>
+      apiPost<AuthResponse>('/auth/apple', { idToken }),
+    onSuccess: (data) => {
+      setUser({
+        userId: data.user.id,
+        userName: data.user.displayName,
+        userEmail: data.user.email,
+        userRole: 'Member',
+        avatarInitials: computeInitials(data.user.displayName),
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
+    },
+  });
+}

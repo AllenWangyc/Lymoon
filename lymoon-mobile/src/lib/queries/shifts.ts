@@ -33,6 +33,7 @@ export function useAddShift(scheduleId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
       qc.invalidateQueries({ queryKey: scheduleKeys.all });
+      qc.invalidateQueries({ queryKey: ['myShifts'] });
     },
   });
 }
@@ -54,6 +55,7 @@ export function useUpdateShift(scheduleId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
       qc.invalidateQueries({ queryKey: scheduleKeys.all });
+      qc.invalidateQueries({ queryKey: ['myShifts'] });
     },
   });
 }
@@ -66,6 +68,7 @@ export function useDeleteShift(scheduleId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: scheduleKeys.detail(scheduleId) });
       qc.invalidateQueries({ queryKey: scheduleKeys.all });
+      qc.invalidateQueries({ queryKey: ['myShifts'] });
     },
   });
 }
