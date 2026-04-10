@@ -1,10 +1,10 @@
 // app/(app)/notifications/index.tsx
-import { View, Text, SectionList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, SectionList, ActivityIndicator, Pressable, TouchableOpacity, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow, isToday, isYesterday, differenceInCalendarDays } from 'date-fns';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useNotifications, useMarkNotificationsRead, type Notification } from '@/lib/queries/notifications';
+import { useNotifications, useMarkNotificationsRead, useDeleteAllNotifications, type Notification } from '@/lib/queries/notifications';
 import { useToast } from '@/hooks/useToast';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -75,63 +75,70 @@ function formatRelativeTime(createdAt: string): string {
   }
 }
 
-function NotificationCard({ item }: { item: Notification }) {
+function NotificationCard({ item, onPress }: { item: Notification; onPress: () => void }) {
   const typeLabel = TYPE_LABELS[item.type] ?? item.type;
   const iconName = TYPE_ICONS[item.type] ?? 'notifications-outline';
 
   return (
-    <View
-      className="flex-row items-start rounded-[14px] mb-3 p-4"
-      style={[
-        item.isRead
-          ? { backgroundColor: 'rgba(255,255,255,0.6)' }
-          : { backgroundColor: '#ffffff', ...cardShadow },
-      ]}
+    <Pressable
+      onPress={!item.isRead ? onPress : undefined}
+      style={({ pressed }) => ({
+        transform: [{ scale: !item.isRead && pressed ? 0.97 : 1 }],
+      })}
     >
-      {/* Icon container */}
       <View
-        className="items-center justify-center mr-3.5 flex-shrink-0 w-12 h-12 rounded-xl overflow-visible"
-        style={{ backgroundColor: item.isRead ? '#f1f5f9' : 'rgba(182,236,19,0.2)' }}
+        className="flex-row items-start rounded-[14px] mb-3 p-4"
+        style={[
+          item.isRead
+            ? { backgroundColor: 'rgba(255,255,255,0.6)' }
+            : { backgroundColor: '#ffffff', ...cardShadow },
+        ]}
       >
-        <Ionicons
-          name={iconName}
-          size={22}
-          color={item.isRead ? '#94a3b8' : '#4e6704'}
-        />
-        {/* Unread dot */}
-        {!item.isRead && (
-          <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#b6ec13]" />
-        )}
-      </View>
+        {/* Icon container */}
+        <View
+          className="items-center justify-center mr-3.5 flex-shrink-0 w-12 h-12 rounded-xl overflow-visible"
+          style={{ backgroundColor: item.isRead ? '#f1f5f9' : 'rgba(182,236,19,0.2)' }}
+        >
+          <Ionicons
+            name={iconName}
+            size={22}
+            color={item.isRead ? '#94a3b8' : '#4e6704'}
+          />
+          {/* Unread dot */}
+          {!item.isRead && (
+            <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#b6ec13]" />
+          )}
+        </View>
 
-      {/* Content */}
-      <View className="flex-1">
-        <View className="flex-row items-center justify-between mb-1">
+        {/* Content */}
+        <View className="flex-1">
+          <View className="flex-row items-center justify-between mb-1">
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '600',
+                color: item.isRead ? '#94a3b8' : '#64748b',
+              }}
+              numberOfLines={1}
+            >
+              {typeLabel}
+            </Text>
+            <Text className="ml-2" style={{ fontSize: 12, color: '#94a3b8' }}>
+              {formatRelativeTime(item.createdAt)}
+            </Text>
+          </View>
           <Text
             style={{
-              fontSize: 13,
-              fontWeight: '600',
-              color: item.isRead ? '#94a3b8' : '#64748b',
+              fontSize: 14,
+              lineHeight: 20,
+              color: item.isRead ? '#64748b' : '#0f172a',
             }}
-            numberOfLines={1}
           >
-            {typeLabel}
-          </Text>
-          <Text className="ml-2" style={{ fontSize: 12, color: '#94a3b8' }}>
-            {formatRelativeTime(item.createdAt)}
+            {item.message}
           </Text>
         </View>
-        <Text
-          style={{
-            fontSize: 14,
-            lineHeight: 20,
-            color: item.isRead ? '#64748b' : '#0f172a',
-          }}
-        >
-          {item.message}
-        </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -153,12 +160,12 @@ export default function NotificationsScreen() {
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const deleteAll = useDeleteAllNotifications();
 
   function handleClearAll() {
-    const allIds = notifications.filter((n) => !n.isRead).map((n) => n.id);
-    if (allIds.length === 0) return;
-    markRead.mutate(allIds, {
+    if (notifications.length === 0) return;
+    deleteAll.mutate(undefined, {
+      onSuccess: () => showToast('All notifications cleared'),
       onError: () => showToast('Failed to clear notifications'),
     });
   }
@@ -179,13 +186,13 @@ export default function NotificationsScreen() {
             <TouchableOpacity
               onPress={handleClearAll}
               activeOpacity={0.7}
-              disabled={markRead.isPending}
+              disabled={deleteAll.isPending}
             >
               <Text
                 style={{
                   fontSize: 14,
                   fontWeight: '600',
-                  color: unreadCount > 0 && !markRead.isPending ? '#b6ec13' : '#94a3b8',
+                  color: notifications.length > 0 && !deleteAll.isPending ? '#b6ec13' : '#94a3b8',
                 }}
               >
                 Clear All
@@ -223,7 +230,16 @@ export default function NotificationsScreen() {
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <NotificationCard item={item} />}
+          renderItem={({ item }) => (
+            <NotificationCard
+              item={item}
+              onPress={() =>
+                markRead.mutate([item.id], {
+                  onError: () => showToast('Failed to mark as read'),
+                })
+              }
+            />
+          )}
           renderSectionHeader={({ section }) => <SectionHeader title={section.title} />}
           stickySectionHeadersEnabled={false}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
