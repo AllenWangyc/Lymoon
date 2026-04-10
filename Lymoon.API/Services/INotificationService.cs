@@ -8,6 +8,9 @@ public interface INotificationService
     Task<List<NotificationDto>> GetNotificationsAsync(string userId);
     Task MarkReadAsync(string userId, List<string> notificationIds);
 
+    /// <summary>Permanently deletes all notifications for the given user.</summary>
+    Task DeleteAllAsync(string userId);
+
     /// <summary>Notify shift owner that another user modified their shift. No-op if actorId == shift owner.</summary>
     Task NotifyShiftModifiedAsync(Shift shift, string actorId);
 
