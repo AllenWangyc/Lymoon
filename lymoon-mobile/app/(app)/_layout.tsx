@@ -8,7 +8,6 @@ export default function AppLayout() {
       <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
         <Tabs.Screen name="index" />
         <Tabs.Screen name="calendar" />
-        <Tabs.Screen name="team" />
         <Tabs.Screen name="settings" />
         <Tabs.Screen name="schedule-created" options={{ tabBarStyle: { display: 'none' } }} />
         <Tabs.Screen name="create-schedule" options={{ tabBarStyle: { display: 'none' } }} />
