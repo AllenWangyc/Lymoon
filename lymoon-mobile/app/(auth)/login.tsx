@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { ActivityIndicator, Image, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useGoogleSignInMutation, useAppleSignInMutation } from '@/lib/queries/auth';
 
 WebBrowser.maybeCompleteAuthSession();
+
 
 export default function LoginScreen() {
   return (
@@ -130,28 +132,44 @@ function ActionCard() {
   const googleSignIn = useGoogleSignInMutation();
   const appleSignIn = useAppleSignInMutation();
 
-  // useIdTokenAuthRequest handles PKCE code exchange automatically and returns id_token directly
+  // iosClientId triggers the native PKCE flow — no client_secret needed.
+  // The returned id_token is signed by Google and validated by the backend
+  // using the web client ID (audience check includes both client IDs).
+  // In Expo Go, Platform.OS === 'ios' but native URI schemes don't work.
+  // Use web client + Expo proxy in Expo Go; native iOS client in production builds.
+  const inExpoGo = Constants.executionEnvironment === 'storeClient';
   const [request, , promptAsync] = Google.useIdTokenAuthRequest({
     clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
+    iosClientId: inExpoGo ? undefined : (process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? ''),
+    redirectUri: inExpoGo ? 'https://auth.expo.io/@allenwangyc/lymoon-mobile' : undefined,
   });
 
   async function handleGooglePress() {
+    if (!request) return;
     setErrorMsg(null);
     try {
+      // promptAsync handles the full OAuth flow: opens the browser via the Expo
+      // proxy, waits for the redirect, and returns the id_token directly in
+      // result.params. No manual code exchange needed (and no client_secret required).
       const result = await promptAsync();
       if (result.type !== 'success') return;
 
-      const idToken = result.params.id_token;
+      const idToken = result.params?.id_token;
       if (!idToken) {
+        console.error('[Google] no id_token in result params:', result.params);
         setErrorMsg('Google sign-in failed. Please try again.');
         return;
       }
 
       googleSignIn.mutate(idToken, {
         onSuccess: () => router.replace('/(app)'),
-        onError: () => setErrorMsg('Google sign-in failed. Please try again.'),
+        onError: (e) => {
+          console.error('[Google] backend /auth/google failed:', e);
+          setErrorMsg('Google sign-in failed. Please try again.');
+        },
       });
-    } catch {
+    } catch (e) {
+      console.error('[Google] unexpected error:', e);
       setErrorMsg('Google sign-in failed. Please try again.');
     }
   }

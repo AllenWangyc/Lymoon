@@ -14,7 +14,16 @@
     },
     "ios": {
       "bundleIdentifier": "com.lymoon.app",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,6 +42,13 @@
       "expo-router",
       "expo-web-browser",
       "expo-apple-authentication"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "13d53a23-6b97-400b-8236-bef79937f2e9"
+      }
+    },
+    "owner": "allenwangyc"
   }
 }
