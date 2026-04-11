@@ -107,15 +107,21 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> GoogleSignInAsync(GoogleSignInRequest request)
     {
-        var clientId = _configuration["GoogleClientId"]
+        var webClientId = _configuration["GoogleClientId"]
             ?? throw new InvalidOperationException("GoogleClientId is not configured.");
+
+        // Accept tokens issued by either the web client or the iOS native client.
+        // The iOS native PKCE flow sets aud to the iOS client ID.
+        var audience = new List<string> { webClientId };
+        var iosClientId = _configuration["GoogleIosClientId"];
+        if (!string.IsNullOrEmpty(iosClientId)) audience.Add(iosClientId);
 
         GoogleJsonWebSignature.Payload payload;
         try
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
-                Audience = new[] { clientId }
+                Audience = audience
             };
             payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
         }

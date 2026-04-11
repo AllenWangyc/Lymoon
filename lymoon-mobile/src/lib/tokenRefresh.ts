@@ -1,6 +1,6 @@
 // src/lib/tokenRefresh.ts
 import { useAuthStore } from '@/stores/authStore';
-import { API_BASE } from './api';
+import { API_BASE } from './apiBase';
 
 export async function tryRefresh(): Promise<boolean> {
   const { refreshToken, setTokens, clearUser } = useAuthStore.getState();
