@@ -11,7 +11,8 @@
       },
       "env": {
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "278239475455-60u5nkpquhi1cdrrc74rs6b7f42566ll.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_BASE": "https://lymoon-production.up.railway.app/api"
       }
     },
     "preview": {
@@ -21,14 +22,16 @@
       },
       "env": {
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "278239475455-60u5nkpquhi1cdrrc74rs6b7f42566ll.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_BASE": "https://lymoon-production.up.railway.app/api"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "278239475455-60u5nkpquhi1cdrrc74rs6b7f42566ll.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_BASE": "https://lymoon-production.up.railway.app/api"
       }
     }
   },
