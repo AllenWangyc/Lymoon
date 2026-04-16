@@ -191,10 +191,7 @@ function ActionCard() {
 
       appleSignIn.mutate(credential.identityToken, {
         onSuccess: () => router.replace('/(app)'),
-        onError: (e) => {
-          console.error('[Apple] backend error:', JSON.stringify(e), (e as any).body);
-          setErrorMsg('Apple sign-in failed. Please try again.');
-        },
+        onError: () => setErrorMsg('Apple sign-in failed. Please try again.'),
       });
     } catch (e: unknown) {
       const code = (e as { code?: string }).code;
