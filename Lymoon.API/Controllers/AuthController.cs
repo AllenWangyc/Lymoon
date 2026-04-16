@@ -11,15 +11,18 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
     private readonly IEmailVerificationService _verificationService;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         IAuthService authService,
         IEmailService emailService,
-        IEmailVerificationService verificationService)
+        IEmailVerificationService verificationService,
+        ILogger<AuthController> logger)
     {
         _authService = authService;
         _emailService = emailService;
         _verificationService = verificationService;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -54,8 +57,9 @@ public class AuthController : ControllerBase
         {
             return StatusCode(429, new { error = "rate_limited" });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "[SendVerification] SMTP failure for {Email}: {Msg}", request.Email, ex.Message);
             return StatusCode(500, new { error = "Failed to send verification email." });
         }
     }
