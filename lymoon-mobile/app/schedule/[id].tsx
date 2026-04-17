@@ -288,7 +288,7 @@ export default function ScheduleDetailScreen() {
         {/* Title row */}
         <PageHeader
           title={scheduleDetail.title}
-          subtitle={scheduleDetail.subtitle}
+          subtitle={scheduleDetail.description}
           onBack={() => router.back()}
           rightElement={
             <TouchableOpacity

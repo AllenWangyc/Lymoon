@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, Platform, SafeAreaView, Text, TouchableOpacit
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
+import * as AuthSession from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -132,57 +133,102 @@ function ActionCard() {
   const googleSignIn = useGoogleSignInMutation();
   const appleSignIn = useAppleSignInMutation();
 
-  // iosClientId triggers the native PKCE flow — no client_secret needed.
-  // The returned id_token is signed by Google and validated by the backend
-  // using the web client ID (audience check includes both client IDs).
-  // In Expo Go, Platform.OS === 'ios' but native URI schemes don't work.
-  // Use web client + Expo proxy in Expo Go; native iOS client in production builds.
   const inExpoGo = Constants.executionEnvironment === 'storeClient';
-  const [request, , promptAsync] = Google.useIdTokenAuthRequest({
+
+  // Reverse-DNS redirect URI registered in app.json CFBundleURLSchemes.
+  // Used for the native iOS PKCE code flow in EAS builds.
+  const IOS_REDIRECT = `com.googleusercontent.apps.278239475455-acmjnhnf9tr4vii4l9us7kjc2josv0c0:/oauth2redirect/google`;
+
+  const [request, , promptAsync] = Google.useAuthRequest({
     clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
     iosClientId: inExpoGo ? undefined : (process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? ''),
-    redirectUri: inExpoGo ? 'https://auth.expo.io/@allenwangyc/lymoon-mobile' : undefined,
+    redirectUri: inExpoGo ? 'https://auth.expo.io/@allenwangyc/lymoon-mobile' : IOS_REDIRECT,
+    // Expo Go uses implicit id_token flow (web client + proxy).
+    // EAS builds use PKCE code flow (iOS client + reverse-DNS scheme).
+    responseType: inExpoGo ? AuthSession.ResponseType.IdToken : AuthSession.ResponseType.Code,
+    usePKCE: !inExpoGo,
+    scopes: ['openid', 'email', 'profile'],
   });
 
   async function handleGooglePress() {
     if (!request) return;
     setErrorMsg(null);
     try {
-      // promptAsync handles the full OAuth flow: opens the browser via the Expo
-      // proxy, waits for the redirect, and returns the id_token directly in
-      // result.params. No manual code exchange needed (and no client_secret required).
       const result = await promptAsync();
       if (result.type !== 'success') return;
 
-      const idToken = result.params?.id_token;
-      if (!idToken) {
-        console.error('[Google] no id_token in result params:', result.params);
-        setErrorMsg('Google sign-in failed. Please try again.');
-        return;
+      let idToken: string | undefined;
+
+      if (inExpoGo) {
+        // Expo Go: implicit flow returns id_token directly in params
+        idToken = result.params?.id_token;
+        if (!idToken) {
+          const paramKeys = Object.keys(result.params ?? {}).join(',') || 'none';
+          setErrorMsg(`Google: no token (params: ${paramKeys})`);
+          return;
+        }
+      } else {
+        // EAS build: PKCE code flow — exchange code for tokens via Google's token endpoint.
+        // iOS installed-app clients do not require a client_secret; PKCE is sufficient.
+        const code = result.params?.code;
+        if (!code) {
+          const paramKeys = Object.keys(result.params ?? {}).join(',') || 'none';
+          setErrorMsg(`Google: no code returned (params: ${paramKeys})`);
+          return;
+        }
+
+        const tokenResponse = await AuthSession.exchangeCodeAsync(
+          {
+            code,
+            redirectUri: IOS_REDIRECT,
+            clientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '',
+            extraParams: request.codeVerifier ? { code_verifier: request.codeVerifier } : {},
+          },
+          { tokenEndpoint: 'https://oauth2.googleapis.com/token' }
+        );
+
+        idToken = tokenResponse.idToken ?? undefined;
+        if (!idToken) {
+          setErrorMsg('Google: code exchanged but no id_token returned');
+          return;
+        }
       }
 
       googleSignIn.mutate(idToken, {
         onSuccess: () => router.replace('/(app)'),
         onError: (e) => {
-          console.error('[Google] backend /auth/google failed:', e);
-          setErrorMsg('Google sign-in failed. Please try again.');
+          const msg = e instanceof Error ? e.message : String(e);
+          setErrorMsg(`Google: backend error — ${msg}`);
         },
       });
     } catch (e) {
-      console.error('[Google] unexpected error:', e);
-      setErrorMsg('Google sign-in failed. Please try again.');
+      setErrorMsg(`Google: error — ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
   async function handleApplePress() {
     setErrorMsg(null);
     try {
-      const credential = await AppleAuthentication.signInAsync({
+      // Attempt sign-in up to twice. On first install, iOS occasionally returns
+      // a credential with a null identityToken; the second attempt succeeds
+      // because iOS has now established the Apple ID credential session.
+      let credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
+
+      if (!credential.identityToken) {
+        // Retry once — iOS sometimes needs a second call after the first
+        // authorization to issue a valid token.
+        credential = await AppleAuthentication.signInAsync({
+          requestedScopes: [
+            AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+            AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          ],
+        });
+      }
 
       if (!credential.identityToken) {
         setErrorMsg('Apple sign-in failed. Please try again.');
@@ -191,11 +237,13 @@ function ActionCard() {
 
       appleSignIn.mutate(credential.identityToken, {
         onSuccess: () => router.replace('/(app)'),
-        onError: () => setErrorMsg('Apple sign-in failed. Please try again.'),
+        onError: (e) => {
+          setErrorMsg('Apple sign-in failed. Please try again.');
+        },
       });
     } catch (e: unknown) {
       const code = (e as { code?: string }).code;
-      if (code === 'ERR_CANCELED') return; // user dismissed the sheet
+      if (code === 'ERR_CANCELED') return;
       setErrorMsg('Apple sign-in failed. Please try again.');
     }
   }
