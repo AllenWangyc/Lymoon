@@ -24,6 +24,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.InviteCode).HasMaxLength(6).IsFixedLength();
             entity.HasIndex(e => e.InviteCode).IsUnique();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd();
             entity.HasOne(e => e.CreatedBy)
                   .WithMany()
                   .HasForeignKey(e => e.CreatedById)

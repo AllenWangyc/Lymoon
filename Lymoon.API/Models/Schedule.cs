@@ -17,6 +17,7 @@ public class Schedule
     /// <summary>ISO Monday — latest active week (advances forward only)</summary>
     public DateOnly CurrentWeek { get; set; }
     public string CreatedById { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAt { get; set; }
 
     public AppUser CreatedBy { get; set; } = null!;
     public ICollection<ScheduleMember> Members { get; set; } = new List<ScheduleMember>();

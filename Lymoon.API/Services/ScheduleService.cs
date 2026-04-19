@@ -22,6 +22,7 @@ public class ScheduleService : IScheduleService
         var schedules = await _db.Schedules
             .Where(s => s.Members.Any(m => m.UserId == userId))
             .Include(s => s.Shifts)
+            .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
 
         return schedules.Select(s => MapToItemDto(s, userId)).ToList();
