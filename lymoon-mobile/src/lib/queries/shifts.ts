@@ -26,6 +26,7 @@ export function useAddShift(scheduleId: string) {
     mutationFn: (vars: {
       employeeId: string;
       dayOfWeek: number;
+      weekStart: string;
       startTime: string;
       endTime: string;
       shiftType: ShiftType;

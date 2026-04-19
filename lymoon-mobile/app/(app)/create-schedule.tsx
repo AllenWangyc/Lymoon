@@ -43,14 +43,13 @@ export default function CreateScheduleScreen() {
   >('manager_only');
   const [showWeekPicker, setShowWeekPicker] = useState(false);
 
-  const wordCount = description.trim() ? description.trim().split(/\s+/).length : 0;
+  const charCount = description.length;
 
-  const wordCountColor =
-    wordCount <= 17 ? '#94a3b8' : wordCount <= 19 ? '#fb923c' : '#f87171';
+  const charCountColor =
+    charCount <= 170 ? '#94a3b8' : charCount <= 190 ? '#fb923c' : '#f87171';
 
   function handleDescriptionChange(text: string): void {
-    const newWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-    if (newWordCount > 20) return;
+    if (text.length > 200) return;
     setDescription(text);
   }
 
@@ -71,6 +70,12 @@ export default function CreateScheduleScreen() {
       },
       {
         onSuccess: (schedule) => {
+          setName('');
+          setNameError(false);
+          setDescription('');
+          setScheduleType('shift');
+          setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+          setMemberPermission('manager_only');
           router.replace(
             `/schedule-created?id=${schedule.id}&inviteCode=${schedule.inviteCode}&title=${encodeURIComponent(schedule.title)}`,
           );
@@ -172,9 +177,9 @@ export default function CreateScheduleScreen() {
             />
             <Text
               className="mt-1 text-right"
-              style={{ fontSize: 12, color: wordCountColor }}
+              style={{ fontSize: 12, color: charCountColor }}
             >
-              {wordCount} / 20 words
+              {charCount} / 200
             </Text>
           </View>
 

@@ -56,8 +56,7 @@ export default function ScheduleDetailScreen() {
   const [addEditConfig, setAddEditConfig] = useState<ShiftEditConfig | null>(null);
   const [addEditVisible, setAddEditVisible] = useState(false);
   const [renameVisible, setRenameVisible] = useState(false);
-  const [dissolveStep1Visible, setDissolveStep1Visible] = useState(false);
-  const [dissolveStep2Visible, setDissolveStep2Visible] = useState(false);
+  const [dissolveConfirmVisible, setDissolveConfirmVisible] = useState(false);
 
   // Derive the Monday for the currently viewed week
   const currentWeekStart = useMemo(() => {
@@ -163,6 +162,7 @@ export default function ScheduleDetailScreen() {
         {
           employeeId: result.employeeId,
           dayOfWeek: result.dayOfWeek,
+          weekStart: weekStartParam,
           startTime: result.startTime,
           endTime: result.endTime,
           shiftType: result.shiftType,
@@ -214,13 +214,8 @@ export default function ScheduleDetailScreen() {
     });
   }
 
-  function handleDissolveStep1Confirm() {
-    setDissolveStep1Visible(false);
-    setTimeout(() => setDissolveStep2Visible(true), 200);
-  }
-
-  function handleDissolveStep2Confirm() {
-    setDissolveStep2Visible(false);
+  function handleDissolveConfirm() {
+    setDissolveConfirmVisible(false);
     dissolveMutation.mutate(undefined, {
       onSuccess: () => {
         router.replace('/');
@@ -289,7 +284,7 @@ export default function ScheduleDetailScreen() {
         <PageHeader
           title={scheduleDetail.title}
           subtitle={scheduleDetail.description}
-          onBack={() => router.back()}
+          onBack={() => router.canGoBack() ? router.back() : router.replace('/')}
           rightElement={
             <TouchableOpacity
               onPress={() => setMenuOpen(true)}
@@ -340,7 +335,7 @@ export default function ScheduleDetailScreen() {
           setTimeout(() => setViewMembersVisible(true), 160);
         }}
         onDissolve={() => {
-          setTimeout(() => setDissolveStep1Visible(true), 160);
+          setTimeout(() => setDissolveConfirmVisible(true), 160);
         }}
         inviteCode={scheduleDetail.inviteCode}
         onInviteCopied={() => showToast('Invite code copied!', 'success')}
@@ -385,26 +380,13 @@ export default function ScheduleDetailScreen() {
       />
 
       <ConfirmActionSheet
-        visible={dissolveStep1Visible}
-        onClose={() => setDissolveStep1Visible(false)}
-        onConfirm={handleDissolveStep1Confirm}
+        visible={dissolveConfirmVisible}
+        onClose={() => setDissolveConfirmVisible(false)}
+        onConfirm={handleDissolveConfirm}
         title="Dissolve Schedule?"
-        message="This will permanently delete all shifts and remove all members. This action cannot be undone."
+        message={`"${scheduleDetail?.title ?? 'This schedule'}" will be permanently deleted. All shifts and members will be removed and cannot be recovered.`}
         confirmLabel="Dissolve"
         iconName="warning-outline"
-        iconColor="#dc2626"
-        iconBg="rgba(220,38,38,0.10)"
-        confirmColor="#dc2626"
-      />
-
-      <ConfirmActionSheet
-        visible={dissolveStep2Visible}
-        onClose={() => setDissolveStep2Visible(false)}
-        onConfirm={handleDissolveStep2Confirm}
-        title="Are you absolutely sure?"
-        message={`You're about to dissolve "${scheduleDetail?.title ?? 'this schedule'}". All data will be lost forever.`}
-        confirmLabel="Yes, Dissolve"
-        iconName="trash-outline"
         iconColor="#dc2626"
         iconBg="rgba(220,38,38,0.10)"
         confirmColor="#dc2626"

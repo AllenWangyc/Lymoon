@@ -10,6 +10,10 @@ public class AddShiftRequest
     [Range(0, 6)]
     public int DayOfWeek { get; set; }
 
+    /// <summary>Format: "yyyy-MM-dd" (Monday of the target week)</summary>
+    [Required]
+    public string WeekStart { get; set; } = string.Empty;
+
     /// <summary>Format: "HH:mm"</summary>
     [Required]
     public string StartTime { get; set; } = string.Empty;

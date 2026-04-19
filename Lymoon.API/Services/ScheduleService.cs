@@ -50,7 +50,8 @@ public class ScheduleService : IScheduleService
             IconBg = request.IconBg,
             StartWeek = startWeek,
             CurrentWeek = startWeek,
-            CreatedById = userId
+            CreatedById = userId,
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         var member = new ScheduleMember

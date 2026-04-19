@@ -49,7 +49,7 @@ export default function CalendarScreen() {
 
   const handleShiftPress = useCallback((scheduleId: string) => {
     setSheetVisible(false);
-    router.push(`/(app)/schedule/${scheduleId}` as never);
+    router.push(`/schedule/${scheduleId}`);
   }, []);
 
   const handleMonthLayout = useCallback(

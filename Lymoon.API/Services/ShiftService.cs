@@ -43,12 +43,15 @@ public class ShiftService : IShiftService
         if (startTime >= endTime)
             throw new ArgumentException("startTime must be earlier than endTime.");
 
+        if (!DateOnly.TryParse(request.WeekStart, out var weekStart))
+            throw new ArgumentException("Invalid weekStart format. Expected yyyy-MM-dd.");
+
         // Merge any overlapping or adjacent shifts for the same user/day/week
         var overlapping = await _db.Shifts
             .Where(s => s.ScheduleId == scheduleId
                      && s.UserId == request.EmployeeId
                      && s.DayOfWeek == request.DayOfWeek
-                     && s.WeekStart == schedule.CurrentWeek
+                     && s.WeekStart == weekStart
                      && s.StartTime <= endTime
                      && startTime <= s.EndTime)
             .ToListAsync();
@@ -68,7 +71,7 @@ public class ShiftService : IShiftService
             Id = Guid.NewGuid(),
             ScheduleId = scheduleId,
             UserId = request.EmployeeId,
-            WeekStart = schedule.CurrentWeek,
+            WeekStart = weekStart,
             DayOfWeek = request.DayOfWeek,
             StartTime = mergedStart,
             EndTime = mergedEnd,

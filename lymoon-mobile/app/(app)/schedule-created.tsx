@@ -102,7 +102,8 @@ export default function ScheduleCreatedScreen() {
   }
 
   function handleOpenSchedule() {
-    router.replace(`/schedule/${id}`);
+    router.replace('/');
+    router.push(`/schedule/${id}`);
   }
 
   function handleGoHome() {
